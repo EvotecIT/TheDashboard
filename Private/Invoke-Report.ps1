@@ -3,9 +3,9 @@
     param(
         [string] $FilePath,
         [string] $Title,
-        $Statistics,
-        $Summary,
-        $Users
+        [System.Collections.IDictionary] $Statistics,
+        [System.Collections.IDictionary] $Summary,
+        [Array] $Users
     )
     New-HTMLTabOption -RemoveShadow -BorderRadius 0px -BackgroundColor DimGray -TextColor White -BackgroundColorActive DeepSkyBlue
     New-HTMLTableOption -DataStore JavaScript -BoolAsString -ArrayJoin
