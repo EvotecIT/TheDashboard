@@ -1,10 +1,11 @@
 ﻿function Get-PreparedUserInformation {
     [cmdletBinding()]
     param(
-        [Microsoft.ActiveDirectory.Management.ADUser] $User,
+        [Object] $User,
         [System.Collections.IDictionary] $Cache,
         [string] $Group,
-        [datetime] $Today
+        [datetime] $Today,
+        [switch] $ServiceAccounts
     )
     $UserLocation = ($User.DistinguishedName -split ',').Replace('OU=', '').Replace('CN=', '').Replace('DC=', '')
     #$Location = if ($UserLocation[-6] -eq $User.Name) { '' } else { $UserLocation[-6] }
@@ -47,36 +48,66 @@
         $ManagerLastLogonDays = $null
     }
 
-    [PSCustomObject] @{
-        Name                        = $User.Name
-        SamAccountName              = $User.SamAccountName
-        UserPrincipalName           = $User.UserPrincipalName
-        Enabled                     = $User.Enabled
-        ObjectClass                 = $User.ObjectClass
-        IsMissing                   = if ($Group) { $false } else { $true }
-        LastLogonDays               = $LastLogonDays
-        PasswordLastDays            = $PasswordLastDays
-        Manager                     = $Manager
-        ManagerSamAccountName       = $ManagerSamAccountName
-        ManagerEmail                = $ManagerEmail
-        ManagerStatus               = $ManagerStatus
-        ManagerLastLogonDays        = $ManagerLastLogonDays
-        Level0                    = $Region
-        Level1                    = $Country
-        DistinguishedName           = $User.DistinguishedName
-        LastLogonDate               = $User.LastLogonDate
-        PasswordLastSet             = $User.PasswordLastSet
-        PasswordNeverExpires        = $User.PasswordNeverExpires
-        PasswordNotRequired         = $User.PasswordNotRequired
-        PasswordExpired             = $User.PasswordExpired
-        CannotChangePassword        = $User.CannotChangePassword
-        AccountTrustedForDelegation = $User.AccountTrustedForDelegation
-        ManagerDN                   = $User.Manager
-        ManagerLastLogon            = $ManagerLastLogon
-        Group                       = $Group
-        Description                 = $User.Description
-        #Location          = $Location
-        #Region            = $Region
-        #Country           = $Country
+    if ($ServiceAccounts) {
+        [PSCustomObject] @{
+            Name                        = $User.Name
+            SamAccountName              = $User.SamAccountName
+            UserPrincipalName           = $User.UserPrincipalName
+            Enabled                     = $User.Enabled
+            ObjectClass                 = $User.ObjectClass
+            IsMissing                   = if ($Group) { $false } else { $true }
+            LastLogonDays               = $LastLogonDays
+            PasswordLastDays            = $PasswordLastDays
+            Manager                     = $Manager
+            ManagerSamAccountName       = $ManagerSamAccountName
+            ManagerEmail                = $ManagerEmail
+            ManagerStatus               = $ManagerStatus
+            ManagerLastLogonDays        = $ManagerLastLogonDays
+            Level0                      = $Region
+            Level1                      = $Country
+            DistinguishedName           = $User.DistinguishedName
+            LastLogonDate               = $User.LastLogonDate
+            PasswordLastSet             = $User.PasswordLastSet
+            PasswordNeverExpires        = $User.PasswordNeverExpires
+            PasswordNotRequired         = $User.PasswordNotRequired
+            PasswordExpired             = $User.PasswordExpired
+            CannotChangePassword        = $User.CannotChangePassword
+            AccountTrustedForDelegation = $User.AccountTrustedForDelegation
+            ManagerDN                   = $User.Manager
+            ManagerLastLogon            = $ManagerLastLogon
+            Group                       = $Group
+            Description                 = $User.Description
+        }
+    } else {
+        [PSCustomObject] @{
+            Name                        = $User.Name
+            SamAccountName              = $User.SamAccountName
+            UserPrincipalName           = $User.UserPrincipalName
+            Enabled                     = $User.Enabled
+            ObjectClass                 = $User.ObjectClass
+            # The difference being this
+            IsServiceAccount            = if ($Group) { $true } else { $false }
+            LastLogonDays               = $LastLogonDays
+            PasswordLastDays            = $PasswordLastDays
+            Manager                     = $Manager
+            ManagerSamAccountName       = $ManagerSamAccountName
+            ManagerEmail                = $ManagerEmail
+            ManagerStatus               = $ManagerStatus
+            ManagerLastLogonDays        = $ManagerLastLogonDays
+            Level0                      = $Region
+            Level1                      = $Country
+            DistinguishedName           = $User.DistinguishedName
+            LastLogonDate               = $User.LastLogonDate
+            PasswordLastSet             = $User.PasswordLastSet
+            PasswordNeverExpires        = $User.PasswordNeverExpires
+            PasswordNotRequired         = $User.PasswordNotRequired
+            PasswordExpired             = $User.PasswordExpired
+            CannotChangePassword        = $User.CannotChangePassword
+            AccountTrustedForDelegation = $User.AccountTrustedForDelegation
+            ManagerDN                   = $User.Manager
+            ManagerLastLogon            = $ManagerLastLogon
+            Group                       = $Group
+            Description                 = $User.Description
+        }
     }
 }

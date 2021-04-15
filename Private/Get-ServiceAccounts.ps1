@@ -20,17 +20,17 @@
                     # Lets cache all users from groups
                     $GroupMembersCache[$User.DistinguishedName] = $Cache[$User.DistinguishedName]
                     # Lets find details about user
-                    Get-PreparedUserInformation -User $Cache[$User.DistinguishedName] -Cache $Cache -Group $Group -Today $Today
+                    Get-PreparedUserInformation -User $Cache[$User.DistinguishedName] -Cache $Cache -Group $Group -Today $Today -ServiceAccounts
                 }
             }
         }
         $ServiceAccounts = Get-ADServiceAccount -Filter * -Properties mail, LastLogonDate, PasswordLastSet, DisplayName, ObjectClass
         foreach ($Service in $ServiceAccounts) {
-            Get-PreparedUserInformation -User $Service -Cache $Cache -Today $Today
+            Get-PreparedUserInformation -User $Service -Cache $Cache -Today $Today -ServiceAccounts
         }
         foreach ($Service in $AllServices) {
             if (-not $GroupMembersCache[$Service.DistinguishedName]) {
-                Get-PreparedUserInformation -User $Service -Cache $Cache -Today $Today
+                Get-PreparedUserInformation -User $Service -Cache $Cache -Today $Today -ServiceAccounts
             }
         }
     )

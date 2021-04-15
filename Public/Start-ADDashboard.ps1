@@ -5,7 +5,8 @@
         [string] $ExcelPath,
         [string] $StatisticsPath,
         [parameter(Mandatory)][ValidateSet('ServiceAccounts', 'UsersPasswordNeverExpire', 'ComputersLimitedINS')][string[]] $Type,
-        [string] $Logo
+        [string] $Logo,
+        [System.Collections.IDictionary] $Limits
     )
     $TopStats = [ordered] @{}
     $Cache = @{}
@@ -22,17 +23,16 @@
         $Cache[$C.DistinguishedName] = $C
     }
 
-
     if ($StatisticsPath -and (Test-Path -LiteralPath $StatisticsPath)) {
         $TopStats = Import-Clixml -LiteralPath $StatisticsPath
-        $TodayString = Get-Date -Format 'yyyyMMddhhmmss'
-        $TopStats[$TodayString] = [ordered] @{}
-        $TopStats[$TodayString]['Date'] = Get-Date
-        $TopStats[$TodayString]['Computers'] = $AllComputers.Count
-        $TopStats[$TodayString]['Users'] = $AllUsers.Count
-        $TopStats[$TodayString]['Groups'] = $AllGroups.Count
-        $TopStats[$TodayString]['Group Policies'] = $AllGroupPolicies.Count
     }
+    $TodayString = Get-Date -Format 'yyyyMMddhhmmss'
+    $TopStats[$TodayString] = [ordered] @{}
+    $TopStats[$TodayString]['Date'] = Get-Date
+    $TopStats[$TodayString]['Computers'] = $AllComputers.Count
+    $TopStats[$TodayString]['Users'] = $AllUsers.Count
+    $TopStats[$TodayString]['Groups'] = $AllGroups.Count
+    $TopStats[$TodayString]['Group Policies'] = $AllGroupPolicies.Count
 
     # Build report
     New-HTML {
@@ -58,19 +58,19 @@
         New-HTMLSection -Invisible {
             New-HTMLPanel {
                 #New-HTMLText -Text 'Users' -Color Red -Alignment center -FontSize 20px
-                New-HTMLGage -Label 'All Users' -MinValue 0 -MaxValue 80000 -Value $AllUsers.Count -Counter
+                New-HTMLGage -Label 'All Users' -MinValue 0 -MaxValue $Limits.Users -Value $AllUsers.Count -Counter
             }
             New-HTMLPanel {
                 #New-HTMLText -Text 'Groups' -Color Red -Alignment center -FontSize 20px
-                New-HTMLGage -Label 'All Groups' -MinValue 0 -MaxValue 80000 -Value $AllGroups.Count -Counter
+                New-HTMLGage -Label 'All Groups' -MinValue 0 -MaxValue $Limits.Groups -Value $AllGroups.Count -Counter
             }
             New-HTMLPanel {
                 #New-HTMLText -Text 'Computers' -Color Red -Alignment center -FontSize 20px
-                New-HTMLGage -Label 'All Computers' -MinValue 0 -MaxValue 80000 -Value $AllComputers.Count -Counter
+                New-HTMLGage -Label 'All Computers' -MinValue 0 -MaxValue $Limits.Computers -Value $AllComputers.Count -Counter
             }
             New-HTMLPanel {
                 #New-HTMLText -Text 'Users' -Color Red -Alignment center -FontSize 20px
-                New-HTMLGage -Label 'All Group Policies' -MinValue 0 -MaxValue 4000 -Value $AllGroupPolicies.Count -Counter
+                New-HTMLGage -Label 'All Group Policies' -MinValue 0 -MaxValue $Limits.GroupPolicies -Value $AllGroupPolicies.Count -Counter
             }
             <#
             New-HTMLPanel {
@@ -95,19 +95,19 @@
             New-HTMLPanel {
                 New-HTMLChart -Title 'Domain Summary' -TitleAlignment center {
                     $StatisticsKeys = $TopStats.Keys | Sort-Object | Select-Object -Last 10
-                    $Dates = foreach ($Day in $StatisticsKeys) {
+                    [Array] $Dates = foreach ($Day in $StatisticsKeys) {
                         $TopStats[$Day].Date
                     }
-                    $LineComputers = foreach ($Day in $StatisticsKeys) {
+                    [Array] $LineComputers = foreach ($Day in $StatisticsKeys) {
                         $TopStats[$Day].Computers
                     }
-                    $LineUsers = foreach ($Day in $StatisticsKeys) {
+                    [Array] $LineUsers = foreach ($Day in $StatisticsKeys) {
                         $TopStats[$Day].Users
                     }
-                    $LineGroups = foreach ($Day in $StatisticsKeys) {
+                    [Array] $LineGroups = foreach ($Day in $StatisticsKeys) {
                         $TopStats[$Day].Groups
                     }
-                    $LineGroupPolicies = foreach ($Day in $StatisticsKeys) {
+                    [Array] $LineGroupPolicies = foreach ($Day in $StatisticsKeys) {
                         $TopStats[$Day].'Group Policies'
                     }
                     New-ChartAxisX -Type datetime -Names $Dates

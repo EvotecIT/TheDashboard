@@ -155,17 +155,6 @@
             New-HTMLTable -DataTable $Summary['All'][$Region] -Filtering -SearchBuilder {
                 New-HTMLTableCondition -Name 'Enabled' -ComparisonType string -Operator eq -Value $true -BackgroundColor LimeGreen -FailBackgroundColor BlizzardBlue
 
-                New-HTMLTableCondition -Name 'IsServiceAccount' -ComparisonType string -Operator eq -Value $true -BackgroundColor LimeGreen -FailBackgroundColor Alizarin
-                New-HTMLTableCondition -Name 'IsMissing' -ComparisonType string -Operator eq -Value $false -BackgroundColor LimeGreen -FailBackgroundColor Alizarin
-
-                New-HTMLTableCondition -Name 'ManagerLastLogonDays' -ComparisonType number -Operator ge -Value 0 -BackgroundColor LimeGreen
-                New-HTMLTableCondition -Name 'ManagerLastLogonDays' -ComparisonType number -Operator gt -Value 30 -BackgroundColor Orange
-                New-HTMLTableCondition -Name 'ManagerLastLogonDays' -ComparisonType number -Operator gt -Value 90 -BackgroundColor Alizarin
-                New-HTMLTableCondition -Name 'ManagerLastLogonDays' -ComparisonType string -Operator eq -Value '' -BackgroundColor Alizarin
-                New-HTMLTableCondition -Name 'ManagerStatus' -ComparisonType string -Operator eq -Value 'Missing' -BackgroundColor Alizarin
-                New-HTMLTableCondition -Name 'ManagerStatus' -ComparisonType string -Operator eq -Value 'Disabled' -BackgroundColor Alizarin
-                New-HTMLTableCondition -Name 'ManagerStatus' -ComparisonType string -Operator eq -Value 'Enabled' -BackgroundColor LimeGreen
-
                 New-HTMLTableCondition -Name 'LastLogonDays' -ComparisonType number -Operator gt -Value 60 -BackgroundColor Alizarin
                 New-HTMLTableCondition -Name 'PasswordLastDays' -ComparisonType number -Operator ge -Value 0 -BackgroundColor LimeGreen
                 New-HTMLTableCondition -Name 'PasswordLastDays' -ComparisonType number -Operator gt -Value 300 -BackgroundColor Orange
@@ -174,6 +163,22 @@
 
                 New-HTMLTableCondition -Name 'PasswordNotRequired' -ComparisonType string -Operator eq -Value $false -BackgroundColor LimeGreen -FailBackgroundColor Alizarin
                 New-HTMLTableCondition -Name 'PasswordExpired' -ComparisonType string -Operator eq -Value $false -BackgroundColor LimeGreen -FailBackgroundColor Alizarin
+
+                if ($Region -ne 'Managed Service Accounts') {
+                    New-HTMLTableCondition -Name 'IsServiceAccount' -ComparisonType string -Operator eq -Value $true -BackgroundColor LimeGreen -FailBackgroundColor Alizarin
+                    New-HTMLTableCondition -Name 'IsMissing' -ComparisonType string -Operator eq -Value $false -BackgroundColor LimeGreen -FailBackgroundColor Alizarin
+
+                    New-HTMLTableCondition -Name 'ManagerLastLogonDays' -ComparisonType number -Operator ge -Value 0 -BackgroundColor LimeGreen
+                    New-HTMLTableCondition -Name 'ManagerLastLogonDays' -ComparisonType number -Operator gt -Value 30 -BackgroundColor Orange
+                    New-HTMLTableCondition -Name 'ManagerLastLogonDays' -ComparisonType number -Operator gt -Value 90 -BackgroundColor Alizarin
+                    New-HTMLTableCondition -Name 'ManagerLastLogonDays' -ComparisonType string -Operator eq -Value '' -BackgroundColor Alizarin
+                    New-HTMLTableCondition -Name 'ManagerStatus' -ComparisonType string -Operator eq -Value 'Missing' -BackgroundColor Alizarin
+                    New-HTMLTableCondition -Name 'ManagerStatus' -ComparisonType string -Operator eq -Value 'Disabled' -BackgroundColor Alizarin
+                    New-HTMLTableCondition -Name 'ManagerStatus' -ComparisonType string -Operator eq -Value 'Enabled' -BackgroundColor LimeGreen
+                } else {
+                    New-HTMLTableCondition -Name 'IsMissing' -ComparisonType string -Operator eq -Value $false -BackgroundColor DeepSkyBlue -FailBackgroundColor DeepSkyBlue
+                    New-HTMLTableCondition -Name 'ManagerStatus' -ComparisonType string -Operator eq -Value 'Not available' -BackgroundColor DeepSkyBlue
+                }
 
             }
         }
