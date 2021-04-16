@@ -28,13 +28,16 @@
     if ($StatisticsPath -and (Test-Path -LiteralPath $StatisticsPath)) {
         $TopStats = Import-Clixml -LiteralPath $StatisticsPath
     }
-    $TodayString = Get-Date -Format 'yyyyMMddhhmmss'
+    $TodayString = Get-Date #-Format 'yyyyMMddhhmmss'
     $TopStats[$TodayString] = [ordered] @{}
     $TopStats[$TodayString]['Date'] = Get-Date
     $TopStats[$TodayString]['Computers'] = $AllComputers.Count
     $TopStats[$TodayString]['Users'] = $AllUsers.Count
     $TopStats[$TodayString]['Groups'] = $AllGroups.Count
     $TopStats[$TodayString]['Group Policies'] = $AllGroupPolicies.Count
+
+    #$DayBefore = $TopStats.Keys | Select-Object -Last 1 -Skip 1
+    #$DifferenceUsers = $TopStats[$DayBefore].Users - $TopStats[$TodayString].Users
 
     # Build report
     New-HTML {
@@ -57,11 +60,11 @@
                     $FilesInFolder = Get-ChildItem -LiteralPath $Folders[$Folder].Path
                     foreach ($File in $FilesInFolder) {
                         $Href = "$($Folders[$Folder].Url)/$($File.Name)"
-                        New-NavLink -IconMaterial airplane -Name $File.Name -Href $Href
+                        New-NavLink -IconMaterial airplane -Name $File.BaseName -Href $Href
                     }
                 }
             }
-        }
+        } -MenuItemsWidth 250px
 
         # primary page data
         New-HTMLSectionStyle -BorderRadius 0px -HeaderBackGroundColor Grey -RemoveShadow
@@ -70,6 +73,7 @@
             New-HTMLPanel {
                 #New-HTMLText -Text 'Users' -Color Red -Alignment center -FontSize 20px
                 New-HTMLGage -Label 'All Users' -MinValue 0 -MaxValue $Limits.Users -Value $AllUsers.Count -Counter
+                New-HTMLText -Text 'Change since last + ', $DifferenceUsers -Color Red -Alignment right -FontSize 20px -SkipParagraph
             }
             New-HTMLPanel {
                 #New-HTMLText -Text 'Groups' -Color Red -Alignment center -FontSize 20px
