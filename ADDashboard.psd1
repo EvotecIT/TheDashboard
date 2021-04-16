@@ -8,7 +8,7 @@
     Description          = ''
     FunctionsToExport    = 'Start-ADDashboard'
     GUID                 = '0aacc01f-5861-407e-b5e9-2bf57256fb04'
-    ModuleVersion        = '0.0.1'
+    ModuleVersion        = '0.0.2'
     PowerShellVersion    = '5.1'
     PrivateData          = @{
         PSData = @{
