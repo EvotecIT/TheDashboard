@@ -6,7 +6,9 @@
         [string] $StatisticsPath,
         [parameter(Mandatory)][ValidateSet('ServiceAccounts', 'UsersPasswordNeverExpire', 'ComputersLimitedINS')][string[]] $Type,
         [string] $Logo,
-        [System.Collections.IDictionary] $Limits
+        [System.Collections.IDictionary] $Limits,
+        [System.Collections.IDictionary] $Folders,
+        [switch] $ShowHTML
     )
     $TopStats = [ordered] @{}
     $Cache = @{}
@@ -47,6 +49,15 @@
                     }
                     if ($Report -eq 'ComputersLimitedINS') {
                         New-NavLink -IconMaterial airplane -Name 'Computers in INS' -InternalPageID 'ComputersINS'
+                    }
+                }
+            }
+            foreach ($Folder in $Folders.Keys) {
+                New-NavTopMenu -Name $Folder -IconRegular copyright {
+                    $FilesInFolder = Get-ChildItem -LiteralPath $Folders[$Folder].Path
+                    foreach ($File in $FilesInFolder) {
+                        $Href = "$($Folders[$Folder].Url)/$($File.Name)"
+                        New-NavLink -IconMaterial airplane -Name $File.Name -Href $Href
                     }
                 }
             }
@@ -143,7 +154,7 @@
             }
         }
 
-    } -FilePath $HTMLPath -Online -ShowHTML -TitleText 'AD Compliance Dashboard'
+    } -FilePath $HTMLPath -Online -ShowHTML:$ShowHTML.IsPresent -TitleText 'AD Compliance Dashboard'
 
     # Export statistics to file to create charts later on
     if ($StatisticsPath) {
