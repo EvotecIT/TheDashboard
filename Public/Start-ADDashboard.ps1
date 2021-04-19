@@ -8,6 +8,7 @@
         [string] $Logo,
         [System.Collections.IDictionary] $Limits,
         [System.Collections.IDictionary] $Folders,
+        [System.Collections.IDictionary] $Replacements,
         [switch] $ShowHTML
     )
     $TopStats = [ordered] @{}
@@ -36,13 +37,28 @@
     $TopStats[$TodayString]['Groups'] = $AllGroups.Count
     $TopStats[$TodayString]['Group Policies'] = $AllGroupPolicies.Count
 
+
+    # create menu information based on files
     $Files = foreach ($Folder in $Folders.Keys) {
-        $FilesInFolder = Get-ChildItem -LiteralPath $Folders[$Folder].Path
+        $FilesInFolder = Get-ChildItem -LiteralPath $Folders[$Folder].Path -ErrorAction SilentlyContinue
         foreach ($File in $FilesInFolder) {
             $Href = "$($Folders[$Folder].Url)/$($File.Name)"
-            $Splitted = ($File.BaseName.Replace('Testimo', '').Replace('GPOZaurr', '')) -split "_"
+
+            $MenuName = $File.BaseName
+            foreach ($Replace in $Replacements.BeforeSplit.Keys) {
+                $MenuName = $MenuName.Replace($Replace, $Configuration.Replacements.BeforeSplit[$Replace])
+            }
+            #$Splitted = ($File.BaseName.Replace('Testimo', '').Replace('GPOZaurr', '').Replace('GroupMembership-', '').Replace('_Regional', ' Regional')) -split "_"
+            $Splitted = $MenuName -split $Replacements.SplitOn
             $Name = Format-AddSpaceToSentence -Text $Splitted[0]
-            $Name = $Name.Replace('G P O', 'GPO').Replace('L D A P', 'LDAP').Replace('K R B G T', 'KRBGT')
+
+
+            #$Name = $Name.Replace('G P O', 'GPO').Replace('L D A P', 'LDAP').Replace('K R B G T', 'KRBGT').Replace('A D', 'AD').Replace('I T R X X', 'ITRXX')
+
+            foreach ($Replace in $Replacements.AfterSplit.Keys) {
+                $Name = $Name.Replace($Replace, $Replacements.AfterSplit[$Replace])
+            }
+
             [PSCustomObject] @{
                 Name     = $Name
                 NameDate = $Splitted[1]
@@ -52,6 +68,9 @@
             }
         }
     }
+    $Files = $Files | Sort-Object -Property Name
+
+    # Prepare menu based on files
     $MenuBuilder = [ordered] @{}
     foreach ($Entry in $FileS) {
         if (-not $MenuBuilder[$Entry.Menu]) {
@@ -166,27 +185,15 @@
             }
             New-HTMLPanel {
                 New-HTMLCalendar {
-                    #foreach ($Folder in $Folders.Keys) {
-                    # $FilesInFolder = Get-ChildItem -LiteralPath $Folders[$Folder].Path
                     foreach ($CalendarEntry in $Files) {
-                        #$Href = "$($Folders[$Folder].Url)/$($File.Name)"
-                        #New-NavLink -IconMaterial airplane -Name $File.BaseName -Href $Href
-
-                        # Name = Format-AddSpaceToSentence -Text $Splitted[0]
-                        # File = $Href
-                        # Menu = $Folder
-                        # Date = $File.LastWriteTime
-
-                        New-CalendarEvent -Title $CalendarEntry.Name -StartDate $CalendarEntry.Date -EndDate $($CalendarEntry.Date).AddSeconds(1) -Url $CalendarEntry.Href
+                        New-CalendarEvent -Title $CalendarEntry.Name -StartDate $CalendarEntry.Date -EndDate $($CalendarEntry.Date).AddMinutes(30) -Url $CalendarEntry.Href
                     }
-                    #}
                 }
             }
         }
         foreach ($Report in $Type) {
             if ($Report -eq 'ServiceAccounts') {
                 New-HTMLPage -Name 'ServiceAccounts' {
-                    #$ReportTitle = 'Service Accounts'
                     $ReportOutput = Get-ReportServiceAccounts -AllUsers $AllUsers -Cache $Cache
                     #if ($AttachExcel) {
                     #    $ReportPathExcel = "$ExcelPath\ServiceAccounts\ServiceAccounts.xlsx"
