@@ -28,7 +28,7 @@
     if ($StatisticsPath -and (Test-Path -LiteralPath $StatisticsPath)) {
         $TopStats = Import-Clixml -LiteralPath $StatisticsPath
     }
-    $TodayString = Get-Date #-Format 'yyyyMMddhhmmss'
+    $TodayString = Get-Date
     $TopStats[$TodayString] = [ordered] @{}
     $TopStats[$TodayString]['Date'] = Get-Date
     $TopStats[$TodayString]['Computers'] = $AllComputers.Count
@@ -36,31 +36,62 @@
     $TopStats[$TodayString]['Groups'] = $AllGroups.Count
     $TopStats[$TodayString]['Group Policies'] = $AllGroupPolicies.Count
 
-    #$DayBefore = $TopStats.Keys | Select-Object -Last 1 -Skip 1
-    #$DifferenceUsers = $TopStats[$DayBefore].Users - $TopStats[$TodayString].Users
+    $Files = foreach ($Folder in $Folders.Keys) {
+        $FilesInFolder = Get-ChildItem -LiteralPath $Folders[$Folder].Path
+        foreach ($File in $FilesInFolder) {
+            $Href = "$($Folders[$Folder].Url)/$($File.Name)"
+            $Splitted = ($File.BaseName.Replace('Testimo', '').Replace('GPOZaurr', '')) -split "_"
+            $Name = Format-AddSpaceToSentence -Text $Splitted[0]
+            $Name = $Name.Replace('G P O', 'GPO').Replace('L D A P', 'LDAP').Replace('K R B G T', 'KRBGT')
+            [PSCustomObject] @{
+                Name     = $Name
+                NameDate = $Splitted[1]
+                Href     = $Href
+                Menu     = $Folder
+                Date     = $File.LastWriteTime
+            }
+        }
+    }
+    $MenuBuilder = [ordered] @{}
+    foreach ($Entry in $FileS) {
+        if (-not $MenuBuilder[$Entry.Menu]) {
+            $MenuBuilder[$Entry.Menu] = [ordered] @{}
+        }
+        if (-not $MenuBuilder[$Entry.Menu][$Entry.Name]) {
+            $MenuBuilder[$Entry.Menu][$Entry.Name] = $Entry
+        } else {
+            if ($MenuBuilder[$Entry.Menu][$Entry.Name].Date -lt $Entry.Date) {
+                $MenuBuilder[$Entry.Menu][$Entry.Name] = $Entry
+            }
+        }
+    }
 
     # Build report
     New-HTML {
         New-HTMLNavTop -HomeLinkHome -Logo $Logo {
-            New-NavTopMenu -Name 'Reports' -IconRegular stop-circle {
+            New-NavTopMenu -Name 'Reports' -IconBrands sellsy {
                 foreach ($Report in $Type) {
                     if ($Report -eq 'ServiceAccounts') {
-                        New-NavLink -IconMaterial airplane -Name 'Service Accounts' -InternalPageID 'ServiceAccounts'
+                        New-NavLink -IconRegular newspaper -Name 'Service Accounts' -InternalPageID 'ServiceAccounts'
                     }
                     if ($Report -eq 'UsersPasswordNeverExpire') {
-                        New-NavLink -IconMaterial airplane -Name 'Users with PNE' -InternalPageID 'UsersPNE'
+                        New-NavLink -IconRegular newspaper -Name 'Users with PNE' -InternalPageID 'UsersPNE'
                     }
                     if ($Report -eq 'ComputersLimitedINS') {
-                        New-NavLink -IconMaterial airplane -Name 'Computers in INS' -InternalPageID 'ComputersINS'
+                        New-NavLink -IconRegular newspaper -Name 'Computers in INS' -InternalPageID 'ComputersINS'
                     }
                 }
             }
-            foreach ($Folder in $Folders.Keys) {
-                New-NavTopMenu -Name $Folder -IconRegular copyright {
-                    $FilesInFolder = Get-ChildItem -LiteralPath $Folders[$Folder].Path
-                    foreach ($File in $FilesInFolder) {
-                        $Href = "$($Folders[$Folder].Url)/$($File.Name)"
-                        New-NavLink -IconMaterial airplane -Name $File.BaseName -Href $Href
+            foreach ($Menu in $MenuBuilder.Keys) {
+                $TopMenuSplat = @{
+                    Name = $Menu
+                }
+                if ($Configuration.Folders.$Menu.IconType) {
+                    $TopMenuSplat[$Configuration.Folders.$Menu.IconType] = $Configuration.Folders.$Menu.Icon
+                }
+                New-NavTopMenu @TopMenuSplat {
+                    foreach ($MenuReport in $MenuBuilder[$Menu].Keys) {
+                        New-NavLink -IconRegular calendar-check -Name $MenuBuilder[$Menu][$MenuReport].Name -Href $MenuBuilder[$Menu][$MenuReport].Href
                     }
                 }
             }
@@ -73,7 +104,7 @@
             New-HTMLPanel {
                 #New-HTMLText -Text 'Users' -Color Red -Alignment center -FontSize 20px
                 New-HTMLGage -Label 'All Users' -MinValue 0 -MaxValue $Limits.Users -Value $AllUsers.Count -Counter
-                New-HTMLText -Text 'Change since last + ', $DifferenceUsers -Color Red -Alignment right -FontSize 20px -SkipParagraph
+                # New-HTMLText -Text 'Change since last + ', $DifferenceUsers -Color Red -Alignment right -FontSize 20px -SkipParagraph
             }
             New-HTMLPanel {
                 #New-HTMLText -Text 'Groups' -Color Red -Alignment center -FontSize 20px
@@ -131,6 +162,24 @@
                     New-ChartLine -Name 'Users' -Value $LineUsers
                     New-ChartLine -Name 'Groups' -Value $LineGroups
                     New-ChartLine -Name 'Group Policies' -Value $LineGroupPolicies
+                }
+            }
+            New-HTMLPanel {
+                New-HTMLCalendar {
+                    #foreach ($Folder in $Folders.Keys) {
+                    # $FilesInFolder = Get-ChildItem -LiteralPath $Folders[$Folder].Path
+                    foreach ($CalendarEntry in $Files) {
+                        #$Href = "$($Folders[$Folder].Url)/$($File.Name)"
+                        #New-NavLink -IconMaterial airplane -Name $File.BaseName -Href $Href
+
+                        # Name = Format-AddSpaceToSentence -Text $Splitted[0]
+                        # File = $Href
+                        # Menu = $Folder
+                        # Date = $File.LastWriteTime
+
+                        New-CalendarEvent -Title $CalendarEntry.Name -StartDate $CalendarEntry.Date -EndDate $($CalendarEntry.Date).AddSeconds(1) -Url $CalendarEntry.Href
+                    }
+                    #}
                 }
             }
         }
