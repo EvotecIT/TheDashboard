@@ -3,12 +3,12 @@ Import-Module "C:\Support\GitHub\PSPublishModule\PSPublishModule.psm1" -Force
 
 $Configuration = @{
     Information = @{
-        ModuleName        = 'ADDashboard'
+        ModuleName        = 'TheDashboard'
         DirectoryProjects = 'C:\Support\GitHub'
 
         Manifest          = @{
             # Version number of this module.
-            ModuleVersion              = '0.0.2'
+            ModuleVersion              = '0.0.3'
             # Supported PSEditions
             CompatiblePSEditions       = @('Desktop', 'Core')
             # ID used to uniquely identify this module

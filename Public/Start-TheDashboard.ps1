@@ -1,4 +1,4 @@
-﻿function Start-ADDashboard {
+﻿function Start-TheDashboard {
     [cmdletBinding()]
     param(
         [string] $HTMLPath,
@@ -19,6 +19,27 @@
     $AllComputers = Get-ADComputer -Filter * -Properties $PropertiesComputer
     $AllGroups = Get-ADGroup -Filter *
     $AllGroupPolicies = Get-GPO -All
+
+    $ComputerEnabled = 0
+    $ComputerDisabled = 0
+    $UserDisabled = 0
+    $UserEnabled = 0
+    foreach ($Computer in $AllComputers) {
+        if ($Computer.Enabled) {
+            $ComputerEnabled++
+        } else {
+            $ComputerDisabled++
+        }
+    }
+    foreach ($Computer in $AllUsers) {
+        if ($User.Disabled) {
+            $UserEnabled++
+        } else {
+            $UserDisabled++
+        }
+    }
+
+
     foreach ($U in $AllUsers) {
         $Cache[$U.DistinguishedName] = $U
     }
@@ -158,23 +179,24 @@
         }
         New-HTMLSection -Invisible {
             New-HTMLPanel {
+                $StatisticsKeys = $TopStats.Keys | Sort-Object | Select-Object -Last 10
+                [Array] $Dates = foreach ($Day in $StatisticsKeys) {
+                    $TopStats[$Day].Date
+                }
+                [Array] $LineComputers = foreach ($Day in $StatisticsKeys) {
+                    $TopStats[$Day].Computers
+                }
+                [Array] $LineUsers = foreach ($Day in $StatisticsKeys) {
+                    $TopStats[$Day].Users
+                }
+                [Array] $LineGroups = foreach ($Day in $StatisticsKeys) {
+                    $TopStats[$Day].Groups
+                }
+                [Array] $LineGroupPolicies = foreach ($Day in $StatisticsKeys) {
+                    $TopStats[$Day].'Group Policies'
+                }
+
                 New-HTMLChart -Title 'Domain Summary' -TitleAlignment center {
-                    $StatisticsKeys = $TopStats.Keys | Sort-Object | Select-Object -Last 10
-                    [Array] $Dates = foreach ($Day in $StatisticsKeys) {
-                        $TopStats[$Day].Date
-                    }
-                    [Array] $LineComputers = foreach ($Day in $StatisticsKeys) {
-                        $TopStats[$Day].Computers
-                    }
-                    [Array] $LineUsers = foreach ($Day in $StatisticsKeys) {
-                        $TopStats[$Day].Users
-                    }
-                    [Array] $LineGroups = foreach ($Day in $StatisticsKeys) {
-                        $TopStats[$Day].Groups
-                    }
-                    [Array] $LineGroupPolicies = foreach ($Day in $StatisticsKeys) {
-                        $TopStats[$Day].'Group Policies'
-                    }
                     New-ChartAxisX -Type datetime -Names $Dates
                     New-ChartAxisY -TitleText 'Numbers' -Show
                     New-ChartLine -Name 'Computers' -Value $LineComputers
@@ -182,6 +204,41 @@
                     New-ChartLine -Name 'Groups' -Value $LineGroups
                     New-ChartLine -Name 'Group Policies' -Value $LineGroupPolicies
                 }
+
+                <#
+                New-HTMLChart -Title 'Domain Summary' -TitleAlignment center {
+                    New-ChartAxisX -Type datetime -Names $Dates
+                    New-ChartAxisY -TitleText 'Numbers' -Show
+                    New-ChartLine -Name 'Computers' -Value $LineComputers
+                    #New-ChartLine -Name 'Users' -Value $LineUsers
+                    #New-ChartLine -Name 'Groups' -Value $LineGroups
+                    #New-ChartLine -Name 'Group Policies' -Value $LineGroupPolicies
+                } -Group 'LinkedCharts1' -Height 250
+                New-HTMLChart -Title 'Domain Summary' -TitleAlignment center {
+                    New-ChartAxisX -Type datetime -Names $Dates
+                    New-ChartAxisY -TitleText 'Numbers' -Show
+                    #New-ChartLine -Name 'Computers' -Value $LineComputers
+                    New-ChartLine -Name 'Users' -Value $LineUsers
+                    #New-ChartLine -Name 'Groups' -Value $LineGroups
+                    #New-ChartLine -Name 'Group Policies' -Value $LineGroupPolicies
+                } -Group 'LinkedCharts1' -Height 250
+                New-HTMLChart -Title 'Domain Summary' -TitleAlignment center {
+                    New-ChartAxisX -Type datetime -Names $Dates
+                    New-ChartAxisY -TitleText 'Numbers' -Show
+                    #New-ChartLine -Name 'Computers' -Value $LineComputers
+                    #New-ChartLine -Name 'Users' -Value $LineUsers
+                    New-ChartLine -Name 'Groups' -Value $LineGroups
+                    #New-ChartLine -Name 'Group Policies' -Value $LineGroupPolicies
+                } -Group 'LinkedCharts1' -Height 250
+                New-HTMLChart -Title 'Domain Summary' -TitleAlignment center {
+                    New-ChartAxisX -Type datetime -Names $Dates
+                    New-ChartAxisY -TitleText 'Numbers' -Show
+                    #New-ChartLine -Name 'Computers' -Value $LineComputers
+                    #New-ChartLine -Name 'Users' -Value $LineUsers
+                    #New-ChartLine -Name 'Groups' -Value $LineGroups
+                    New-ChartLine -Name 'Group Policies' -Value $LineGroupPolicies
+                } -Group 'LinkedCharts1' -Height 250
+                #>
             }
             New-HTMLPanel {
                 New-HTMLCalendar {
