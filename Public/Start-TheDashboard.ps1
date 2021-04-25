@@ -4,7 +4,7 @@
         [string] $HTMLPath,
         [string] $ExcelPath,
         [string] $StatisticsPath,
-        [parameter(Mandatory)][ValidateSet('ServiceAccounts', 'UsersPasswordNeverExpire', 'ComputersLimitedINS')][string[]] $Type,
+        #[parameter(Mandatory)][ValidateSet('ServiceAccounts', 'UsersPasswordNeverExpire', 'ComputersLimitedINS')][string[]] $Type,
         [string] $Logo,
         [System.Collections.IDictionary] $Limits,
         [System.Collections.IDictionary] $Folders,
@@ -69,12 +69,8 @@
             foreach ($Replace in $Replacements.BeforeSplit.Keys) {
                 $MenuName = $MenuName.Replace($Replace, $Configuration.Replacements.BeforeSplit[$Replace])
             }
-            #$Splitted = ($File.BaseName.Replace('Testimo', '').Replace('GPOZaurr', '').Replace('GroupMembership-', '').Replace('_Regional', ' Regional')) -split "_"
             $Splitted = $MenuName -split $Replacements.SplitOn
             $Name = Format-AddSpaceToSentence -Text $Splitted[0]
-
-
-            #$Name = $Name.Replace('G P O', 'GPO').Replace('L D A P', 'LDAP').Replace('K R B G T', 'KRBGT').Replace('A D', 'AD').Replace('I T R X X', 'ITRXX')
 
             foreach ($Replace in $Replacements.AfterSplit.Keys) {
                 $Name = $Name.Replace($Replace, $Replacements.AfterSplit[$Replace])
@@ -93,10 +89,14 @@
 
     # Prepare menu based on files
     $MenuBuilder = [ordered] @{}
-    foreach ($Entry in $FileS) {
-        if (-not $MenuBuilder[$Entry.Menu]) {
-            $MenuBuilder[$Entry.Menu] = [ordered] @{}
+    # lets build top level based on folders to keep the order of menus
+    foreach ($Folder in $Folders.Keys) {
+        if (-not $MenuBuilder[$Folder]) {
+            $MenuBuilder[$Folder] = [ordered] @{}
         }
+    }
+    # We now build menu from files
+    foreach ($Entry in $FileS) {
         if (-not $MenuBuilder[$Entry.Menu][$Entry.Name]) {
             $MenuBuilder[$Entry.Menu][$Entry.Name] = $Entry
         } else {
@@ -109,6 +109,7 @@
     # Build report
     New-HTML {
         New-HTMLNavTop -HomeLinkHome -Logo $Logo {
+            <#
             New-NavTopMenu -Name 'Reports' -IconBrands sellsy {
                 foreach ($Report in $Type) {
                     if ($Report -eq 'ServiceAccounts') {
@@ -122,6 +123,7 @@
                     }
                 }
             }
+            #>
             foreach ($Menu in $MenuBuilder.Keys) {
                 $TopMenuSplat = @{
                     Name = $Menu
@@ -243,11 +245,18 @@
             New-HTMLPanel {
                 New-HTMLCalendar {
                     foreach ($CalendarEntry in $Files) {
-                        New-CalendarEvent -Title $CalendarEntry.Name -StartDate $CalendarEntry.Date -EndDate $($CalendarEntry.Date).AddMinutes(30) -Url $CalendarEntry.Href
+                        # The check make sure that report doesn't run over midnight when using +30 minutes. If it runs over midnight it looks bad as it spans over 2 days
+                        # we then remove 30 minutes instead to prevent this
+                        if ($($CalendarEntry.Date).Day -eq $($($CalendarEntry.Date).AddMinutes(30)).Day) {
+                            New-CalendarEvent -Title $CalendarEntry.Name -StartDate $CalendarEntry.Date -EndDate $($CalendarEntry.Date).AddMinutes(30) -Url $CalendarEntry.Href
+                        } else {
+                            New-CalendarEvent -Title $CalendarEntry.Name -StartDate $CalendarEntry.Date.AddMinutes(-30) -EndDate $($CalendarEntry.Date) -Url $CalendarEntry.Href
+                        }
                     }
                 }
             }
         }
+        <#
         foreach ($Report in $Type) {
             if ($Report -eq 'ServiceAccounts') {
                 New-HTMLPage -Name 'ServiceAccounts' {
@@ -270,7 +279,7 @@
                 }
             }
         }
-
+        #>
     } -FilePath $HTMLPath -Online -ShowHTML:$ShowHTML.IsPresent -TitleText 'AD Compliance Dashboard'
 
     # Export statistics to file to create charts later on
