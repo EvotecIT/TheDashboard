@@ -60,27 +60,47 @@
 
 
     # create menu information based on files
-    $Files = foreach ($Folder in $Folders.Keys) {
-        $FilesInFolder = Get-ChildItem -LiteralPath $Folders[$Folder].Path -ErrorAction SilentlyContinue
+    $Files = foreach ($FolderName in $Folders.Keys) {
+
+        $Folder = $Folders[$FolderName]
+        $FilesInFolder = Get-ChildItem -LiteralPath $Folders[$FolderName].Path -ErrorAction SilentlyContinue -Filter *.html
         foreach ($File in $FilesInFolder) {
-            $Href = "$($Folders[$Folder].Url)/$($File.Name)"
+            $Href = "$($Folders[$FolderName].Url)/$($File.Name)"
 
             $MenuName = $File.BaseName
-            foreach ($Replace in $Replacements.BeforeSplit.Keys) {
-                $MenuName = $MenuName.Replace($Replace, $Configuration.Replacements.BeforeSplit[$Replace])
-            }
-            $Splitted = $MenuName -split $Replacements.SplitOn
-            $Name = Format-AddSpaceToSentence -Text $Splitted[0]
-
-            foreach ($Replace in $Replacements.AfterSplit.Keys) {
-                $Name = $Name.Replace($Replace, $Replacements.AfterSplit[$Replace])
+            if ($Folder.ReplacementsGlobal -eq $true) {
+                foreach ($Replace in $Replacements.BeforeSplit.Keys) {
+                    $MenuName = $MenuName.Replace($Replace, $Replacements.BeforeSplit[$Replace])
+                }
+                $Splitted = $MenuName -split $Replacements.SplitOn
+                if ($Replacements.AddSpaceToName) {
+                    $Name = Format-AddSpaceToSentence -Text $Splitted[0]
+                } else {
+                    $Name = $Splitted[0]
+                }
+                foreach ($Replace in $Replacements.AfterSplit.Keys) {
+                    $Name = $Name.Replace($Replace, $Replacements.AfterSplit[$Replace])
+                }
+            } else {
+                foreach ($Replace in $Folder.Replacements.BeforeSplit.Keys) {
+                    $MenuName = $MenuName.Replace($Replace, $Folder.Replacements.BeforeSplit[$Replace])
+                }
+                $Splitted = $MenuName -split $Folder.Replacements.SplitOn
+                if ($Folder.Replacements.AddSpaceToName) {
+                    $Name = Format-AddSpaceToSentence -Text $Splitted[0]
+                } else {
+                    $Name = $Splitted[0]
+                }
+                foreach ($Replace in $Folder.Replacements.AfterSplit.Keys) {
+                    $Name = $Name.Replace($Replace, $Folder.Replacements.AfterSplit[$Replace])
+                }
             }
 
             [PSCustomObject] @{
                 Name     = $Name
                 NameDate = $Splitted[1]
                 Href     = $Href
-                Menu     = $Folder
+                Menu     = $FolderName
                 Date     = $File.LastWriteTime
             }
         }
