@@ -15,21 +15,6 @@
     # Build report
     New-HTML {
         New-HTMLNavTop -HomeLinkHome -Logo $Logo {
-            <#
-            New-NavTopMenu -Name 'Reports' -IconBrands sellsy {
-                foreach ($Report in $Type) {
-                    if ($Report -eq 'ServiceAccounts') {
-                        New-NavLink -IconRegular newspaper -Name 'Service Accounts' -InternalPageID 'ServiceAccounts'
-                    }
-                    if ($Report -eq 'UsersPasswordNeverExpire') {
-                        New-NavLink -IconRegular newspaper -Name 'Users with PNE' -InternalPageID 'UsersPNE'
-                    }
-                    if ($Report -eq 'ComputersLimitedINS') {
-                        New-NavLink -IconRegular newspaper -Name 'Computers in INS' -InternalPageID 'ComputersINS'
-                    }
-                }
-            }
-            #>
             foreach ($Menu in $MenuBuilder.Keys) {
                 $TopMenuSplat = @{
                     Name = $Menu
@@ -39,7 +24,9 @@
                 }
                 New-NavTopMenu @TopMenuSplat {
                     foreach ($MenuReport in $MenuBuilder[$Menu].Keys) {
-                        New-NavLink -IconRegular calendar-check -Name $MenuBuilder[$Menu][$MenuReport].Name -Href $MenuBuilder[$Menu][$MenuReport].Href
+                        #$PageName = (( -join ($MenuBuilder[$Menu][$MenuReport].Name, " ", $MenuBuilder[$Menu][$MenuReport].Date)).Replace(":", "_").Replace(" ", "_"))
+                        $PageName = (( -join ($MenuBuilder[$Menu][$MenuReport].Name)).Replace(":", "_").Replace(" ", "_"))
+                        New-NavLink -IconRegular calendar-check -Name $MenuBuilder[$Menu][$MenuReport].Name -Href "$PageName.html"
                     }
                 }
             }
@@ -186,5 +173,24 @@
             }
         }
         #>
+        foreach ($Menu in $MenuBuilder.Keys) {
+            $TopMenuSplat = @{
+                Name = $Menu
+            }
+            if ($Configuration.Folders.$Menu.IconType) {
+                $TopMenuSplat[$Configuration.Folders.$Menu.IconType] = $Configuration.Folders.$Menu.Icon
+            }
+
+            foreach ($MenuReport in $MenuBuilder[$Menu].Keys) {
+                $PathToSubReports = [io.path]::GetDirectoryName($HTMLPath)
+                #$PageName = ( -join ($MenuBuilder[$Menu][$MenuReport].Name, " ", $MenuBuilder[$Menu][$MenuReport].Date)).Replace(":", "_").Replace(" ", "_")
+                $PageName = ($MenuBuilder[$Menu][$MenuReport].Name).Replace(":", "_").Replace(" ", "_")
+                $FullPath = [io.path]::Combine($PathToSubReports, "$PageName.html")
+                New-HTMLPage -Name $MenuBuilder[$Menu][$MenuReport].Name {
+                    New-HTMLFrame -SourcePath $MenuBuilder[$Menu][$MenuReport].Href -Scrolling Auto -Height 1500px
+                } -FilePath $FullPath
+            }
+
+        }
     } -FilePath $HTMLPath -Online -ShowHTML:$ShowHTML.IsPresent -TitleText 'AD Compliance Dashboard'
 }
