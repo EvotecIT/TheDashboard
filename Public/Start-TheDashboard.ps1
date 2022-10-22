@@ -1,6 +1,7 @@
 ﻿function Start-TheDashboard {
     [cmdletBinding()]
     param(
+        [ScriptBlock] $Elements,
         [string] $HTMLPath,
         [string] $ExcelPath,
         [string] $StatisticsPath,
@@ -13,12 +14,15 @@
     )
     $TopStats = [ordered] @{}
     $Cache = @{}
+
+    <#
     $Properties = 'DistinguishedName', 'mail', 'LastLogonDate', 'PasswordLastSet', 'DisplayName', 'Manager', 'Description', 'PasswordNeverExpires', 'PasswordNotRequired', 'PasswordExpired', 'UserPrincipalName', 'SamAccountName', 'CannotChangePassword', 'TrustedForDelegation', 'TrustedToAuthForDelegation'
     $AllUsers = Get-ADUser -Filter * -Properties $Properties
     $PropertiesComputer = 'DistinguishedName', 'LastLogonDate', 'PasswordLastSet', 'Enabled', 'DnsHostName', 'PasswordNeverExpires', 'PasswordNotRequired', 'PasswordExpired', 'Manager', 'OperatingSystemVersion', 'OperatingSystem' , 'TrustedForDelegation'
     $AllComputers = Get-ADComputer -Filter * -Properties $PropertiesComputer
     $AllGroups = Get-ADGroup -Filter *
     $AllGroupPolicies = Get-GPO -All
+    #>
 
     $ComputerEnabled = 0
     $ComputerDisabled = 0
@@ -95,13 +99,17 @@
                     $Name = $Name.Replace($Replace, $Folder.Replacements.AfterSplit[$Replace])
                 }
             }
-
-            [PSCustomObject] @{
-                Name     = $Name
-                NameDate = $Splitted[1]
-                Href     = $Href
-                Menu     = $FolderName
-                Date     = $File.LastWriteTime
+            if ($Name -and $Splitted[1]) {
+                [ordered] @{
+                    Name     = $Name
+                    NameDate = $Splitted[1]
+                    Href     = $Href
+                    FileName = $File.Name
+                    Menu     = $FolderName
+                    Date     = $File.LastWriteTime
+                }
+            } else {
+                Write-Color -Text "Couldn't create menu item for $($File.FullName)" -Color Red
             }
         }
     }
@@ -118,15 +126,20 @@
     # We now build menu from files
     foreach ($Entry in $Files) {
         if (-not $MenuBuilder[$Entry.Menu][$Entry.Name]) {
-            $MenuBuilder[$Entry.Menu][$Entry.Name] = $Entry
+            $MenuBuilder[$Entry.Menu][$Entry.Name] = @{
+                Current = $Entry
+                All     = [System.Collections.Generic.List[Object]]::new()
+            }
         } else {
-            if ($MenuBuilder[$Entry.Menu][$Entry.Name].Date -lt $Entry.Date) {
-                $MenuBuilder[$Entry.Menu][$Entry.Name] = $Entry
+            if ($MenuBuilder[$Entry.Menu][$Entry.Name]['Current'].Date -lt $Entry.Date) {
+                $MenuBuilder[$Entry.Menu][$Entry.Name]['Current'] = $Entry
+
             }
         }
+        $MenuBuilder[$Entry.Menu][$Entry.Name]['All'].Add($Entry)
     }
 
-    New-HTMLReport -Logo $Logo -MenuBuilder $MenuBuilder -Configuration $Configuration -Limits $Limits -TopStats $TopStats -Files $Files -ShowHTML:$ShowHTML.IsPresent -HTMLPath $HTMLPath
+    New-HTMLReport -Elements $Elements -Logo $Logo -MenuBuilder $MenuBuilder -Configuration $Configuration -Limits $Limits -TopStats $TopStats -Files $Files -ShowHTML:$ShowHTML.IsPresent -HTMLPath $HTMLPath
 
     # Export statistics to file to create charts later on
     if ($StatisticsPath) {
