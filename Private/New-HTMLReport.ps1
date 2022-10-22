@@ -1,6 +1,7 @@
 ﻿function New-HTMLReport {
     [cmdletBinding()]
     param(
+        $Elements,
         $Logo,
         [System.Collections.IDictionary] $MenuBuilder,
         $Configuration,
@@ -10,8 +11,8 @@
         [string] $HTMLPath,
         [switch] $ShowHTML
     )
-
-
+    $TimeLogHTML = Start-TimeLog
+    Write-Color -Text '[i]', '[HTML ] ', "Generating HTML report ($HTMLPath)" -Color Yellow, DarkGray, Yellow
     # Build report
     New-HTML {
         New-HTMLNavTop -HomeLinkHome -Logo $Logo {
@@ -25,8 +26,8 @@
                 New-NavTopMenu @TopMenuSplat {
                     foreach ($MenuReport in $MenuBuilder[$Menu].Keys) {
                         #$PageName = (( -join ($MenuBuilder[$Menu][$MenuReport].Name, " ", $MenuBuilder[$Menu][$MenuReport].Date)).Replace(":", "_").Replace(" ", "_"))
-                        $PageName = (( -join ($MenuBuilder[$Menu][$MenuReport].Name)).Replace(":", "_").Replace(" ", "_"))
-                        New-NavLink -IconRegular calendar-check -Name $MenuBuilder[$Menu][$MenuReport].Name -Href "$PageName.html"
+                        $PageName = (( -join ($MenuBuilder[$Menu][$MenuReport]['Current'].Name)).Replace(":", "_").Replace(" ", "_"))
+                        New-NavLink -IconRegular calendar-check -Name $MenuBuilder[$Menu][$MenuReport]['Current'].Name -Href "$PageName.html"
                     }
                 }
             }
@@ -35,24 +36,26 @@
         # primary page data
         New-HTMLSectionStyle -BorderRadius 0px -HeaderBackGroundColor Grey -RemoveShadow
         New-HTMLPanelStyle -BorderRadius 0px
+
         New-HTMLSection -Invisible {
-            New-HTMLPanel {
-                #New-HTMLText -Text 'Users' -Color Red -Alignment center -FontSize 20px
-                New-HTMLGage -Label 'All Users' -MinValue 0 -MaxValue $Limits.Users -Value $AllUsers.Count -Counter
-                # New-HTMLText -Text 'Change since last + ', $DifferenceUsers -Color Red -Alignment right -FontSize 20px -SkipParagraph
-            }
-            New-HTMLPanel {
-                #New-HTMLText -Text 'Groups' -Color Red -Alignment center -FontSize 20px
-                New-HTMLGage -Label 'All Groups' -MinValue 0 -MaxValue $Limits.Groups -Value $AllGroups.Count -Counter
-            }
-            New-HTMLPanel {
-                #New-HTMLText -Text 'Computers' -Color Red -Alignment center -FontSize 20px
-                New-HTMLGage -Label 'All Computers' -MinValue 0 -MaxValue $Limits.Computers -Value $AllComputers.Count -Counter
-            }
-            New-HTMLPanel {
-                #New-HTMLText -Text 'Users' -Color Red -Alignment center -FontSize 20px
-                New-HTMLGage -Label 'All Group Policies' -MinValue 0 -MaxValue $Limits.GroupPolicies -Value $AllGroupPolicies.Count -Counter
-            }
+            #& $Elements
+            # New-HTMLPanel {
+            #     #New-HTMLText -Text 'Users' -Color Red -Alignment center -FontSize 20px
+            #     New-HTMLGage -Label 'All Users' -MinValue 0 -MaxValue $Limits.Users -Value $AllUsers.Count -Counter
+            #     # New-HTMLText -Text 'Change since last + ', $DifferenceUsers -Color Red -Alignment right -FontSize 20px -SkipParagraph
+            # }
+            # New-HTMLPanel {
+            #     #New-HTMLText -Text 'Groups' -Color Red -Alignment center -FontSize 20px
+            #     New-HTMLGage -Label 'All Groups' -MinValue 0 -MaxValue $Limits.Groups -Value $AllGroups.Count -Counter
+            # }
+            # New-HTMLPanel {
+            #     #New-HTMLText -Text 'Computers' -Color Red -Alignment center -FontSize 20px
+            #     New-HTMLGage -Label 'All Computers' -MinValue 0 -MaxValue $Limits.Computers -Value $AllComputers.Count -Counter
+            # }
+            # New-HTMLPanel {
+            #     #New-HTMLText -Text 'Users' -Color Red -Alignment center -FontSize 20px
+            #     New-HTMLGage -Label 'All Group Policies' -MinValue 0 -MaxValue $Limits.GroupPolicies -Value $AllGroupPolicies.Count -Counter
+            # }
             <#
             New-HTMLPanel {
                 New-HTMLText -Text 'Users ' -Alignment center -FontSize 20px -LineBreak
@@ -74,7 +77,7 @@
         }
         New-HTMLSection -Invisible {
             New-HTMLPanel {
-                $StatisticsKeys = $TopStats.Keys | Sort-Object | Select-Object -Last 10
+                $StatisticsKeys = $TopStats.Keys | Sort-Object | Select-Object -Last 50
                 [Array] $Dates = foreach ($Day in $StatisticsKeys) {
                     $TopStats[$Day].Date
                 }
@@ -141,12 +144,12 @@
                         # The check make sure that report doesn't run over midnight when using +30 minutes. If it runs over midnight it looks bad as it spans over 2 days
                         # we then remove 30 minutes instead to prevent this
                         if ($($CalendarEntry.Date).Day -eq $($($CalendarEntry.Date).AddMinutes(30)).Day) {
-                            New-CalendarEvent -Title $CalendarEntry.Name -StartDate $CalendarEntry.Date -EndDate $($CalendarEntry.Date).AddMinutes(30) -Url $CalendarEntry.Href
+                            New-CalendarEvent -Title $CalendarEntry.Name -StartDate $CalendarEntry.Date -EndDate $($CalendarEntry.Date).AddMinutes(30) -Url $CalendarEntry.FileName
                         } else {
-                            New-CalendarEvent -Title $CalendarEntry.Name -StartDate $CalendarEntry.Date.AddMinutes(-30) -EndDate $($CalendarEntry.Date) -Url $CalendarEntry.Href
+                            New-CalendarEvent -Title $CalendarEntry.Name -StartDate $CalendarEntry.Date.AddMinutes(-30) -EndDate $($CalendarEntry.Date) -Url $CalendarEntry.FileName
                         }
                     }
-                }
+                } -HeaderRight @('dayGridMonth', 'timeGridWeek', 'timeGridDay', 'listMonth', 'listYear')
             }
         }
         <#
@@ -174,6 +177,7 @@
         }
         #>
         foreach ($Menu in $MenuBuilder.Keys) {
+            Write-Color -Text '[i]', '[HTML ] ', "Building Menu for ", $Menu -Color Yellow, DarkGray, Yellow, DarkCyan
             $TopMenuSplat = @{
                 Name = $Menu
             }
@@ -182,15 +186,30 @@
             }
 
             foreach ($MenuReport in $MenuBuilder[$Menu].Keys) {
+
                 $PathToSubReports = [io.path]::GetDirectoryName($HTMLPath)
                 #$PageName = ( -join ($MenuBuilder[$Menu][$MenuReport].Name, " ", $MenuBuilder[$Menu][$MenuReport].Date)).Replace(":", "_").Replace(" ", "_")
-                $PageName = ($MenuBuilder[$Menu][$MenuReport].Name).Replace(":", "_").Replace(" ", "_")
+                $PageName = ($MenuBuilder[$Menu][$MenuReport]['Current'].Name).Replace(":", "_").Replace(" ", "_")
                 $FullPath = [io.path]::Combine($PathToSubReports, "$PageName.html")
-                New-HTMLPage -Name $MenuBuilder[$Menu][$MenuReport].Name {
-                    New-HTMLFrame -SourcePath $MenuBuilder[$Menu][$MenuReport].Href -Scrolling Auto -Height 1500px
-                } -FilePath $FullPath
-            }
 
+                $CurrentReport = $MenuBuilder[$Menu][$MenuReport]['Current']
+                $AllReports = $MenuBuilder[$Menu][$MenuReport]['All']
+
+                New-HTMLReportPage -Report $CurrentReport -AllReports $AllReports -FilePath $FullPath -PathToSubReports $PathToSubReports
+
+                foreach ($Report in $AllReports) {
+                    if ($Report.Name -eq $CurrentReport.Name -and $Report.Date -eq $CurrentReport.Date) {
+                        continue
+                    }
+                    $FullPathOther = [io.path]::Combine($PathToSubReports, $Report.FileName)
+                    New-HTMLReportPage -Report $Report -AllReports $AllReports -FilePath $FullPathOther -PathToSubReports $PathToSubReports
+                }
+            }
+            Write-Color -Text '[i]', '[HTML ] ', "Ending Menu for ", $Menu -Color Yellow, DarkGray, Yellow, DarkCyan
         }
-    } -FilePath $HTMLPath -Online -ShowHTML:$ShowHTML.IsPresent -TitleText 'AD Compliance Dashboard'
+        Write-Color -Text '[i]', '[HTML ] ', "Saving HTML reports (this may take a while...)" -Color Yellow, DarkGray, Yellow
+    } -FilePath $HTMLPath -Online -ShowHTML:$ShowHTML.IsPresent -TitleText 'The Dashboard'
+
+    $TimeLogEndHTML = Stop-TimeLog -Time $TimeLogHTML -Option OneLiner
+    Write-Color -Text '[i]', '[HTML ] ', 'Generating HTML report', " [Time to execute: $TimeLogEndHTML]" -Color Yellow, DarkGray, Yellow, DarkGray
 }
