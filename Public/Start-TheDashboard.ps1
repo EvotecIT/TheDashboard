@@ -7,10 +7,10 @@
         [string] $StatisticsPath,
         #[parameter(Mandatory)][ValidateSet('ServiceAccounts', 'UsersPasswordNeverExpire', 'ComputersLimitedINS')][string[]] $Type,
         [string] $Logo,
-        [System.Collections.IDictionary] $Limits,
         [System.Collections.IDictionary] $Folders,
         [System.Collections.IDictionary] $Replacements,
-        [switch] $ShowHTML
+        [switch] $ShowHTML,
+        [switch] $Online
     )
     $TopStats = [ordered] @{}
     $Cache = @{}
@@ -46,7 +46,9 @@
         $TopStats = Import-Clixml -LiteralPath $StatisticsPath
     }
 
-    $OutputElements = & $Elements
+    if ($Elements) {
+        $OutputElements = & $Elements
+    }
     foreach ($E in $OutputElements) {
         $TopStats[$E.Date] = [ordered] @{}
         $TopStats[$E.Date].Date = $E.Date
@@ -150,7 +152,7 @@
         $MenuBuilder[$Entry.Menu][$Entry.Name]['All'].Add($Entry)
     }
 
-    New-HTMLReport -OutputElements $OutputElements -Logo $Logo -MenuBuilder $MenuBuilder -Configuration $Configuration -Limits $Limits -TopStats $TopStats -Files $Files -ShowHTML:$ShowHTML.IsPresent -HTMLPath $HTMLPath
+    New-HTMLReport -OutputElements $OutputElements -Logo $Logo -MenuBuilder $MenuBuilder -Configuration $Configuration -TopStats $TopStats -Files $Files -ShowHTML:$ShowHTML.IsPresent -HTMLPath $HTMLPath -Online:$Online.IsPresent
 
     # Export statistics to file to create charts later on
     if ($StatisticsPath) {

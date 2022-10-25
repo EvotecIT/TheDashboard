@@ -5,7 +5,6 @@
         $Logo,
         [System.Collections.IDictionary] $MenuBuilder,
         $Configuration,
-        $Limits,
         $TopStats,
         [Array] $Files,
         [string] $HTMLPath,
