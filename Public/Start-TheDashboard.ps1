@@ -15,15 +15,6 @@
     $TopStats = [ordered] @{}
     $Cache = @{}
 
-    <#
-    $Properties = 'DistinguishedName', 'mail', 'LastLogonDate', 'PasswordLastSet', 'DisplayName', 'Manager', 'Description', 'PasswordNeverExpires', 'PasswordNotRequired', 'PasswordExpired', 'UserPrincipalName', 'SamAccountName', 'CannotChangePassword', 'TrustedForDelegation', 'TrustedToAuthForDelegation'
-    $AllUsers = Get-ADUser -Filter * -Properties $Properties
-    $PropertiesComputer = 'DistinguishedName', 'LastLogonDate', 'PasswordLastSet', 'Enabled', 'DnsHostName', 'PasswordNeverExpires', 'PasswordNotRequired', 'PasswordExpired', 'Manager', 'OperatingSystemVersion', 'OperatingSystem' , 'TrustedForDelegation'
-    $AllComputers = Get-ADComputer -Filter * -Properties $PropertiesComputer
-    $AllGroups = Get-ADGroup -Filter *
-    $AllGroupPolicies = Get-GPO -All
-    #>
-
     $ComputerEnabled = 0
     $ComputerDisabled = 0
     $UserDisabled = 0
@@ -54,14 +45,34 @@
     if ($StatisticsPath -and (Test-Path -LiteralPath $StatisticsPath)) {
         $TopStats = Import-Clixml -LiteralPath $StatisticsPath
     }
-    $TodayString = Get-Date
-    $TopStats[$TodayString] = [ordered] @{}
-    $TopStats[$TodayString]['Date'] = Get-Date
-    $TopStats[$TodayString]['Computers'] = $AllComputers.Count
-    $TopStats[$TodayString]['Users'] = $AllUsers.Count
-    $TopStats[$TodayString]['Groups'] = $AllGroups.Count
-    $TopStats[$TodayString]['Group Policies'] = $AllGroupPolicies.Count
 
+    $OutputElements = & $Elements
+    foreach ($E in $OutputElements) {
+        $TopStats[$E.Date] = [ordered] @{}
+        $TopStats[$E.Date].Date = $E.Date
+    }
+
+    foreach ($FolderName in $Folders.Keys) {
+        if ($Folders[$FolderName].CopyFrom) {
+            foreach ($Path in $Folders[$FolderName].CopyFrom) {
+                foreach ($File in Get-ChildItem -LiteralPath $Path -Filter "*.html" -Recurse) {
+                    $Destination = $File.FullName.Replace($Path, $Folders[$FolderName].Path)
+                    $DIrectoryName = [io.path]::GetDirectoryName($Destination)
+                    $null = New-Item -Path $DIrectoryName -ItemType Directory -Force
+                    Copy-Item -LiteralPath $File.FullName -Destination $Destination -Force -ErrorAction Stop
+                }
+            }
+        } elseif ($Folders[$FolderName].MoveFrom) {
+            foreach ($Path in $Folders[$FolderName].MoveFrom) {
+                foreach ($File in Get-ChildItem -LiteralPath $Path -Filter "*.html" -Recurse) {
+                    $Destination = $File.FullName.Replace($Path, $Folders[$FolderName].Path)
+                    $DIrectoryName = [io.path]::GetDirectoryName($Destination)
+                    $null = New-Item -Path $DIrectoryName -ItemType Directory -Force
+                    Move-Item -LiteralPath $File.FullName -Destination $Destination -Force -ErrorAction Stop
+                }
+            }
+        }
+    }
 
     # create menu information based on files
     $Files = foreach ($FolderName in $Folders.Keys) {
@@ -139,7 +150,7 @@
         $MenuBuilder[$Entry.Menu][$Entry.Name]['All'].Add($Entry)
     }
 
-    New-HTMLReport -Elements $Elements -Logo $Logo -MenuBuilder $MenuBuilder -Configuration $Configuration -Limits $Limits -TopStats $TopStats -Files $Files -ShowHTML:$ShowHTML.IsPresent -HTMLPath $HTMLPath
+    New-HTMLReport -OutputElements $OutputElements -Logo $Logo -MenuBuilder $MenuBuilder -Configuration $Configuration -Limits $Limits -TopStats $TopStats -Files $Files -ShowHTML:$ShowHTML.IsPresent -HTMLPath $HTMLPath
 
     # Export statistics to file to create charts later on
     if ($StatisticsPath) {

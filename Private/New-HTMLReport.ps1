@@ -1,7 +1,7 @@
 ﻿function New-HTMLReport {
     [cmdletBinding()]
     param(
-        $Elements,
+        $OutputElements,
         $Logo,
         [System.Collections.IDictionary] $MenuBuilder,
         $Configuration,
@@ -38,42 +38,14 @@
         New-HTMLPanelStyle -BorderRadius 0px
 
         New-HTMLSection -Invisible {
-            #& $Elements
-            # New-HTMLPanel {
-            #     #New-HTMLText -Text 'Users' -Color Red -Alignment center -FontSize 20px
-            #     New-HTMLGage -Label 'All Users' -MinValue 0 -MaxValue $Limits.Users -Value $AllUsers.Count -Counter
-            #     # New-HTMLText -Text 'Change since last + ', $DifferenceUsers -Color Red -Alignment right -FontSize 20px -SkipParagraph
-            # }
-            # New-HTMLPanel {
-            #     #New-HTMLText -Text 'Groups' -Color Red -Alignment center -FontSize 20px
-            #     New-HTMLGage -Label 'All Groups' -MinValue 0 -MaxValue $Limits.Groups -Value $AllGroups.Count -Counter
-            # }
-            # New-HTMLPanel {
-            #     #New-HTMLText -Text 'Computers' -Color Red -Alignment center -FontSize 20px
-            #     New-HTMLGage -Label 'All Computers' -MinValue 0 -MaxValue $Limits.Computers -Value $AllComputers.Count -Counter
-            # }
-            # New-HTMLPanel {
-            #     #New-HTMLText -Text 'Users' -Color Red -Alignment center -FontSize 20px
-            #     New-HTMLGage -Label 'All Group Policies' -MinValue 0 -MaxValue $Limits.GroupPolicies -Value $AllGroupPolicies.Count -Counter
-            # }
-            <#
-            New-HTMLPanel {
-                New-HTMLText -Text 'Users ' -Alignment center -FontSize 20px -LineBreak
-                New-HTMLText -Text $AllUsers.Count -Alignment center -FontSize 20px
+            foreach ($E in $OutputElements) {
+                New-HTMLPanel {
+                    #New-HTMLText -Text 'Users' -Color Red -Alignment center -FontSize 20px
+                    New-HTMLGage -Label $E.Label -MinValue $E.MinValue -MaxValue $E.MaxValue -Value $E.Value -Counter
+                    $TopStats[$E.Date][$($E.Label)] = $E.Value
+                    # New-HTMLText -Text 'Change since last + ', $DifferenceUsers -Color Red -Alignment right -FontSize 20px -SkipParagraph
+                }
             }
-            New-HTMLPanel {
-                New-HTMLText -Text 'Groups ' -Alignment center -FontSize 20px -LineBreak
-                New-HTMLText -Text $Groups.Count -Alignment center -FontSize 20px
-            }
-            New-HTMLPanel {
-                New-HTMLText -Text 'Computers ' -Alignment center -FontSize 20px -LineBreak
-                New-HTMLText -Text $AllComputers.Count -Alignment center -FontSize 20px
-            }
-            New-HTMLPanel {
-                New-HTMLText -Text 'Group Policies ' -Alignment center -FontSize 20px -LineBreak
-                New-HTMLText -Text $GroupPolicies.Count -Alignment center -FontSize 20px
-            }
-            #>
         }
         New-HTMLSection -Invisible {
             New-HTMLPanel {
@@ -81,62 +53,21 @@
                 [Array] $Dates = foreach ($Day in $StatisticsKeys) {
                     $TopStats[$Day].Date
                 }
-                [Array] $LineComputers = foreach ($Day in $StatisticsKeys) {
-                    $TopStats[$Day].Computers
-                }
-                [Array] $LineUsers = foreach ($Day in $StatisticsKeys) {
-                    $TopStats[$Day].Users
-                }
-                [Array] $LineGroups = foreach ($Day in $StatisticsKeys) {
-                    $TopStats[$Day].Groups
-                }
-                [Array] $LineGroupPolicies = foreach ($Day in $StatisticsKeys) {
-                    $TopStats[$Day].'Group Policies'
-                }
 
-                New-HTMLChart -Title 'Domain Summary' -TitleAlignment center {
-                    New-ChartAxisX -Type datetime -Names $Dates
-                    New-ChartAxisY -TitleText 'Numbers' -Show
-                    New-ChartLine -Name 'Computers' -Value $LineComputers
-                    New-ChartLine -Name 'Users' -Value $LineUsers
-                    New-ChartLine -Name 'Groups' -Value $LineGroups
-                    New-ChartLine -Name 'Group Policies' -Value $LineGroupPolicies
+                foreach ($UserInput in $Dates) {
+                    $TopStats[$Day].$($UserInput.Label) = $UserInput.Value
                 }
+                New-HTMLChart -Title 'Domain Summary' -TitleAlignment center {
+                    New-ChartAxisX -Type datetime -Names $Dates
+                    New-ChartAxisY -TitleText 'Numbers' -Show
 
-                <#
-                New-HTMLChart -Title 'Domain Summary' -TitleAlignment center {
-                    New-ChartAxisX -Type datetime -Names $Dates
-                    New-ChartAxisY -TitleText 'Numbers' -Show
-                    New-ChartLine -Name 'Computers' -Value $LineComputers
-                    #New-ChartLine -Name 'Users' -Value $LineUsers
-                    #New-ChartLine -Name 'Groups' -Value $LineGroups
-                    #New-ChartLine -Name 'Group Policies' -Value $LineGroupPolicies
-                } -Group 'LinkedCharts1' -Height 250
-                New-HTMLChart -Title 'Domain Summary' -TitleAlignment center {
-                    New-ChartAxisX -Type datetime -Names $Dates
-                    New-ChartAxisY -TitleText 'Numbers' -Show
-                    #New-ChartLine -Name 'Computers' -Value $LineComputers
-                    New-ChartLine -Name 'Users' -Value $LineUsers
-                    #New-ChartLine -Name 'Groups' -Value $LineGroups
-                    #New-ChartLine -Name 'Group Policies' -Value $LineGroupPolicies
-                } -Group 'LinkedCharts1' -Height 250
-                New-HTMLChart -Title 'Domain Summary' -TitleAlignment center {
-                    New-ChartAxisX -Type datetime -Names $Dates
-                    New-ChartAxisY -TitleText 'Numbers' -Show
-                    #New-ChartLine -Name 'Computers' -Value $LineComputers
-                    #New-ChartLine -Name 'Users' -Value $LineUsers
-                    New-ChartLine -Name 'Groups' -Value $LineGroups
-                    #New-ChartLine -Name 'Group Policies' -Value $LineGroupPolicies
-                } -Group 'LinkedCharts1' -Height 250
-                New-HTMLChart -Title 'Domain Summary' -TitleAlignment center {
-                    New-ChartAxisX -Type datetime -Names $Dates
-                    New-ChartAxisY -TitleText 'Numbers' -Show
-                    #New-ChartLine -Name 'Computers' -Value $LineComputers
-                    #New-ChartLine -Name 'Users' -Value $LineUsers
-                    #New-ChartLine -Name 'Groups' -Value $LineGroups
-                    New-ChartLine -Name 'Group Policies' -Value $LineGroupPolicies
-                } -Group 'LinkedCharts1' -Height 250
-                #>
+                    foreach ($UserInput in $OutputElements) {
+                        $Values = foreach ($Day in $StatisticsKeys) {
+                            $TopStats[$Day].$($UserInput.Label)
+                        }
+                        New-ChartLine -Name $UserInput.Label -Value $Values
+                    }
+                }
             }
             New-HTMLPanel {
                 New-HTMLCalendar {
@@ -152,30 +83,6 @@
                 } -HeaderRight @('dayGridMonth', 'timeGridWeek', 'timeGridDay', 'listMonth', 'listYear')
             }
         }
-        <#
-        foreach ($Report in $Type) {
-            if ($Report -eq 'ServiceAccounts') {
-                New-HTMLPage -Name 'ServiceAccounts' {
-                    $ReportOutput = Get-ReportServiceAccounts -AllUsers $AllUsers -Cache $Cache
-                    #if ($AttachExcel) {
-                    #    $ReportPathExcel = "$ExcelPath\ServiceAccounts\ServiceAccounts.xlsx"
-                    #    Export-ADReportToExcel -ReportPathExcel $ReportPathExcel -Objects $Users -Summary $Summary -SummaryTitle 'Service Accounts' -ExportSummary
-                    #}
-                    Invoke-Report -Summary $ReportOutput.Summary -Title 'Service Accounts' -Statistics $ReportOutput.Statistics -Users $ReportOutput.Objects
-                }
-            } elseif ($Report -eq 'UsersPasswordNeverExpire') {
-                New-HTMLPage -Name 'UsersPNE' {
-                    $ReportOutput = Get-ReportPasswordNeverExpire -AllUsers $AllUsers -Cache $Cache
-                    Invoke-Report -Summary $ReportOutput.Summary -Title 'Users with Password Never Expires' -Statistics $ReportOutput.Statistics -Users $ReportOutput.Objects
-                }
-            } elseif ($Report -eq 'ComputersLimitedINS') {
-                New-HTMLPage -Name 'ComputersINS' {
-                    $ReportOutput = Get-ReportComputerINS -AllComputers $AllComputers -Cache $Cache
-                    Invoke-Report -Summary $ReportOutput.Summary -Title 'Computers in INS' -Statistics $ReportOutput.Statistics -Users $ReportOutput.Objects
-                }
-            }
-        }
-        #>
         foreach ($Menu in $MenuBuilder.Keys) {
             Write-Color -Text '[i]', '[HTML ] ', "Building Menu for ", $Menu -Color Yellow, DarkGray, Yellow, DarkCyan
             $TopMenuSplat = @{
