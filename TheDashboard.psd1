@@ -1,4 +1,4 @@
-@{
+﻿@{
     AliasesToExport      = @()
     Author               = 'Przemyslaw Klys'
     CmdletsToExport      = @()
@@ -8,7 +8,7 @@
     Description          = 'TheDashboard is a module that allows you to create a dashboard for your HTML reports'
     FunctionsToExport    = @('New-TheDashboardGage', 'Request-DashboardStatistics', 'Start-TheDashboard')
     GUID                 = '0aacc01f-5861-407e-b5e9-2bf57256fb04'
-    ModuleVersion        = '0.0.5'
+    ModuleVersion        = '0.0.7'
     PowerShellVersion    = '5.1'
     PrivateData          = @{
         PSData = @{
@@ -17,12 +17,12 @@
     }
     RequiredModules      = @(@{
             ModuleVersion = '0.0.248'
-            Guid          = 'ee272aa8-baaa-4edf-9f45-b6d6f7d844fe'
             ModuleName    = 'PSSharedGoods'
+            Guid          = 'ee272aa8-baaa-4edf-9f45-b6d6f7d844fe'
         }, @{
             ModuleVersion = '0.0.180'
-            Guid          = 'a7bdf640-f5cb-4acf-9de0-365b322d245c'
             ModuleName    = 'PSWriteHTML'
+            Guid          = 'a7bdf640-f5cb-4acf-9de0-365b322d245c'
         })
     RootModule           = 'TheDashboard.psm1'
 }
