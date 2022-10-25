@@ -9,7 +9,8 @@
         $TopStats,
         [Array] $Files,
         [string] $HTMLPath,
-        [switch] $ShowHTML
+        [switch] $ShowHTML,
+        [switch] $Online
     )
     $TimeLogHTML = Start-TimeLog
     Write-Color -Text '[i]', '[HTML ] ', "Generating HTML report ($HTMLPath)" -Color Yellow, DarkGray, Yellow
@@ -106,7 +107,7 @@
 
                 foreach ($Report in $AllReports) {
                     if ($Report.Name -eq $CurrentReport.Name -and $Report.Date -eq $CurrentReport.Date) {
-                        continue
+                        #continue
                     }
                     $FullPathOther = [io.path]::Combine($PathToSubReports, $Report.FileName)
                     New-HTMLReportPage -Report $Report -AllReports $AllReports -FilePath $FullPathOther -PathToSubReports $PathToSubReports
@@ -115,7 +116,7 @@
             Write-Color -Text '[i]', '[HTML ] ', "Ending Menu for ", $Menu -Color Yellow, DarkGray, Yellow, DarkCyan
         }
         Write-Color -Text '[i]', '[HTML ] ', "Saving HTML reports (this may take a while...)" -Color Yellow, DarkGray, Yellow
-    } -FilePath $HTMLPath -Online -ShowHTML:$ShowHTML.IsPresent -TitleText 'The Dashboard'
+    } -FilePath $HTMLPath -ShowHTML:$ShowHTML.IsPresent -TitleText 'The Dashboard' -Online:$Online.IsPresent
 
     $TimeLogEndHTML = Stop-TimeLog -Time $TimeLogHTML -Option OneLiner
     Write-Color -Text '[i]', '[HTML ] ', 'Generating HTML report', " [Time to execute: $TimeLogEndHTML]" -Color Yellow, DarkGray, Yellow, DarkGray
