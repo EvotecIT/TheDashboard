@@ -1,11 +1,11 @@
 ﻿function New-HTMLReport {
     [cmdletBinding()]
     param(
-        $OutputElements,
-        $Logo,
+        [Array] $OutputElements,
+        [string] $Logo,
         [System.Collections.IDictionary] $MenuBuilder,
-        $Configuration,
-        $TopStats,
+        [System.Collections.IDictionary] $Configuration,
+        [System.Collections.IDictionary] $TopStats,
         [Array] $Files,
         [string] $HTMLPath,
         [switch] $ShowHTML,
