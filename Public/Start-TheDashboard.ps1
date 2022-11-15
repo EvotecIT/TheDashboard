@@ -12,6 +12,11 @@
         [switch] $ShowHTML,
         [switch] $Online
     )
+    $Script:Reporting = @{}
+    $Script:Reporting['Version'] = Get-GitHubVersion -Cmdlet 'Start-TheDashboard' -RepositoryOwner 'evotecit' -RepositoryName 'TheDashboard'
+
+    Write-Color '[i]', "[TheDashboard] ", 'Version', ' [Informative] ', $Script:Reporting['Version'] -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
+
     $TopStats = [ordered] @{}
     $Cache = @{}
 
@@ -43,17 +48,24 @@
     }
 
     if ($StatisticsPath -and (Test-Path -LiteralPath $StatisticsPath)) {
+        Write-Color -Text '[i]', "[TheDashboard] ", 'Importing Statistics', ' [Informative] ', $StatisticsPath -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
         $TopStats = Import-Clixml -LiteralPath $StatisticsPath
     }
 
     if ($Elements) {
+        $TimeLogElements = Start-TimeLog
+        Write-Color -Text '[i]', "[TheDashboard] ", 'Executing nested elements', ' [Informative] ' -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
         $OutputElements = & $Elements
+        $TimeLogElements = Stop-TimeLog -Time $TimeLogElements -Option OneLiner
+        Write-Color -Text '[i]', "[TheDashboard] ", 'Executing nested elements', ' [Time to execute: ', $TimeLogElements, ']' -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
+
     }
     foreach ($E in $OutputElements) {
         $TopStats[$E.Date] = [ordered] @{}
         $TopStats[$E.Date].Date = $E.Date
     }
 
+    Write-Color -Text '[i]', "[TheDashboard] ", 'Copying or HTML files', ' [Informative] ', $HTMLPath -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
     foreach ($FolderName in $Folders.Keys) {
         if ($Folders[$FolderName].CopyFrom) {
             foreach ($Path in $Folders[$FolderName].CopyFrom) {
@@ -77,6 +89,7 @@
     }
 
     # create menu information based on files
+    Write-Color -Text '[i]', "[TheDashboard] ", 'Creating Menu', ' [Informative] ', $HTMLPath -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
     $Files = foreach ($FolderName in $Folders.Keys) {
 
         $Folder = $Folders[$FolderName]

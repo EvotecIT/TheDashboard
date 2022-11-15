@@ -4,13 +4,13 @@
         [System.Collections.IDictionary] $Report,
         [Array] $AllReports,
         [string] $FilePath,
-        [string] $PathToSubReports
+        [string] $PathToSubReports,
+        [string] $Name
     )
     #$TimeLogPageHTML = Start-TimeLog
 
     Write-Color -Text '[i]', '[HTML ] ', "Generating HTML page ($MenuReport) report ($FilePath)" -Color Yellow, DarkGray, Yellow
 
-    $Name = $Report.Name + ' - ' + $Report.Date
     New-HTMLPage -Name $Name {
         New-HTMLSection -HeaderText "Summary for $($Report.Name)" -HeaderBackGroundColor Black {
             New-HTMLSection -Invisible {

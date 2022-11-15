@@ -102,14 +102,16 @@
                 $CurrentReport = $MenuBuilder[$Menu][$MenuReport]['Current']
                 $AllReports = $MenuBuilder[$Menu][$MenuReport]['All']
 
-                New-HTMLReportPage -Report $CurrentReport -AllReports $AllReports -FilePath $FullPath -PathToSubReports $PathToSubReports
+                $Name = $CurrentReport.Name
+                New-HTMLReportPage -Report $CurrentReport -AllReports $AllReports -FilePath $FullPath -PathToSubReports $PathToSubReports -Name $Name
 
                 foreach ($Report in $AllReports) {
                     if ($Report.Name -eq $CurrentReport.Name -and $Report.Date -eq $CurrentReport.Date) {
                         #continue
                     }
                     $FullPathOther = [io.path]::Combine($PathToSubReports, $Report.FileName)
-                    New-HTMLReportPage -Report $Report -AllReports $AllReports -FilePath $FullPathOther -PathToSubReports $PathToSubReports
+                    $Name = $Report.Name + ' - ' + $Report.Date
+                    New-HTMLReportPage -Report $Report -AllReports $AllReports -FilePath $FullPathOther -PathToSubReports $PathToSubReports -Name $Name
                 }
             }
             Write-Color -Text '[i]', '[HTML ] ', "Ending Menu for ", $Menu -Color Yellow, DarkGray, Yellow, DarkCyan
