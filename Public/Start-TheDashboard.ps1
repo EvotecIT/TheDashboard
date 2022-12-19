@@ -1,4 +1,48 @@
 ﻿function Start-TheDashboard {
+    <#
+    .SYNOPSIS
+    Generates TheDashboard from multiple provided reports in form of HTML files.
+
+    .DESCRIPTION
+    Generates TheDashboard from multiple provided reports in form of HTML files.
+
+    .PARAMETER Elements
+    Parameter description
+
+    .PARAMETER HTMLPath
+    Path to HTML files that will be generated.
+
+    .PARAMETER ExcelPath
+    Parameter description
+
+    .PARAMETER StatisticsPath
+    Parameter description
+
+    .PARAMETER Logo
+    Parameter description
+
+    .PARAMETER Folders
+    Parameter description
+
+    .PARAMETER Replacements
+    Parameter description
+
+    .PARAMETER ShowHTML
+    Show TheDashboard in browser after generating it.
+
+    .PARAMETER Online
+    Tells Dashboard to use CSS/JS from CDN instead of local files.
+
+    .PARAMETER Force
+    By default dashboard generates HTML files once, and then refreshes only main file from each category leaving the rest as is if it exists.
+    This saves a lot of time when generating historical reports. If you want to force regeneration of all files, use this parameter.
+
+    .EXAMPLE
+    An example
+
+    .NOTES
+    General notes
+    #>
     [cmdletBinding()]
     param(
         [ScriptBlock] $Elements,
@@ -10,7 +54,8 @@
         [System.Collections.IDictionary] $Folders,
         [System.Collections.IDictionary] $Replacements,
         [switch] $ShowHTML,
-        [switch] $Online
+        [switch] $Online,
+        [switch] $Force
     )
     $Script:Reporting = @{}
     $Script:Reporting['Version'] = Get-GitHubVersion -Cmdlet 'Start-TheDashboard' -RepositoryOwner 'evotecit' -RepositoryName 'TheDashboard'
@@ -93,7 +138,7 @@
     $Files = foreach ($FolderName in $Folders.Keys) {
 
         $Folder = $Folders[$FolderName]
-        $FilesInFolder = Get-ChildItem -LiteralPath $Folders[$FolderName].Path -ErrorAction SilentlyContinue -Filter *.html
+        $FilesInFolder = Get-ChildItem -LiteralPath $Folders[$FolderName].Path -ErrorAction SilentlyContinue -Filter *.html | Sort-Object -Property Name
         foreach ($File in $FilesInFolder) {
             $Href = "$($Folders[$FolderName].Url)/$($File.Name)"
 
@@ -139,7 +184,6 @@
             }
         }
     }
-    $Files = $Files | Sort-Object -Property Name
 
     # Prepare menu based on files
     $MenuBuilder = [ordered] @{}
@@ -165,7 +209,7 @@
         $MenuBuilder[$Entry.Menu][$Entry.Name]['All'].Add($Entry)
     }
 
-    New-HTMLReport -OutputElements $OutputElements -Logo $Logo -MenuBuilder $MenuBuilder -Configuration $Configuration -TopStats $TopStats -Files $Files -ShowHTML:$ShowHTML.IsPresent -HTMLPath $HTMLPath -Online:$Online.IsPresent
+    New-HTMLReport -OutputElements $OutputElements -Logo $Logo -MenuBuilder $MenuBuilder -Configuration $Configuration -TopStats $TopStats -Files $Files -ShowHTML:$ShowHTML.IsPresent -HTMLPath $HTMLPath -Online:$Online.IsPresent -Force:$Force.IsPresent
 
     # Export statistics to file to create charts later on
     if ($StatisticsPath) {
