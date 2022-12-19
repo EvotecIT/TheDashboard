@@ -9,7 +9,8 @@
         [Array] $Files,
         [string] $HTMLPath,
         [switch] $ShowHTML,
-        [switch] $Online
+        [switch] $Online,
+        [switch] $Force
     )
     $TimeLogHTML = Start-TimeLog
     Write-Color -Text '[i]', '[HTML ] ', "Generating HTML report ($HTMLPath)" -Color Yellow, DarkGray, Yellow
@@ -111,7 +112,12 @@
                     }
                     $FullPathOther = [io.path]::Combine($PathToSubReports, $Report.FileName)
                     $Name = $Report.Name + ' - ' + $Report.Date
-                    New-HTMLReportPage -Report $Report -AllReports $AllReports -FilePath $FullPathOther -PathToSubReports $PathToSubReports -Name $Name
+                    # we only generate the report if it doesn't exist or if the force parameter is used
+                    if ((Test-Path -LiteralPath $FullPathOther) -and -not $Force.IsPresent) {
+                        Write-Color -Text '[i]', '[HTML ] ', "Generating HTML page ($MenuReport) report ", "($FullPathOther)", " skipped. Already exists." -Color Yellow, DarkGray, Yellow, Red, Yellow, Yellow
+                    } else {
+                        New-HTMLReportPage -Report $Report -AllReports $AllReports -FilePath $FullPathOther -PathToSubReports $PathToSubReports -Name $Name
+                    }
                 }
             }
             Write-Color -Text '[i]', '[HTML ] ', "Ending Menu for ", $Menu -Color Yellow, DarkGray, Yellow, DarkCyan
