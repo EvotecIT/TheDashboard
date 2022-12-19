@@ -28,7 +28,7 @@ $Configuration = @{
 
             #IconUri                    = 'https://evotec.xyz/wp-content/uploads/2018/12/PSWriteHTML.png'
 
-            #ProjectUri                 = 'https://github.com/EvotecIT/PSWriteHTML'
+            ProjectUri                 = 'https://github.com/EvotecIT/TheDashboard'
 
             RequiredModules            = @(
                 @{ ModuleName = 'PSSharedGoods'; ModuleVersion = "Latest"; Guid = 'ee272aa8-baaa-4edf-9f45-b6d6f7d844fe' }
@@ -158,10 +158,10 @@ $Configuration = @{
             Verbose         = $false
         }
         PublishModule      = @{  # requires Enable to be on to process all of that
-            Enabled      = $false
+            Enabled      = $true
             Prerelease   = ''
             RequireForce = $false
-            GitHub       = $false
+            GitHub       = $true
         }
     }
 }
