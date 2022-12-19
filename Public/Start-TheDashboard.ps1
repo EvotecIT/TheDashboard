@@ -12,14 +12,11 @@
     .PARAMETER HTMLPath
     Path to HTML files that will be generated.
 
-    .PARAMETER ExcelPath
-    Parameter description
-
     .PARAMETER StatisticsPath
-    Parameter description
+    Path to XML file that will save some of the data that is used to generate charts
 
     .PARAMETER Logo
-    Parameter description
+    Path to logo that will be used in the header.
 
     .PARAMETER Folders
     Parameter description
@@ -47,7 +44,6 @@
     param(
         [ScriptBlock] $Elements,
         [string] $HTMLPath,
-        [string] $ExcelPath,
         [string] $StatisticsPath,
         #[parameter(Mandatory)][ValidateSet('ServiceAccounts', 'UsersPasswordNeverExpire', 'ComputersLimitedINS')][string[]] $Type,
         [string] $Logo,
