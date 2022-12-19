@@ -12,7 +12,8 @@
     PowerShellVersion    = '5.1'
     PrivateData          = @{
         PSData = @{
-            Tags = @('HTML', 'Reports', 'Reporting', 'Windows')
+            Tags       = @('HTML', 'Reports', 'Reporting', 'Windows')
+            ProjectUri = 'https://github.com/EvotecIT/TheDashboard'
         }
     }
     RequiredModules      = @(@{
