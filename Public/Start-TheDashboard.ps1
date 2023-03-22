@@ -171,12 +171,12 @@
                     Name     = $Name
                     NameDate = $Splitted[1]
                     Href     = $Href
-                    FileName = $File.Name
+                    FileName = "$($Folder.Url)_$($File.Name)"
                     Menu     = $FolderName
                     Date     = $File.LastWriteTime
                 }
             } else {
-                Write-Color -Text "Couldn't create menu item for $($File.FullName)" -Color Red
+                Write-Color -Text "[e]", "[TheDashboard] ", "Creating Menu ", "[error] ", "Couldn't create menu item for $($File.FullName)" -Color Red, DarkGray, Red, DarkGray, Red
             }
         }
     }
