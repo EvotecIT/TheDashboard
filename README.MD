@@ -23,6 +23,25 @@
 
 A lot of modules that I've created over the years such as Tesimo, ADEssentials, GPOZaurr, or other external products such as PingCastle generate HTML output. While using those modules is great, it's not always easy to see all the information in one place. TheDashboard solves this problem.
 
+### Features & ToDo
+
+The main feature of TheDashboard is to generate HTML report that can be used to see all the information in one place.
+While doing so, TheDashboard provides additional insights so that the picture of infrastructure is more complete.
+
+- Gages with quick overview:
+  - [x] Active Directory - Total number of computers
+  - [x] Active Directory - Total number of users
+  - [x] Active Directory - Total number of groups
+  - [x] Active Directory - Total number of group policies
+
+- Panels available for quick overview
+  - [ ] Active Directory - Users changed password in last XXX days
+  - [ ] Active Directory - Users with password never expires
+  - [ ] Active Directory - Users with password expired in last XXX days
+  - [ ] Active Directory - Users with password expiring in next XXX days
+  - [ ] Active Directory - Computers with password last set over XXX days ago
+
+
 ### Install and configure IIS
 
 TheDashboard can be used on any type of server as it generates static files that can be served by any web server. However, IIS is the most common one and it's the one I'm going to use in this example. IIS is also the one that I'm most familiar with.
