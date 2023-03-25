@@ -41,7 +41,8 @@ $Configuration = @{
                 #"DnsClient"
                 #"CimCmdlets"
                 #"NetTCPIP"
-                #"Microsoft.PowerShell.Management"
+                "Microsoft.PowerShell.Management"
+                "Microsoft.PowerShell.Utility"
                 #"Microsoft.PowerShell.Security"
             )
         }
