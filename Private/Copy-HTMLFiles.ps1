@@ -1,0 +1,30 @@
+﻿function Copy-HTMLFiles {
+    [cmdletbinding()]
+    param(
+        [System.Collections.IDictionary] $Folders,
+        [string] $HTMLPath
+    )
+
+    Write-Color -Text '[i]', "[TheDashboard] ", 'Copying or HTML files', ' [Informative] ', $HTMLPath -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
+    foreach ($FolderName in $Folders.Keys) {
+        if ($Folders[$FolderName].CopyFrom) {
+            foreach ($Path in $Folders[$FolderName].CopyFrom) {
+                foreach ($File in Get-ChildItem -LiteralPath $Path -Filter "*.html" -Recurse) {
+                    $Destination = $File.FullName.Replace($Path, $Folders[$FolderName].Path)
+                    $DIrectoryName = [io.path]::GetDirectoryName($Destination)
+                    $null = New-Item -Path $DIrectoryName -ItemType Directory -Force
+                    Copy-Item -LiteralPath $File.FullName -Destination $Destination -Force -ErrorAction Stop
+                }
+            }
+        } elseif ($Folders[$FolderName].MoveFrom) {
+            foreach ($Path in $Folders[$FolderName].MoveFrom) {
+                foreach ($File in Get-ChildItem -LiteralPath $Path -Filter "*.html" -Recurse) {
+                    $Destination = $File.FullName.Replace($Path, $Folders[$FolderName].Path)
+                    $DIrectoryName = [io.path]::GetDirectoryName($Destination)
+                    $null = New-Item -Path $DIrectoryName -ItemType Directory -Force
+                    Move-Item -LiteralPath $File.FullName -Destination $Destination -Force -ErrorAction Stop
+                }
+            }
+        }
+    }
+}
