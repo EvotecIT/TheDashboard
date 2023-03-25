@@ -1,12 +1,12 @@
 ﻿@{
-    AliasesToExport      = @('New-TheDashboardFolder', 'New-TheDashboardGage', 'New-TheDashboardReplacements')
+    AliasesToExport      = @('New-TheDashboardFolder', 'New-TheDashboardGage', 'New-TheDashboardReplacement')
     Author               = 'Przemyslaw Klys'
     CmdletsToExport      = @()
     CompanyName          = 'Evotec'
     CompatiblePSEditions = @('Desktop', 'Core')
     Copyright            = '(c) 2011 - 2023 Przemyslaw Klys @ Evotec. All rights reserved.'
     Description          = 'TheDashboard is a module that allows you to create a dashboard for your HTML reports'
-    FunctionsToExport    = @('New-DashboardFolder', 'New-DashboardGage', 'New-DashboardReplacements', 'Request-DashboardStatistics', 'Start-TheDashboard')
+    FunctionsToExport    = @('New-DashboardFolder', 'New-DashboardGage', 'New-DashboardReplacement', 'Request-DashboardStatistics', 'Start-TheDashboard')
     GUID                 = '0aacc01f-5861-407e-b5e9-2bf57256fb04'
     ModuleVersion        = '0.0.10'
     PowerShellVersion    = '5.1'
