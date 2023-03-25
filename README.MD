@@ -96,7 +96,7 @@ Start-TheDashboard -HTMLPath "$PSScriptRoot\Reports\Index.html" -Logo 'https://e
 
 Generated HTML Dashboard
 
-![Image](..\Data\TheDashboard1.png)
+![Image](../Data/TheDashboard1.png)
 
 
 ### Install and configure IIS
