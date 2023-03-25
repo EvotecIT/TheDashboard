@@ -14,23 +14,23 @@ Start-TheDashboard -HTMLPath "$PSScriptRoot\Reports\Index.html" -Logo 'https://e
     New-DashboardGage -Label 'Groups' -MinValue 0 -MaxValue 200 -Value $AllGroups.Count -Date $Today
     New-DashboardGage -Label 'Group Policies' -MinValue 0 -MaxValue 200 -Value $AllGroupPolicies.Count -Date $Today
     New-DashboardFolder -Name 'ADEssentials' -IconBrands gofore -UrlName 'ADEssentials' -Path $PSScriptRoot\Reports\ADEssentials {
-        # New-DashboardReplacement -SplitOn "_" -AddSpaceToName
-        # New-DashboardReplacement -BeforeSplit @{
-        #     'GPOZaurr'         = ''
-        #     'PingCastle-'      = ''
-        #     'Testimo'          = ''
-        #     'GroupMembership-' = ''
-        #     '_Regional'        = ' Regional'
-        # }
-        # New-DashboardReplacement -AfterSplit @{
-        #     'G P O'     = 'GPO'
-        #     'L A P S'   = 'LAPS'
-        #     'L D A P'   = 'LDAP'
-        #     'K R B G T' = 'KRBGT'
-        #     'I N S'     = 'INS'
-        #     'I T R X X' = 'ITRXX'
-        #     'A D'       = 'AD'
-        # }
+        New-DashboardReplacement -SplitOn "_" -AddSpaceToName
+        New-DashboardReplacement -BeforeSplit @{
+            'GPOZaurr'         = ''
+            'PingCastle-'      = ''
+            'Testimo'          = ''
+            'GroupMembership-' = ''
+            '_Regional'        = ' Regional'
+        }
+        New-DashboardReplacement -AfterSplit @{
+            'G P O'     = 'GPO'
+            'L A P S'   = 'LAPS'
+            'L D A P'   = 'LDAP'
+            'K R B G T' = 'KRBGT'
+            'I N S'     = 'INS'
+            'I T R X X' = 'ITRXX'
+            'A D'       = 'AD'
+        }
     } -DisableGlobalReplacement
     New-DashboardFolder -Name 'GPOZaurr' -IconBrands gofore -UrlName 'GPOzaurr' -Path $PSScriptRoot\Reports\GPOZaurr
 
