@@ -5,6 +5,7 @@
 
     .DESCRIPTION
     Generates TheDashboard from multiple provided reports in form of HTML files.
+    It also generates statistics and charts based on the data provided by additional data.
 
     .PARAMETER Elements
     Parameter description
@@ -42,10 +43,9 @@
     #>
     [cmdletBinding()]
     param(
-        [ScriptBlock] $Elements,
-        [string] $HTMLPath,
+        [Parameter(Position = 0)][ScriptBlock] $Elements,
+        [Parameter(Position = 1, Mandatory)][alias('FilePath')][string] $HTMLPath,
         [string] $StatisticsPath,
-        #[parameter(Mandatory)][ValidateSet('ServiceAccounts', 'UsersPasswordNeverExpire', 'ComputersLimitedINS')][string[]] $Type,
         [string] $Logo,
         [System.Collections.IDictionary] $Folders,
         [System.Collections.IDictionary] $Replacements,
@@ -60,6 +60,10 @@
 
     $TopStats = [ordered] @{}
     $Cache = @{}
+
+    if (-not $Folders) {
+        $Folders = [ordered] @{}
+    }
 
     $ComputerEnabled = 0
     $ComputerDisabled = 0
@@ -93,18 +97,39 @@
         $TopStats = Import-Clixml -LiteralPath $StatisticsPath
     }
 
+    $GageConfiguration = [System.Collections.Generic.List[System.Collections.IDictionary]]::new()
+    $FoldersConfiguration = [System.Collections.Generic.List[System.Collections.IDictionary]]::new()
+    $ReplacementConfiguration = [System.Collections.Generic.List[System.Collections.IDictionary]]::new()
     if ($Elements) {
         $TimeLogElements = Start-TimeLog
-        Write-Color -Text '[i]', "[TheDashboard] ", 'Executing nested elements', ' [Informative] ' -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
+        Write-Color -Text '[i]', "[TheDashboard] ", 'Executing nested elements (data gathering/conversions)', ' [Informative] ' -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
         $OutputElements = & $Elements
+        foreach ($E in $OutputElements) {
+            if ($E.Type -eq 'Gage') {
+                $GageConfiguration.Add($E.Settings)
+            } elseif ($E.Type -eq 'Folder') {
+                $FoldersConfiguration.Add($E.Settings)
+            } elseif ($E.Type -eq 'Replacement') {
+                $ReplacementConfiguration.Add($E.Settings)
+            }
+        }
+
+
         $TimeLogElements = Stop-TimeLog -Time $TimeLogElements -Option OneLiner
-        Write-Color -Text '[i]', "[TheDashboard] ", 'Executing nested elements', ' [Time to execute: ', $TimeLogElements, ']' -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
+        Write-Color -Text '[i]', "[TheDashboard] ", 'Executing nested elements (data gathering/conversions)', ' [Time to execute: ', $TimeLogElements, ']' -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
 
     }
-    foreach ($E in $OutputElements) {
+    foreach ($E in $GageConfiguration) {
         $TopStats[$E.Date] = [ordered] @{}
         $TopStats[$E.Date].Date = $E.Date
     }
+
+    # convert replacements into a single entry
+    # this is to make sure user can use different ways of replacing things
+    $Replacements = Convert-MultipleReplacements -Replacements $Replacements -ReplacementConfiguration $ReplacementConfiguration
+
+    # build folders configuration
+    Set-FolderConfiguration -Folders $Folders -FoldersConfiguration $FoldersConfiguration
 
     Write-Color -Text '[i]', "[TheDashboard] ", 'Copying or HTML files', ' [Informative] ', $HTMLPath -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
     foreach ($FolderName in $Folders.Keys) {
@@ -205,7 +230,7 @@
         $MenuBuilder[$Entry.Menu][$Entry.Name]['All'].Add($Entry)
     }
 
-    New-HTMLReport -OutputElements $OutputElements -Logo $Logo -MenuBuilder $MenuBuilder -Configuration $Configuration -TopStats $TopStats -Files $Files -ShowHTML:$ShowHTML.IsPresent -HTMLPath $HTMLPath -Online:$Online.IsPresent -Force:$Force.IsPresent
+    New-HTMLReport -OutputElements $GageConfiguration -Logo $Logo -MenuBuilder $MenuBuilder -Configuration $Configuration -TopStats $TopStats -Files $Files -ShowHTML:$ShowHTML.IsPresent -HTMLPath $HTMLPath -Online:$Online.IsPresent -Force:$Force.IsPresent
 
     # Export statistics to file to create charts later on
     if ($StatisticsPath) {
