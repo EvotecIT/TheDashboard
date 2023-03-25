@@ -53,50 +53,15 @@
         [switch] $Online,
         [switch] $Force
     )
-    $Script:Reporting = @{}
+    $Script:Reporting = [ordered] @{}
     $Script:Reporting['Version'] = Get-GitHubVersion -Cmdlet 'Start-TheDashboard' -RepositoryOwner 'evotecit' -RepositoryName 'TheDashboard'
 
     Write-Color '[i]', "[TheDashboard] ", 'Version', ' [Informative] ', $Script:Reporting['Version'] -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
 
     $TopStats = [ordered] @{}
-    $Cache = @{}
-
     if (-not $Folders) {
         $Folders = [ordered] @{}
     }
-
-    $ComputerEnabled = 0
-    $ComputerDisabled = 0
-    $UserDisabled = 0
-    $UserEnabled = 0
-    foreach ($Computer in $AllComputers) {
-        if ($Computer.Enabled) {
-            $ComputerEnabled++
-        } else {
-            $ComputerDisabled++
-        }
-    }
-    foreach ($Computer in $AllUsers) {
-        if ($User.Disabled) {
-            $UserEnabled++
-        } else {
-            $UserDisabled++
-        }
-    }
-
-
-    foreach ($U in $AllUsers) {
-        $Cache[$U.DistinguishedName] = $U
-    }
-    foreach ($C in $AllComputers) {
-        $Cache[$C.DistinguishedName] = $C
-    }
-
-    if ($StatisticsPath -and (Test-Path -LiteralPath $StatisticsPath)) {
-        Write-Color -Text '[i]', "[TheDashboard] ", 'Importing Statistics', ' [Informative] ', $StatisticsPath -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
-        $TopStats = Import-Clixml -LiteralPath $StatisticsPath
-    }
-
     $GageConfiguration = [System.Collections.Generic.List[System.Collections.IDictionary]]::new()
     $FoldersConfiguration = [System.Collections.Generic.List[System.Collections.IDictionary]]::new()
     $ReplacementConfiguration = [System.Collections.Generic.List[System.Collections.IDictionary]]::new()
@@ -114,11 +79,15 @@
             }
         }
 
-
         $TimeLogElements = Stop-TimeLog -Time $TimeLogElements -Option OneLiner
         Write-Color -Text '[i]', "[TheDashboard] ", 'Executing nested elements (data gathering/conversions)', ' [Time to execute: ', $TimeLogElements, ']' -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
-
     }
+
+    if ($StatisticsPath -and (Test-Path -LiteralPath $StatisticsPath)) {
+        Write-Color -Text '[i]', "[TheDashboard] ", 'Importing Statistics', ' [Informative] ', $StatisticsPath -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
+        $TopStats = Import-Clixml -LiteralPath $StatisticsPath
+    }
+
     foreach ($E in $GageConfiguration) {
         $TopStats[$E.Date] = [ordered] @{}
         $TopStats[$E.Date].Date = $E.Date
@@ -131,104 +100,14 @@
     # build folders configuration
     Set-FolderConfiguration -Folders $Folders -FoldersConfiguration $FoldersConfiguration
 
-    Write-Color -Text '[i]', "[TheDashboard] ", 'Copying or HTML files', ' [Informative] ', $HTMLPath -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
-    foreach ($FolderName in $Folders.Keys) {
-        if ($Folders[$FolderName].CopyFrom) {
-            foreach ($Path in $Folders[$FolderName].CopyFrom) {
-                foreach ($File in Get-ChildItem -LiteralPath $Path -Filter "*.html" -Recurse) {
-                    $Destination = $File.FullName.Replace($Path, $Folders[$FolderName].Path)
-                    $DIrectoryName = [io.path]::GetDirectoryName($Destination)
-                    $null = New-Item -Path $DIrectoryName -ItemType Directory -Force
-                    Copy-Item -LiteralPath $File.FullName -Destination $Destination -Force -ErrorAction Stop
-                }
-            }
-        } elseif ($Folders[$FolderName].MoveFrom) {
-            foreach ($Path in $Folders[$FolderName].MoveFrom) {
-                foreach ($File in Get-ChildItem -LiteralPath $Path -Filter "*.html" -Recurse) {
-                    $Destination = $File.FullName.Replace($Path, $Folders[$FolderName].Path)
-                    $DIrectoryName = [io.path]::GetDirectoryName($Destination)
-                    $null = New-Item -Path $DIrectoryName -ItemType Directory -Force
-                    Move-Item -LiteralPath $File.FullName -Destination $Destination -Force -ErrorAction Stop
-                }
-            }
-        }
-    }
+    # copy or move HTML files to the right place, as user requested
+    Copy-HTMLFiles -HTMLPath $HTMLPath -Folders $Folders
 
-    # create menu information based on files
-    Write-Color -Text '[i]', "[TheDashboard] ", 'Creating Menu', ' [Informative] ', $HTMLPath -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
-    $Files = foreach ($FolderName in $Folders.Keys) {
-
-        $Folder = $Folders[$FolderName]
-        $FilesInFolder = Get-ChildItem -LiteralPath $Folders[$FolderName].Path -ErrorAction SilentlyContinue -Filter *.html | Sort-Object -Property Name
-        foreach ($File in $FilesInFolder) {
-            $Href = "$($Folders[$FolderName].Url)/$($File.Name)"
-
-            $MenuName = $File.BaseName
-            if ($Folder.ReplacementsGlobal -eq $true) {
-                foreach ($Replace in $Replacements.BeforeSplit.Keys) {
-                    $MenuName = $MenuName.Replace($Replace, $Replacements.BeforeSplit[$Replace])
-                }
-                $Splitted = $MenuName -split $Replacements.SplitOn
-                if ($Replacements.AddSpaceToName) {
-                    $Name = Format-AddSpaceToSentence -Text $Splitted[0]
-                } else {
-                    $Name = $Splitted[0]
-                }
-                foreach ($Replace in $Replacements.AfterSplit.Keys) {
-                    $Name = $Name.Replace($Replace, $Replacements.AfterSplit[$Replace])
-                }
-            } else {
-                foreach ($Replace in $Folder.Replacements.BeforeSplit.Keys) {
-                    $MenuName = $MenuName.Replace($Replace, $Folder.Replacements.BeforeSplit[$Replace])
-                }
-                $Splitted = $MenuName -split $Folder.Replacements.SplitOn
-                if ($Folder.Replacements.AddSpaceToName) {
-                    $Name = Format-AddSpaceToSentence -Text $Splitted[0]
-                } else {
-                    $Name = $Splitted[0]
-                }
-                foreach ($Replace in $Folder.Replacements.AfterSplit.Keys) {
-                    $Name = $Name.Replace($Replace, $Folder.Replacements.AfterSplit[$Replace])
-                }
-            }
-            if ($Name -and $Splitted[1]) {
-                [ordered] @{
-                    Name     = $Name
-                    NameDate = $Splitted[1]
-                    Href     = $Href
-                    FileName = "$($Folder.Url)_$($File.Name)"
-                    Menu     = $FolderName
-                    Date     = $File.LastWriteTime
-                }
-            } else {
-                Write-Color -Text "[e]", "[TheDashboard] ", "Creating Menu ", "[error] ", "Couldn't create menu item for $($File.FullName)" -Color Red, DarkGray, Red, DarkGray, Red
-            }
-        }
-    }
+    # create menu data information based on files
+    $Files = Convert-FilesToMenuData -Folders $Folders -Replacements $Replacements
 
     # Prepare menu based on files
-    $MenuBuilder = [ordered] @{}
-    # lets build top level based on folders to keep the order of menus
-    foreach ($Folder in $Folders.Keys) {
-        if (-not $MenuBuilder[$Folder]) {
-            $MenuBuilder[$Folder] = [ordered] @{}
-        }
-    }
-    # We now build menu from files
-    foreach ($Entry in $Files) {
-        if (-not $MenuBuilder[$Entry.Menu][$Entry.Name]) {
-            $MenuBuilder[$Entry.Menu][$Entry.Name] = @{
-                Current = $Entry
-                All     = [System.Collections.Generic.List[Object]]::new()
-            }
-        } else {
-            if ($MenuBuilder[$Entry.Menu][$Entry.Name]['Current'].Date -lt $Entry.Date) {
-                $MenuBuilder[$Entry.Menu][$Entry.Name]['Current'] = $Entry
-
-            }
-        }
-        $MenuBuilder[$Entry.Menu][$Entry.Name]['All'].Add($Entry)
-    }
+    $MenuBuilder = Convert-FilesToMenu -Files $Files -Folders $Folders
 
     New-HTMLReport -OutputElements $GageConfiguration -Logo $Logo -MenuBuilder $MenuBuilder -Configuration $Configuration -TopStats $TopStats -Files $Files -ShowHTML:$ShowHTML.IsPresent -HTMLPath $HTMLPath -Online:$Online.IsPresent -Force:$Force.IsPresent
 
