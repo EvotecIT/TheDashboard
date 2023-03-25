@@ -8,7 +8,7 @@
     It also generates statistics and charts based on the data provided by additional data.
 
     .PARAMETER Elements
-    Parameter description
+    ScriptBlock that accepts New-Dashboard* functions, allowing for configuration of TheDashboard.
 
     .PARAMETER HTMLPath
     Path to HTML files that will be generated.
@@ -20,10 +20,11 @@
     Path to logo that will be used in the header.
 
     .PARAMETER Folders
-    Parameter description
+    Folders that will be used to generate TheDashboard.
+    Can co-exist with Elements parameter, and configuration using both will be merged.
 
     .PARAMETER Replacements
-    Parameter description
+    Replacements that will be used to replace names within TheDashboard.
 
     .PARAMETER ShowHTML
     Show TheDashboard in browser after generating it.
@@ -113,6 +114,10 @@
 
     # Export statistics to file to create charts later on
     if ($StatisticsPath) {
-        $TopStats | Export-Clixml -Depth 3 -LiteralPath $StatisticsPath
+        try {
+            $TopStats | Export-Clixml -Depth 3 -LiteralPath $StatisticsPath -ErrorAction Stop
+        } catch {
+            Write-Color -Text '[e]', "[TheDashboard] ", 'Failed to export statistics', ' [Error] ', $_.Exception.Message -Color Yellow, DarkGray, Yellow, DarkGray, Red
+        }
     }
 }
