@@ -1,18 +1,22 @@
-﻿function New-TheDashboardGage {
+﻿function New-DashboardGage {
+    [alias('New-TheDashboardGage')]
     [cmdletBinding()]
     param(
-        [string] $Label,
-        [int] $MinValue,
-        [int] $MaxValue,
-        [int] $Value,
-        [DateTime] $Date
+        [Parameter(Mandatory)][string] $Label,
+        [Parameter()][int] $MinValue,
+        [Parameter(Mandatory)][int] $MaxValue,
+        [Parameter(Mandatory)][int] $Value,
+        [Parameter(Mandatory)][DateTime] $Date
     )
 
     [ordered] @{
-        Label    = $Label
-        Value    = $Value
-        Date     = $Date
-        MinValue = $MinValue
-        MaxValue = $MaxValue
+        Type     = 'Gage'
+        Settings = [ordered] @{
+            Label    = $Label
+            Value    = $Value
+            Date     = $Date
+            MinValue = $MinValue
+            MaxValue = $MaxValue
+        }
     }
 }
