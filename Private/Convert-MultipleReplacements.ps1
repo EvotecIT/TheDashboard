@@ -4,10 +4,6 @@
         [System.Collections.IDictionary] $Replacements,
         [Array] $ReplacementConfiguration
     )
-    # if no replacement configuration is provided, return null
-    if ($ReplacementConfiguration.Count -eq 0) {
-        return $null
-    }
     # otherwise try to build the replacement configuration
     if (-not $Replacements) {
         $ReplacementSetting = [ordered] @{
