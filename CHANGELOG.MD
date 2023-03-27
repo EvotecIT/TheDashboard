@@ -1,4 +1,7 @@
-﻿### 0.0.10 - 2023.03.25
+﻿### 0.0.11 - 2023.03.27
+- Fixes a bug when using old configuration that would not regenerate all HTML files
+
+### 0.0.10 - 2023.03.25
 - Allow new way to define the dashboard using `New-Dashboard*` cmdlets
 
 ```powershell
