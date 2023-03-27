@@ -18,31 +18,41 @@
                 foreach ($Replace in $Replacements.BeforeSplit.Keys) {
                     $MenuName = $MenuName.Replace($Replace, $Replacements.BeforeSplit[$Replace])
                 }
-                $Splitted = $MenuName -split $Replacements.SplitOn
-                if ($Replacements.AddSpaceToName) {
-                    $Name = Format-AddSpaceToSentence -Text $Splitted[0]
-                } else {
+                if ($Replacements.SplitOn) {
+                    $Splitted = $MenuName -split $Replacements.SplitOn
                     $Name = $Splitted[0]
+                    $NameDate = $Splitted[1]
+                } else {
+                    $Name = $MenuName
+                    $NameDate = $MenuName
+                }
+                if ($Replacements.AddSpaceToName) {
+                    $Name = Format-AddSpaceToSentence -Text $Name
                 }
                 foreach ($Replace in $Replacements.AfterSplit.Keys) {
                     $Name = $Name.Replace($Replace, $Replacements.AfterSplit[$Replace])
                 }
-                $NameDate = $Splitted[1]
+                # $NameDate = $Splitted[1]
                 $Type = 'global replacements'
             } elseif ($Folder.Replacements) {
                 foreach ($Replace in $Folder.Replacements.BeforeSplit.Keys) {
                     $MenuName = $MenuName.Replace($Replace, $Folder.Replacements.BeforeSplit[$Replace])
                 }
-                $Splitted = $MenuName -split $Folder.Replacements.SplitOn
-                if ($Folder.Replacements.AddSpaceToName) {
-                    $Name = Format-AddSpaceToSentence -Text $Splitted[0]
-                } else {
+                if ($Folder.Replacements.SplitOn) {
+                    $Splitted = $MenuName -split $Folder.Replacements.SplitOn
                     $Name = $Splitted[0]
+                    $NameDate = $Splitted[1]
+                } else {
+                    $Name = $MenuName
+                    $NameDate = $MenuName
+                }
+                if ($Folder.Replacements.AddSpaceToName) {
+                    $Name = Format-AddSpaceToSentence -Text $Name
                 }
                 foreach ($Replace in $Folder.Replacements.AfterSplit.Keys) {
                     $Name = $Name.Replace($Replace, $Folder.Replacements.AfterSplit[$Replace])
                 }
-                $NameDate = $Splitted[1]
+                # $NameDate = $Splitted[1]
                 $Type = 'folder replacements'
             } else {
                 $Name = $MenuName
