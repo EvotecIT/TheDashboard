@@ -1,4 +1,7 @@
-﻿### 0.0.11 - 2023.03.27
+﻿### 0.0.12 - 2023.03.29
+- Fixes an issue with file being overwritten with pages with same name
+
+### 0.0.11 - 2023.03.27
 - Fixes a bug when using old configuration that would not regenerate all HTML files
 
 ### 0.0.10 - 2023.03.25
