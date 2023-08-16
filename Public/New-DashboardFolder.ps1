@@ -2,7 +2,7 @@
     [alias('New-TheDashboardFolder')]
     [CmdletBinding()]
     param(
-        [Parameter(Position = 0)][scriptblock] $Replacements,
+        [Parameter(Position = 0)][scriptblock] $Entries,
         [Parameter(Mandatory)][string] $Name,
         [Parameter(Mandatory)][string] $Path,
         [Parameter(Mandatory)][string] $UrlName,
@@ -67,9 +67,10 @@
         $Icon = 'folder'
     }
 
-    if ($Replacements) {
+    if ($Entries) {
         $ReplacementConfiguration = [System.Collections.Generic.List[System.Collections.IDictionary]]::new()
-        $OutputElements = & $Replacements
+        $LimitsConfiguration = [ordered] @{}
+        $OutputElements = & $Entries
         foreach ($E in $OutputElements) {
             # if ($E.Type -eq 'Gage') {
             #     $GageConfiguration.Add($E.Settings)
@@ -77,6 +78,8 @@
             #     $FoldersConfiguration.Add($E.Settings)
             if ($E.Type -eq 'Replacement') {
                 $ReplacementConfiguration.Add($E.Settings)
+            } elseif ($E.Type -eq 'FolderLimit') {
+                $LimitsConfiguration[$E.Settings.Name] = $E.Settings
             }
         }
         $ReplacementsConfiguration = Convert-MultipleReplacements -ReplacementConfiguration $ReplacementConfiguration
@@ -88,15 +91,16 @@
     $Folder = [ordered] @{
         Type     = 'Folder'
         Settings = [ordered] @{
-            Name               = $Name
-            IconType           = $IconType
-            Icon               = $Icon
-            Path               = $Path
-            Url                = $UrlName
-            CopyFrom           = $CopyFrom
-            MoveFrom           = $MoveFrom
-            ReplacementsGlobal = -not $DisableGlobalReplacement.IsPresent
-            Replacements       = $ReplacementsConfiguration
+            Name                = $Name
+            IconType            = $IconType
+            Icon                = $Icon
+            Path                = $Path
+            Url                 = $UrlName
+            CopyFrom            = $CopyFrom
+            MoveFrom            = $MoveFrom
+            ReplacementsGlobal  = -not $DisableGlobalReplacement.IsPresent
+            Replacements        = $ReplacementsConfiguration
+            LimitsConfiguration = $LimitsConfiguration
         }
     }
     Remove-EmptyValue -Hashtable $Folder
