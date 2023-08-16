@@ -3,6 +3,7 @@
     param(
         [Array] $OutputElements,
         [string] $Logo,
+        [string] $Extension,
         [System.Collections.IDictionary] $MenuBuilder,
         [System.Collections.IDictionary] $Configuration,
         [System.Collections.IDictionary] $TopStats,
@@ -28,7 +29,7 @@
                     foreach ($MenuReport in $MenuBuilder[$Menu].Keys) {
                         #$PageName = (( -join ($MenuBuilder[$Menu][$MenuReport].Name, " ", $MenuBuilder[$Menu][$MenuReport].Date)).Replace(":", "_").Replace(" ", "_"))
                         $PageName = (( -join ($MenuBuilder[$Menu][$MenuReport]['Current'].Name)).Replace(":", "_").Replace(" ", "_"))
-                        New-NavLink -IconRegular calendar-check -Name $MenuBuilder[$Menu][$MenuReport]['Current'].Name -Href "$($Menu)_$($PageName).html"
+                        New-NavLink -IconRegular calendar-check -Name $MenuBuilder[$Menu][$MenuReport]['Current'].Name -Href "$($Menu)_$($PageName)$($Extension)"
                     }
                 }
             }
@@ -98,7 +99,7 @@
                 $PathToSubReports = [io.path]::GetDirectoryName($HTMLPath)
                 #$PageName = ( -join ($MenuBuilder[$Menu][$MenuReport].Name, " ", $MenuBuilder[$Menu][$MenuReport].Date)).Replace(":", "_").Replace(" ", "_")
                 $PageName = ($MenuBuilder[$Menu][$MenuReport]['Current'].Name).Replace(":", "_").Replace(" ", "_")
-                $FullPath = [io.path]::Combine($PathToSubReports, "$($Menu)_$PageName.html")
+                $FullPath = [io.path]::Combine($PathToSubReports, "$($Menu)_$PageName$($Extension)")
 
                 $CurrentReport = $MenuBuilder[$Menu][$MenuReport]['Current']
                 $AllReports = $MenuBuilder[$Menu][$MenuReport]['All']
