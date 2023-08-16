@@ -89,6 +89,8 @@
         $TopStats = Import-Clixml -LiteralPath $StatisticsPath
     }
 
+    $Extension = [io.path]::GetExtension($HTMLPath)
+
     foreach ($E in $GageConfiguration) {
         $TopStats[$E.Date] = [ordered] @{}
         $TopStats[$E.Date].Date = $E.Date
@@ -102,7 +104,7 @@
     Set-FolderConfiguration -Folders $Folders -FoldersConfiguration $FoldersConfiguration
 
     # copy or move HTML files to the right place, as user requested
-    Copy-HTMLFiles -HTMLPath $HTMLPath -Folders $Folders
+    Copy-HTMLFiles -HTMLPath $HTMLPath -Folders $Folders -Extension $Extension
 
     # create menu data information based on files
     $Files = Convert-FilesToMenuData -Folders $Folders -Replacements $Replacements
@@ -110,7 +112,7 @@
     # Prepare menu based on files
     $MenuBuilder = Convert-FilesToMenu -Files $Files -Folders $Folders
 
-    New-HTMLReport -OutputElements $GageConfiguration -Logo $Logo -MenuBuilder $MenuBuilder -Configuration $Configuration -TopStats $TopStats -Files $Files -ShowHTML:$ShowHTML.IsPresent -HTMLPath $HTMLPath -Online:$Online.IsPresent -Force:$Force.IsPresent
+    New-HTMLReport -OutputElements $GageConfiguration -Logo $Logo -MenuBuilder $MenuBuilder -Configuration $Configuration -TopStats $TopStats -Files $Files -ShowHTML:$ShowHTML.IsPresent -HTMLPath $HTMLPath -Online:$Online.IsPresent -Force:$Force.IsPresent -Extension $Extension
 
     # Export statistics to file to create charts later on
     if ($StatisticsPath) {
