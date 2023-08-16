@@ -2,13 +2,13 @@
     [CmdletBinding()]
     param(
         [System.Collections.IDictionary] $Folders,
-        [System.Collections.IDictionary] $Replacements
+        [System.Collections.IDictionary] $Replacements,
+        [string] $Extension
     )
     Write-Color -Text '[i]', "[TheDashboard] ", 'Creating Menu from files', ' [Informative] ' -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
     foreach ($FolderName in $Folders.Keys) {
         $Folder = $Folders[$FolderName]
-        $FilesInFolder = Get-ChildItem -LiteralPath $Folders[$FolderName].Path -ErrorAction SilentlyContinue -Filter *.html | Sort-Object -Property Name
-
+        $FilesInFolder = Get-ChildItem -LiteralPath $Folders[$FolderName].Path -ErrorAction SilentlyContinue -Filter "*$Extension" | Sort-Object -Property Name
         Write-Color -Text '[i]', "[TheDashboard] ", "Creating Menu from files in folder ", "'$FolderName'", " files in folder ", $($FilesInFolder.Count), ' [Informative] ' -Color Yellow, DarkGray, Yellow, Magenta, Yellow, Magenta, DarkGray
         foreach ($File in $FilesInFolder) {
             $Href = "$($Folders[$FolderName].Url)/$($File.Name)"
