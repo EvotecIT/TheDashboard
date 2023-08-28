@@ -17,6 +17,13 @@
         $LimitsConfiguration = $Folders[$Entry.Menu].LimitsConfiguration
         if ($LimitsConfiguration) {
             $Limits = $LimitsConfiguration[$Entry.Name]
+            if (-not $Limits) {
+                if ($LimitsConfiguration['*']) {
+                    $Limits = $LimitsConfiguration['*']
+                } else {
+                    $Limits = $null
+                }
+            }
         } else {
             $Limits = $null
         }
