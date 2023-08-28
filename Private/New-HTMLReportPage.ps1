@@ -6,10 +6,14 @@
         [Array] $HistoryReports,
         [string] $FilePath,
         [string] $PathToSubReports,
-        [string] $Name
+        [string] $Name,
+        [switch] $SubReport
     )
-    Write-Color -Text '[i]', '[HTML ] ', "Generating HTML page ($MenuReport) report ($FilePath)" -Color Yellow, DarkGray, Yellow
-
+    if ($SubReport) {
+        Write-Color -Text '[i]', '[HTML ] ', "Generating HTML page ($MenuReport) sub report ($FilePath)" -Color Yellow, DarkGray, Yellow
+    } else {
+        Write-Color -Text '[i]', '[HTML ] ', "Generating HTML page ($MenuReport) report ($FilePath)" -Color Yellow, DarkGray, Yellow
+    }
     New-HTMLPage -Name $Name {
         New-HTMLSection -HeaderText "Summary for $($Report.Name)" -HeaderBackGroundColor Black {
             New-HTMLSection -Invisible {
