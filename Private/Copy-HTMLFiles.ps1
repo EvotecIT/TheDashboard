@@ -2,11 +2,10 @@
     [cmdletbinding()]
     param(
         [System.Collections.IDictionary] $Folders,
-        [string] $HTMLPath,
         [string] $Extension
     )
 
-    Write-Color -Text '[i]', "[TheDashboard] ", 'Copying or HTML files', ' [Informative] ', $HTMLPath -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
+    Write-Color -Text '[i]', "[TheDashboard] ", 'Copying or HTML files', ' [Informative] ' -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
     foreach ($FolderName in $Folders.Keys) {
         if ($Folders[$FolderName].CopyFrom) {
             foreach ($Path in $Folders[$FolderName].CopyFrom) {
