@@ -15,6 +15,10 @@
     )
     $TimeLogHTML = Start-TimeLog
     Write-Color -Text '[i]', '[HTML ] ', "Generating HTML report ($HTMLPath)" -Color Yellow, DarkGray, Yellow
+
+    $FilePathsGenerated = [System.Collections.Generic.List[string]]::new()
+    $FilePathsGenerated.Add($HTMLPath) # return filepath for main report
+
     # Build report
     New-HTML {
         New-HTMLNavTop -HomeLinkHome -Logo $Logo {
@@ -100,12 +104,19 @@
                 #$PageName = ( -join ($MenuBuilder[$Menu][$MenuReport].Name, " ", $MenuBuilder[$Menu][$MenuReport].Date)).Replace(":", "_").Replace(" ", "_")
                 $PageName = ($MenuBuilder[$Menu][$MenuReport]['Current'].Name).Replace(":", "_").Replace(" ", "_")
                 $FullPath = [io.path]::Combine($PathToSubReports, "$($Menu)_$PageName$($Extension)")
+                $FullPathHistory = [io.path]::Combine($PathToSubReports, "$($Menu)_$($PageName)_History$($Extension)")
 
                 $CurrentReport = $MenuBuilder[$Menu][$MenuReport]['Current']
                 $AllReports = $MenuBuilder[$Menu][$MenuReport]['All']
+                [Array] $HistoryReports = $MenuBuilder[$Menu][$MenuReport]['History']
 
                 $Name = $CurrentReport.Name
-                New-HTMLReportPage -Report $CurrentReport -AllReports $AllReports -FilePath $FullPath -PathToSubReports $PathToSubReports -Name $Name
+                New-HTMLReportPage -Report $CurrentReport -AllReports $AllReports -HistoryReports $HistoryReports -FilePath $FullPath -PathToSubReports $PathToSubReports -Name $Name
+                $FilePathsGenerated.Add($FullPath)  # return filepath for main report
+                if ($HistoryReports.Count -gt 0) {
+                    $FilePathsGenerated.Add($FullPathHistory) # return filepath for history report
+                    New-HTMLReportPageHistory -Report $CurrentReport -AllReports $AllReports -HistoryReports $HistoryReports -FilePath $FullPathHistory -PathToSubReports $PathToSubReports -Name $Name
+                }
 
                 foreach ($Report in $AllReports) {
                     if ($Report.Name -eq $CurrentReport.Name -and $Report.Date -eq $CurrentReport.Date) {
@@ -114,11 +125,12 @@
                     $FullPathOther = [io.path]::Combine($PathToSubReports, $Report.FileName)
                     $Name = $Report.Name + ' - ' + $Report.Date
                     # we only generate the report if it doesn't exist or if the force parameter is used
-                    if ((Test-Path -LiteralPath $FullPathOther) -and -not $Force.IsPresent) {
-                        Write-Color -Text '[i]', '[HTML ] ', "Generating HTML page ($MenuReport) report ", "($FullPathOther)", " skipped. Already exists." -Color Yellow, DarkGray, Yellow, Red, Yellow, Yellow
-                    } else {
-                        New-HTMLReportPage -Report $Report -AllReports $AllReports -FilePath $FullPathOther -PathToSubReports $PathToSubReports -Name $Name
-                    }
+                    #if ((Test-Path -LiteralPath $FullPathOther) -and -not $Force.IsPresent) {
+                    #    Write-Color -Text '[i]', '[HTML ] ', "Generating HTML page ($MenuReport) report ", "($FullPathOther)", " skipped. Already exists." -Color Yellow, DarkGray, Yellow, Red, Yellow, Yellow
+                    #} else {
+                    $FilePathsGenerated.Add($FullPathOther) # return filepath for other reports
+                    New-HTMLReportPage -SubReport -Report $Report -AllReports $AllReports -FilePath $FullPathOther -PathToSubReports $PathToSubReports -Name $Name
+                    #}
                 }
             }
             Write-Color -Text '[i]', '[HTML ] ', "Ending Menu for ", $Menu -Color Yellow, DarkGray, Yellow, DarkCyan
@@ -128,4 +140,6 @@
 
     $TimeLogEndHTML = Stop-TimeLog -Time $TimeLogHTML -Option OneLiner
     Write-Color -Text '[i]', '[HTML ] ', 'Generating HTML report', " [Time to execute: $TimeLogEndHTML]" -Color Yellow, DarkGray, Yellow, DarkGray
+    # lets return files paths we generated
+    $FilePathsGenerated
 }
