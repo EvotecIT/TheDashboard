@@ -1,11 +1,14 @@
 ﻿function New-DashboardLimit {
     [CmdletBinding()]
     param(
-        [parameter(Mandatory)][string] $Name,
+        [string] $Name,
         [nullable[int]] $LimitItem,
         [nullable[DateTime]] $LimitDate
     )
 
+    if (-not $Name) {
+        $Name = '*'
+    }
     $Limit = [ordered] @{
         Type     = 'FolderLimit'
         Settings = [ordered] @{
