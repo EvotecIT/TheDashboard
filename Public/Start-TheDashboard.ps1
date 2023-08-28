@@ -32,10 +32,6 @@
     .PARAMETER Online
     Tells Dashboard to use CSS/JS from CDN instead of local files.
 
-    .PARAMETER Force
-    By default dashboard generates HTML files once, and then refreshes only main file from each category leaving the rest as is if it exists.
-    This saves a lot of time when generating historical reports. If you want to force regeneration of all files, use this parameter.
-
     .EXAMPLE
     An example
 
@@ -51,8 +47,7 @@
         [System.Collections.IDictionary] $Folders,
         [System.Collections.IDictionary] $Replacements,
         [switch] $ShowHTML,
-        [switch] $Online,
-        [switch] $Force
+        [switch] $Online
     )
     $Script:Reporting = [ordered] @{}
     $Script:Reporting['Version'] = Get-GitHubVersion -Cmdlet 'Start-TheDashboard' -RepositoryOwner 'evotecit' -RepositoryName 'TheDashboard'
@@ -90,6 +85,7 @@
     }
 
     $Extension = [io.path]::GetExtension($HTMLPath)
+    $FolderPath = [io.path]::GetDirectoryName($HTMLPath)
 
     foreach ($E in $GageConfiguration) {
         $TopStats[$E.Date] = [ordered] @{}
@@ -104,7 +100,7 @@
     Set-FolderConfiguration -Folders $Folders -FoldersConfiguration $FoldersConfiguration
 
     # copy or move HTML files to the right place, as user requested
-    Copy-HTMLFiles -HTMLPath $HTMLPath -Folders $Folders -Extension $Extension
+    Copy-HTMLFiles -Folders $Folders -Extension $Extension
 
     # create menu data information based on files
     $Files = Convert-FilesToMenuData -Folders $Folders -Replacements $Replacements
@@ -112,7 +108,8 @@
     # Prepare menu based on files
     $MenuBuilder = Convert-FilesToMenu -Files $Files -Folders $Folders
 
-    New-HTMLReport -OutputElements $GageConfiguration -Logo $Logo -MenuBuilder $MenuBuilder -Configuration $Configuration -TopStats $TopStats -Files $Files -ShowHTML:$ShowHTML.IsPresent -HTMLPath $HTMLPath -Online:$Online.IsPresent -Force:$Force.IsPresent -Extension $Extension
+    $FilePathsGenerated = New-HTMLReport -OutputElements $GageConfiguration -Logo $Logo -MenuBuilder $MenuBuilder -Configuration $Configuration -TopStats $TopStats -Files $Files -ShowHTML:$ShowHTML.IsPresent -HTMLPath $HTMLPath -Online:$Online.IsPresent -Force:$Force.IsPresent -Extension $Extension
+    Remove-DiscardedReports -FilePathsGenerated $FilePathsGenerated -FolderPath $FolderPath -Extension $Extension
 
     # Export statistics to file to create charts later on
     if ($StatisticsPath) {
@@ -122,4 +119,5 @@
             Write-Color -Text '[e]', "[TheDashboard] ", 'Failed to export statistics', ' [Error] ', $_.Exception.Message -Color Yellow, DarkGray, Yellow, DarkGray, Red
         }
     }
+    Write-Color -Text '[i]', "[TheDashboard] ", 'Done', ' [Informative] ' -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
 }
