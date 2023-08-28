@@ -27,23 +27,28 @@
         } else {
             $Limits = $null
         }
+        # we start creating menu based on files
         if (-not $MenuBuilder[$Entry.Menu][$Entry.Name]) {
             $MenuBuilder[$Entry.Menu][$Entry.Name] = @{
                 Current = $Entry
                 All     = [System.Collections.Generic.List[Object]]::new()
+                History = [System.Collections.Generic.List[Object]]::new()
             }
         } else {
             if ($MenuBuilder[$Entry.Menu][$Entry.Name]['Current'].Date -lt $Entry.Date) {
                 $MenuBuilder[$Entry.Menu][$Entry.Name]['Current'] = $Entry
-
             }
         }
         if ($Limits.LimitItem) {
             if ($MenuBuilder[$Entry.Menu][$Entry.Name]['All'].Count -ge $Limits.LimitItem) {
+                # User limited input in standard way, we just add it to history which will be treated differently
+                $MenuBuilder[$Entry.Menu][$Entry.Name]['History'].Add($Entry)
                 continue
             }
         } elseif ($Limits.LimitDate) {
             if ($Entry.Date -lt $Limits.LimitDate) {
+                # User limited input in standard way, we just add it to history which will be treated differently
+                $MenuBuilder[$Entry.Menu][$Entry.Name]['History'].Add($Entry)
                 continue
             }
         }
