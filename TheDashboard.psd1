@@ -12,19 +12,20 @@
     PowerShellVersion    = '5.1'
     PrivateData          = @{
         PSData = @{
+            ExternalModuleDependencies = @('Microsoft.PowerShell.Management', 'Microsoft.PowerShell.Utility')
+            IconUri                    = 'https://evotec.xyz/wp-content/uploads/2023/08/TheDashboard.png'
             ProjectUri                 = 'https://github.com/EvotecIT/TheDashboard'
             Tags                       = @('HTML', 'Reports', 'Reporting', 'Windows')
-            ExternalModuleDependencies = @('Microsoft.PowerShell.Management', 'Microsoft.PowerShell.Utility')
         }
     }
     RequiredModules      = @(@{
-            ModuleName    = 'PSSharedGoods'
-            ModuleVersion = '0.0.264'
             Guid          = 'ee272aa8-baaa-4edf-9f45-b6d6f7d844fe'
+            ModuleName    = 'PSSharedGoods'
+            ModuleVersion = '0.0.265'
         }, @{
-            ModuleName    = 'PSWriteHTML'
-            ModuleVersion = '1.2.0'
             Guid          = 'a7bdf640-f5cb-4acf-9de0-365b322d245c'
+            ModuleName    = 'PSWriteHTML'
+            ModuleVersion = '1.7.0'
         }, 'Microsoft.PowerShell.Management', 'Microsoft.PowerShell.Utility')
     RootModule           = 'TheDashboard.psm1'
 }
