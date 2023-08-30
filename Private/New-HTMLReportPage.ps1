@@ -46,11 +46,22 @@
                     foreach ($CalendarEntry in $AllReports) {
                         # The check make sure that report doesn't run over midnight when using +30 minutes. If it runs over midnight it looks bad as it spans over 2 days
                         # we then remove 30 minutes instead to prevent this
-                        #$FullPathOther = [io.path]::Combine($PathToSubReports, $CalendarEntry.FileName)
                         if ($($CalendarEntry.Date).Day -eq $($($CalendarEntry.Date).AddMinutes(30)).Day) {
                             New-CalendarEvent -Title $CalendarEntry.Name -StartDate $CalendarEntry.Date -EndDate $($CalendarEntry.Date).AddMinutes(30) -Url $CalendarEntry.FileName
                         } else {
                             New-CalendarEvent -Title $CalendarEntry.Name -StartDate $CalendarEntry.Date.AddMinutes(-30) -EndDate $($CalendarEntry.Date) -Url $CalendarEntry.FileName
+                        }
+                    }
+                    # if there are history reports we add them, but we do it as part of iframe without creating new files
+                    # this means it's much faster to generate, as we generate only X amount of reports, and rest will be inline
+                    # the drawback is - there is no seprate link for those, so copying link will not work
+                    foreach ($CalendarEntry in $HistoryReports) {
+                        # The check make sure that report doesn't run over midnight when using +30 minutes. If it runs over midnight it looks bad as it spans over 2 days
+                        # we then remove 30 minutes instead to prevent this
+                        if ($($CalendarEntry.Date).Day -eq $($($CalendarEntry.Date).AddMinutes(30)).Day) {
+                            New-CalendarEvent -Title $CalendarEntry.Name -StartDate $CalendarEntry.Date -EndDate $($CalendarEntry.Date).AddMinutes(30) -Url $CalendarEntry.Href -TargetName 'iFrameWithContent'
+                        } else {
+                            New-CalendarEvent -Title $CalendarEntry.Name -StartDate $CalendarEntry.Date.AddMinutes(-30) -EndDate $($CalendarEntry.Date) -Url $CalendarEntry.Href -TargetName 'iFrameWithContent'
                         }
                     }
                 } -HeaderRight @('dayGridMonth', 'timeGridWeek', 'timeGridDay', 'listMonth', 'listYear')
@@ -59,6 +70,6 @@
         New-HTMLSection -Invisible {
 
         } -Height 15px
-        New-HTMLFrame -SourcePath $Report.Href -Scrolling Auto -Height 2000px
+        New-HTMLFrame -SourcePath $Report.Href -Scrolling Auto -Height 2000px -Name 'iFrameWithContent'
     } -FilePath $FilePath
 }

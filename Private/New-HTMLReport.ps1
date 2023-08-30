@@ -104,7 +104,6 @@
                 #$PageName = ( -join ($MenuBuilder[$Menu][$MenuReport].Name, " ", $MenuBuilder[$Menu][$MenuReport].Date)).Replace(":", "_").Replace(" ", "_")
                 $PageName = ($MenuBuilder[$Menu][$MenuReport]['Current'].Name).Replace(":", "_").Replace(" ", "_")
                 $FullPath = [io.path]::Combine($PathToSubReports, "$($Menu)_$PageName$($Extension)")
-                $FullPathHistory = [io.path]::Combine($PathToSubReports, "$($Menu)_$($PageName)_History$($Extension)")
 
                 $CurrentReport = $MenuBuilder[$Menu][$MenuReport]['Current']
                 $AllReports = $MenuBuilder[$Menu][$MenuReport]['All']
@@ -113,10 +112,6 @@
                 $Name = $CurrentReport.Name
                 New-HTMLReportPage -Report $CurrentReport -AllReports $AllReports -HistoryReports $HistoryReports -FilePath $FullPath -PathToSubReports $PathToSubReports -Name $Name
                 $FilePathsGenerated.Add($FullPath)  # return filepath for main report
-                if ($HistoryReports.Count -gt 0) {
-                    $FilePathsGenerated.Add($FullPathHistory) # return filepath for history report
-                    New-HTMLReportPageHistory -Report $CurrentReport -AllReports $AllReports -HistoryReports $HistoryReports -FilePath $FullPathHistory -PathToSubReports $PathToSubReports -Name $Name
-                }
 
                 foreach ($Report in $AllReports) {
                     if ($Report.Name -eq $CurrentReport.Name -and $Report.Date -eq $CurrentReport.Date) {
@@ -129,7 +124,7 @@
                     #    Write-Color -Text '[i]', '[HTML ] ', "Generating HTML page ($MenuReport) report ", "($FullPathOther)", " skipped. Already exists." -Color Yellow, DarkGray, Yellow, Red, Yellow, Yellow
                     #} else {
                     $FilePathsGenerated.Add($FullPathOther) # return filepath for other reports
-                    New-HTMLReportPage -SubReport -Report $Report -AllReports $AllReports -FilePath $FullPathOther -PathToSubReports $PathToSubReports -Name $Name
+                    New-HTMLReportPage -SubReport -Report $Report -AllReports $AllReports -FilePath $FullPathOther -PathToSubReports $PathToSubReports -Name $Name -HistoryReports $HistoryReports
                     #}
                 }
             }
