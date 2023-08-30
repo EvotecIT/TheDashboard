@@ -3,7 +3,8 @@
     param(
         [string] $Name,
         [nullable[int]] $LimitItem,
-        [nullable[DateTime]] $LimitDate
+        [nullable[DateTime]] $LimitDate,
+        [switch] $IncludeHistory
     )
 
     if (-not $Name) {
@@ -12,9 +13,10 @@
     $Limit = [ordered] @{
         Type     = 'FolderLimit'
         Settings = [ordered] @{
-            Name      = $Name
-            LimitItem = $LimitItem
-            LimitDate = $LimitDate
+            Name           = $Name
+            LimitItem      = $LimitItem
+            LimitDate      = $LimitDate
+            IncludeHistory = $IncludeHistory
         }
     }
 

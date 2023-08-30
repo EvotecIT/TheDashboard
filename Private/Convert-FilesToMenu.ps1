@@ -42,13 +42,17 @@
         if ($Limits.LimitItem) {
             if ($MenuBuilder[$Entry.Menu][$Entry.Name]['All'].Count -ge $Limits.LimitItem) {
                 # User limited input in standard way, we just add it to history which will be treated differently
-                $MenuBuilder[$Entry.Menu][$Entry.Name]['History'].Add($Entry)
+                if ($Limits.IncludeHistory) {
+                    $MenuBuilder[$Entry.Menu][$Entry.Name]['History'].Add($Entry)
+                }
                 continue
             }
         } elseif ($Limits.LimitDate) {
             if ($Entry.Date -lt $Limits.LimitDate) {
                 # User limited input in standard way, we just add it to history which will be treated differently
-                $MenuBuilder[$Entry.Menu][$Entry.Name]['History'].Add($Entry)
+                if ($Limits.IncludeHistory) {
+                    $MenuBuilder[$Entry.Menu][$Entry.Name]['History'].Add($Entry)
+                }
                 continue
             }
         }
