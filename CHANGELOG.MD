@@ -1,4 +1,9 @@
-﻿### 0.0.12 - 2023.03.29
+﻿### 0.0.13 - 2023.08.31
+- Removed -Force from `Start-TheDashboard` as it was not really useful causing inconsistent reports
+- Added `New-DashboardLimit` to limit number of reports generated and allow history reports
+- Reworked few things making it easier to use and better overall
+
+### 0.0.12 - 2023.03.29
 - Fixes an issue with file being overwritten with pages with same name
 
 ### 0.0.11 - 2023.03.27
