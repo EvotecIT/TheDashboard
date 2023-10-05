@@ -13,7 +13,7 @@ Start-TheDashboard -HTMLPath "$PSScriptRoot\Reports\Index.html" -Logo 'https://e
     New-DashboardGage -Label 'Computers' -MinValue 0 -MaxValue 200 -Value $AllComputers.Count -Date $Today
     New-DashboardGage -Label 'Groups' -MinValue 0 -MaxValue 200 -Value $AllGroups.Count -Date $Today
     New-DashboardGage -Label 'Group Policies' -MinValue 0 -MaxValue 200 -Value $AllGroupPolicies.Count -Date $Today
-    New-DashboardFolder -Name 'ADEssentials' -IconBrands gofore -UrlName 'ADEssentials' -Path $PSScriptRoot\Reports\ADEssentials {
+    New-DashboardFolder -Name 'ActiveDirectory' -IconBrands gofore -UrlName 'ActiveDirectory' -Path $PSScriptRoot\Reports\ActiveDirectory {
         New-DashboardReplacement -SplitOn "_" -AddSpaceToName
         New-DashboardReplacement -BeforeSplit @{
             'GPOZaurr'         = ''
@@ -30,9 +30,13 @@ Start-TheDashboard -HTMLPath "$PSScriptRoot\Reports\Index.html" -Logo 'https://e
             'I N S'     = 'INS'
             'I T R X X' = 'ITRXX'
             'A D'       = 'AD'
+            'D H C P'   = 'DHCP'
         }
+        New-DashboardLimit -LimitItem 1 -IncludeHistory
+        #New-DashboardLimit -Name 'GPO Blocked Inheritance' -LimitItem 1
+        #New-DashboardLimit -Name 'Password Quality 1' -LimitItem 1
     } -DisableGlobalReplacement
-    New-DashboardFolder -Name 'GPOZaurr' -IconBrands gofore -UrlName 'GPOzaurr' -Path $PSScriptRoot\Reports\GPOZaurr
+    New-DashboardFolder -Name 'GroupPolicies' -IconBrands android -UrlName 'GPO' -Path $PSScriptRoot\Reports\GroupPolicies
 
     New-DashboardReplacement -SplitOn "_" -AddSpaceToName
     New-DashboardReplacement -BeforeSplit @{ 'GPOZaurr' = '' }
@@ -42,7 +46,8 @@ Start-TheDashboard -HTMLPath "$PSScriptRoot\Reports\Index.html" -Logo 'https://e
         'PingCastle-' = ''
         'Testimo'     = ''
     }
-    New-DashboardReplacement -AfterSplit @{ 'G P O' = 'GPO' }, @{  'L D A P' = 'LDAP' }
+
+    New-DashboardReplacement -AfterSplit @{ 'G P O' = 'GPO' }, @{  'L D A P' = 'LDAP' }, @{ 'D H C P' = 'DHCP' }
     New-DashboardReplacement -AfterSplit @{ 'L A P S' = 'LAPS' }, @{  'K R B G T' = 'KRBGT' }
     New-DashboardReplacement -AfterSplit @{ 'A D' = 'AD' }, @{  'I T R X X' = 'ITRXX' }, @{  'I N S' = 'INS' }
-} -StatisticsPath "$PSScriptRoot\Dashboard.xml" -Verbose -Online -Force
+} -StatisticsPath "$PSScriptRoot\Dashboard.xml" -Verbose -Online
