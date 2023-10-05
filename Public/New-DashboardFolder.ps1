@@ -9,6 +9,7 @@
         [string] $CopyFrom,
         [string] $MoveFrom,
         [switch] $DisableGlobalReplacement,
+        [switch] $DisableGlobalLimits,
         # ICON BRANDS
         [ArgumentCompleter(
             {
@@ -72,10 +73,6 @@
         $LimitsConfiguration = [ordered] @{}
         $OutputElements = & $Entries
         foreach ($E in $OutputElements) {
-            # if ($E.Type -eq 'Gage') {
-            #     $GageConfiguration.Add($E.Settings)
-            # } elseif ($E.Type -eq 'Folder') {
-            #     $FoldersConfiguration.Add($E.Settings)
             if ($E.Type -eq 'Replacement') {
                 $ReplacementConfiguration.Add($E.Settings)
             } elseif ($E.Type -eq 'FolderLimit') {
@@ -83,8 +80,8 @@
             }
         }
         $ReplacementsConfiguration = Convert-MultipleReplacements -ReplacementConfiguration $ReplacementConfiguration
-
     } else {
+        $LimitsConfiguration = [ordered] @{}
         $ReplacementsConfiguration = $null
     }
 
@@ -101,6 +98,7 @@
             ReplacementsGlobal  = -not $DisableGlobalReplacement.IsPresent
             Replacements        = $ReplacementsConfiguration
             LimitsConfiguration = $LimitsConfiguration
+            DisableGlobalLimits = $DisableGlobalLimits.IsPresent
         }
     }
     Remove-EmptyValue -Hashtable $Folder

@@ -72,6 +72,8 @@
                 $FoldersConfiguration.Add($E.Settings)
             } elseif ($E.Type -eq 'Replacement') {
                 $ReplacementConfiguration.Add($E.Settings)
+            } elseif ($E.Type -eq 'FolderLimit') {
+                $FolderLimit = $E.Settings
             }
         }
 
@@ -97,7 +99,7 @@
     $Replacements = Convert-MultipleReplacements -Replacements $Replacements -ReplacementConfiguration $ReplacementConfiguration
 
     # build folders configuration
-    Set-FolderConfiguration -Folders $Folders -FoldersConfiguration $FoldersConfiguration
+    Set-FolderConfiguration -Folders $Folders -FoldersConfiguration $FoldersConfiguration -FolderLimit $FolderLimit
 
     # copy or move HTML files to the right place, as user requested
     Copy-HTMLFiles -Folders $Folders -Extension $Extension
