@@ -1,4 +1,7 @@
-﻿### 0.0.13 - 2023.08.31
+﻿### 0.0.14 - 2023.10.05
+- `New-DashboardLimit` now works on global level
+
+### 0.0.13 - 2023.08.31
 - Removed -Force from `Start-TheDashboard` as it was not really useful causing inconsistent reports
 - Added `New-DashboardLimit` to limit number of reports generated and allow history reports
 - Reworked few things making it easier to use and better overall
