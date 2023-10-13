@@ -1,4 +1,7 @@
-﻿### 0.0.14 - 2023.10.05
+﻿### 0.0.15 - 2023.10.13
+- Ignore XML files when generating reports
+
+### 0.0.14 - 2023.10.05
 - `New-DashboardLimit` now works on global level
 
 ### 0.0.13 - 2023.08.31
