@@ -8,7 +8,7 @@
     Description          = 'TheDashboard is a module that allows you to create a dashboard for your HTML reports'
     FunctionsToExport    = @('New-DashboardFolder', 'New-DashboardGage', 'New-DashboardLimit', 'New-DashboardReplacement', 'Start-TheDashboard')
     GUID                 = '0aacc01f-5861-407e-b5e9-2bf57256fb04'
-    ModuleVersion        = '0.0.14'
+    ModuleVersion        = '0.0.15'
     PowerShellVersion    = '5.1'
     PrivateData          = @{
         PSData = @{
