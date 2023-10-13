@@ -105,7 +105,7 @@
     Copy-HTMLFiles -Folders $Folders -Extension $Extension
 
     # create menu data information based on files
-    $Files = Convert-FilesToMenuData -Folders $Folders -Replacements $Replacements
+    $Files = Convert-FilesToMenuData -Folders $Folders -Replacements $Replacements -Extension $Extension
 
     # Prepare menu based on files
     $MenuBuilder = Convert-FilesToMenu -Files $Files -Folders $Folders
