@@ -42,7 +42,59 @@ While doing so, TheDashboard provides additional insights so that the picture of
   - [ ] Active Directory - Computers with password last set over XXX days ago
 
 
-### Example
+#### Example 1
+
+Following example shows how to generate a dashboard
+
+```powershell
+Start-TheDashboard -HTMLPath "$PSScriptRoot\Reports\Index.html" -Logo 'https://evotec.xyz/wp-content/uploads/2021/04/Logo-evotec-bb.png' -ShowHTML {
+    # Gather data for gages
+    $Today = Get-Date
+    $Forest = Get-ADForest
+    $AllUsers = $Forest.Domains | ForEach-Object { Get-ADUser -Filter * -Properties 'DistinguishedName' -Server $_ }
+    $AllComputers = $Forest.Domains | ForEach-Object { Get-ADComputer -Filter * -Properties 'DistinguishedName' -Server $_ }
+    $AllGroups = $Forest.Domains | ForEach-Object { Get-ADGroup -Filter * -Server $_ }
+    $AllGroupPolicies = $Forest.Domains | ForEach-Object { Get-GPO -All -Domain $_ }
+
+    # Top level gages
+    New-DashboardGage -Label 'Users' -MinValue 0 -MaxValue 500 -Value $AllUsers.Count -Date $Today
+    New-DashboardGage -Label 'Computers' -MinValue 0 -MaxValue 200 -Value $AllComputers.Count -Date $Today
+    New-DashboardGage -Label 'Groups' -MinValue 0 -MaxValue 200 -Value $AllGroups.Count -Date $Today
+    New-DashboardGage -Label 'Group Policies' -MinValue 0 -MaxValue 200 -Value $AllGroupPolicies.Count -Date $Today
+
+    # Folder definitions
+    New-DashboardFolder -Name 'ActiveDirectory' -IconBrands gofore -UrlName 'ActiveDirectory' -Path $PSScriptRoot\Reports\ActiveDirectory
+    New-DashboardFolder -Name 'GroupPolicies' -IconBrands android -UrlName 'GPO' -Path $PSScriptRoot\Reports\GroupPolicies
+    New-DashboardFolder -Name 'DomainControllers' -IconBrands android -UrlName 'DomainControllers' -Path $PSScriptRoot\Reports\DomainControllers
+
+    # Global Replacements
+    New-DashboardReplacement -SplitOn "_" -AddSpaceToName
+    New-DashboardReplacement -BeforeSplit @{
+        'GPOZaurr'         = ''
+        'PingCastle-'      = ''
+        'Testimo'          = ''
+        'GroupMembership-' = ''
+        '_Regional'        = ' Regional'
+    }
+    New-DashboardReplacement -AfterSplit @{
+        'G P O'     = 'GPO'
+        'L A P S'   = 'LAPS'
+        'L D A P'   = 'LDAP'
+        'K R B G T' = 'KRBGT'
+        'I N S'     = 'INS'
+        'I T R X X' = 'ITRXX'
+        'A D'       = 'AD'
+        'D H C P'   = 'DHCP'
+        'D F S'     = 'DFS'
+        'D C'       = 'DC'
+    }
+    New-DashboardLimit -LimitItem 1 -IncludeHistory
+} -StatisticsPath "$PSScriptRoot\Dashboard.xml" -Verbose -Online
+```
+
+![Image](/Data/TheDashboard2.png)
+
+#### Example 2
 
 Following example shows how to generate a dashboard
 
@@ -101,7 +153,9 @@ Generated HTML Dashboard
 
 ### Install and configure IIS
 
-TheDashboard can be used on any type of server as it generates static files that can be served by any web server. However, IIS is the most common one and it's the one I'm going to use in this example. IIS is also the one that I'm most familiar with.
+TheDashboard can be used on any type of server as it generates static files that can be served by any web server. It can run on IIS, Apache, Nginx, or any other web server. If you wish to host files on SharePoint you need to make sure to 
+
+ However, IIS is the most common one and it's the one I'm going to use in this example. IIS is also the one that I'm most familiar with.
 
 #### Install IIS roles
 Install all required roles (may be too much, but it works). If you think some roles are not needed, feel free to remove them (open PR/Issue).
