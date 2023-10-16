@@ -1,4 +1,7 @@
-﻿### 0.0.15 - 2023.10.13
+﻿### 0.0.16 - 2023.10.16
+- Fix for primary calendar showing history reports
+
+### 0.0.15 - 2023.10.13
 - Ignore XML files when generating reports
 
 ### 0.0.14 - 2023.10.05
