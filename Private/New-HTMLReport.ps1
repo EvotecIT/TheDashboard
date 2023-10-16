@@ -77,13 +77,19 @@
             }
             New-HTMLPanel {
                 New-HTMLCalendar {
-                    foreach ($CalendarEntry in $Files) {
-                        # The check make sure that report doesn't run over midnight when using +30 minutes. If it runs over midnight it looks bad as it spans over 2 days
-                        # we then remove 30 minutes instead to prevent this
-                        if ($($CalendarEntry.Date).Day -eq $($($CalendarEntry.Date).AddMinutes(30)).Day) {
-                            New-CalendarEvent -Title $CalendarEntry.Name -StartDate $CalendarEntry.Date -EndDate $($CalendarEntry.Date).AddMinutes(30) -Url $CalendarEntry.FileName
-                        } else {
-                            New-CalendarEvent -Title $CalendarEntry.Name -StartDate $CalendarEntry.Date.AddMinutes(-30) -EndDate $($CalendarEntry.Date) -Url $CalendarEntry.FileName
+                    foreach ($Menu in $MenuBuilder.Keys) {
+                        foreach ($MenuReport in $MenuBuilder[$Menu].Keys) {
+                            [Array] $AllReports = $MenuBuilder[$Menu][$MenuReport]['All']
+                            foreach ($CalendarEntry in $AllReports) {
+                                # The check make sure that report doesn't run over midnight when using +30 minutes. If it runs over midnight it looks bad as it spans over 2 days
+                                # we then remove 30 minutes instead to prevent this
+                                if ($($CalendarEntry.Date).Day -eq $($($CalendarEntry.Date).AddMinutes(30)).Day) {
+                                    New-CalendarEvent -Title $CalendarEntry.Name -StartDate $CalendarEntry.Date -EndDate $($CalendarEntry.Date).AddMinutes(30) -Url $CalendarEntry.FileName
+                                } else {
+                                    New-CalendarEvent -Title $CalendarEntry.Name -StartDate $CalendarEntry.Date.AddMinutes(-30) -EndDate $($CalendarEntry.Date) -Url $CalendarEntry.FileName
+                                }
+                            }
+                            # We don't add history reports to calendar as history reports are only shown in iframe with current report
                         }
                     }
                 } -HeaderRight @('dayGridMonth', 'timeGridWeek', 'timeGridDay', 'listMonth', 'listYear')
@@ -99,7 +105,6 @@
             }
 
             foreach ($MenuReport in $MenuBuilder[$Menu].Keys) {
-
                 $PathToSubReports = [io.path]::GetDirectoryName($HTMLPath)
                 #$PageName = ( -join ($MenuBuilder[$Menu][$MenuReport].Name, " ", $MenuBuilder[$Menu][$MenuReport].Date)).Replace(":", "_").Replace(" ", "_")
                 $PageName = ($MenuBuilder[$Menu][$MenuReport]['Current'].Name).Replace(":", "_").Replace(" ", "_")
@@ -114,18 +119,13 @@
                 $FilePathsGenerated.Add($FullPath)  # return filepath for main report
 
                 foreach ($Report in $AllReports) {
-                    if ($Report.Name -eq $CurrentReport.Name -and $Report.Date -eq $CurrentReport.Date) {
-                        #continue
-                    }
+                    #if ($Report.Name -eq $CurrentReport.Name -and $Report.Date -eq $CurrentReport.Date) {
+                    #    #continue
+                    #}
                     $FullPathOther = [io.path]::Combine($PathToSubReports, $Report.FileName)
                     $Name = $Report.Name + ' - ' + $Report.Date
-                    # we only generate the report if it doesn't exist or if the force parameter is used
-                    #if ((Test-Path -LiteralPath $FullPathOther) -and -not $Force.IsPresent) {
-                    #    Write-Color -Text '[i]', '[HTML ] ', "Generating HTML page ($MenuReport) report ", "($FullPathOther)", " skipped. Already exists." -Color Yellow, DarkGray, Yellow, Red, Yellow, Yellow
-                    #} else {
                     $FilePathsGenerated.Add($FullPathOther) # return filepath for other reports
                     New-HTMLReportPage -SubReport -Report $Report -AllReports $AllReports -FilePath $FullPathOther -PathToSubReports $PathToSubReports -Name $Name -HistoryReports $HistoryReports
-                    #}
                 }
             }
             Write-Color -Text '[i]', '[HTML ] ', "Ending Menu for ", $Menu -Color Yellow, DarkGray, Yellow, DarkCyan
