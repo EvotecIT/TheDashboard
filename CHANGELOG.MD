@@ -1,4 +1,8 @@
-﻿### 0.0.18 - 2023.11.16
+﻿### 0.0.19 - 2023.11.16
+- Fix for sorting of reports in menu (again)
+- Remove not needed field
+
+### 0.0.18 - 2023.11.16
 - Respect extension on cleanup of old html files
 
 ### 0.0.17 - 2023.11.16
