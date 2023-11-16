@@ -21,10 +21,10 @@
                 if ($Replacements.SplitOn) {
                     $Splitted = $MenuName -split $Replacements.SplitOn
                     $Name = $Splitted[0]
-                    $NameDate = $Splitted[1]
+                    #$NameDate = $Splitted[1]
                 } else {
                     $Name = $MenuName
-                    $NameDate = $MenuName
+                    #$NameDate = $MenuName
                 }
                 if ($Replacements.AddSpaceToName) {
                     $Name = Format-AddSpaceToSentence -Text $Name
@@ -41,10 +41,10 @@
                 if ($Folder.Replacements.SplitOn) {
                     $Splitted = $MenuName -split $Folder.Replacements.SplitOn
                     $Name = $Splitted[0]
-                    $NameDate = $Splitted[1]
+                   # $NameDate = $Splitted[1]
                 } else {
                     $Name = $MenuName
-                    $NameDate = $MenuName
+                    #$NameDate = $MenuName
                 }
                 if ($Folder.Replacements.AddSpaceToName) {
                     $Name = Format-AddSpaceToSentence -Text $Name
@@ -56,13 +56,13 @@
                 $Type = 'folder replacements'
             } else {
                 $Name = $MenuName
-                $NameDate = $MenuName
+                #$NameDate = $MenuName
                 $Type = 'no replacements applied'
             }
-            if ($Name -and $NameDate) {
+            if ($Name) {
                 [ordered] @{
                     Name     = $Name
-                    NameDate = $NameDate
+                    #NameDate = $NameDate
                     Href     = $Href
                     FileName = "$($Folder.Url)_$($File.Name)"
                     Menu     = $FolderName
