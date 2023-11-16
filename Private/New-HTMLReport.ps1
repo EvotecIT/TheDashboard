@@ -30,7 +30,7 @@
                     $TopMenuSplat[$Configuration.Folders.$Menu.IconType] = $Configuration.Folders.$Menu.Icon
                 }
                 New-NavTopMenu @TopMenuSplat {
-                    foreach ($MenuReport in $MenuBuilder[$Menu].Keys) {
+                    foreach ($MenuReport in $MenuBuilder[$Menu].Keys | Sort-Object) {
                         #$PageName = (( -join ($MenuBuilder[$Menu][$MenuReport].Name, " ", $MenuBuilder[$Menu][$MenuReport].Date)).Replace(":", "_").Replace(" ", "_"))
                         $PageName = (( -join ($MenuBuilder[$Menu][$MenuReport]['Current'].Name)).Replace(":", "_").Replace(" ", "_"))
                         New-NavLink -IconRegular calendar-check -Name $MenuBuilder[$Menu][$MenuReport]['Current'].Name -Href "$($Menu)_$($PageName)$($Extension)"
@@ -104,7 +104,7 @@
                 $TopMenuSplat[$Configuration.Folders.$Menu.IconType] = $Configuration.Folders.$Menu.Icon
             }
 
-            foreach ($MenuReport in $MenuBuilder[$Menu].Keys) {
+            foreach ($MenuReport in $MenuBuilder[$Menu].Keys | Sort-Object) {
                 $PathToSubReports = [io.path]::GetDirectoryName($HTMLPath)
                 #$PageName = ( -join ($MenuBuilder[$Menu][$MenuReport].Name, " ", $MenuBuilder[$Menu][$MenuReport].Date)).Replace(":", "_").Replace(" ", "_")
                 $PageName = ($MenuBuilder[$Menu][$MenuReport]['Current'].Name).Replace(":", "_").Replace(" ", "_")
