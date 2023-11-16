@@ -26,14 +26,14 @@
                         if ($AllReports.Count -eq 1) {
                             New-HTMLListItem -Text "Date in report: ", $AllReports[0].Date -FontSize 12px -FontWeight normal, bold -TextDecoration none, underline
                         } else {
-                            New-HTMLListItem -Text "Date ranges from: ", $AllReports[0].Date, " to ", $AllReports[$AllReports.Count - 1].Date -FontSize 12px -FontWeight normal, bold, normal, bold -TextDecoration none, underline, none, underline
+                            New-HTMLListItem -Text "Date ranges from: ", $AllReports[$AllReports.Count - 1].Date, " to ", $AllReports[0].Date -FontSize 12px -FontWeight normal, bold, normal, bold -TextDecoration none, underline, none, underline
                         }
                     }
                     if ($HistoryReports.Count) {
                         New-HTMLText -Text "History reports in this catagory: ", $HistoryReports.Count -FontSize 12px
                         New-HTMLList {
                             if ($HistoryReports.Count -gt 1) {
-                                New-HTMLListItem -Text "Date ranges from: ", $HistoryReports[0].Date, " to ", $HistoryReports[$AllReports.Count - 1].Date -FontSize 12px -FontWeight normal, bold, normal, bold -TextDecoration none, underline, none, underline
+                                New-HTMLListItem -Text "Date ranges from: ", $HistoryReports[$AllReports.Count - 1].Date, " to ", $HistoryReports[0].Date -FontSize 12px -FontWeight normal, bold, normal, bold -TextDecoration none, underline, none, underline
                             } else {
                                 New-HTMLListItem -Text "Date in report: ", $HistoryReports[0].Date -FontSize 12px -FontWeight normal, bold -TextDecoration none, underline
                             }
