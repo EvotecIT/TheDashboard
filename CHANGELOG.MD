@@ -1,4 +1,7 @@
-﻿### 0.0.17 - 2023.11.16
+﻿### 0.0.18 - 2023.11.16
+- Respect extension on cleanup of old html files
+
+### 0.0.17 - 2023.11.16
 - Fix for sorting of reports in menu
 - Fix for sorting descending when using limits
 
