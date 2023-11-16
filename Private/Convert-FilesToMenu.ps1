@@ -13,7 +13,7 @@
         }
     }
     # We now build menu from files
-    foreach ($Entry in $Files | Sort-Object -Property Date -Descending) {
+    foreach ($Entry in $Files | Sort-Object { $_.Date } -Descending) {
         $LimitsConfiguration = $Folders[$Entry.Menu].LimitsConfiguration
         if ($LimitsConfiguration) {
             $Limits = $LimitsConfiguration[$Entry.Name]
