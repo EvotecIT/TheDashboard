@@ -1,4 +1,8 @@
-﻿### 0.0.16 - 2023.10.16
+﻿### 0.0.17 - 2023.11.16
+- Fix for sorting of reports in menu
+- Fix for sorting descending when using limits
+
+### 0.0.16 - 2023.10.16
 - Fix for primary calendar showing history reports
 
 ### 0.0.15 - 2023.10.13
