@@ -6,9 +6,9 @@
         [System.Collections.IDictionary]$FolderLimit
     )
     foreach ($Folder in $FoldersConfiguration) {
-        if (-not $Folder.Name -and $Folder.UrlName) {
-            $Folder.Name = $Folder.UrlName
-        } elseif (-not $Folder.UrlName -and $Folder.Name) {
+        if (-not $Folder.Name -and $Folder.Url) {
+            $Folder.Name = $Folder.Url
+        } elseif (-not $Folder.Url -and $Folder.Name) {
             $Folder.Url = $Folder.Name
         }
 
