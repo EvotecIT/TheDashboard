@@ -31,9 +31,10 @@
                 }
                 New-NavTopMenu @TopMenuSplat {
                     foreach ($MenuReport in $MenuBuilder[$Menu].Keys | Sort-Object) {
+                        $MenuLink = $MenuBuilder[$Menu][$MenuReport]['Current'].MenuLink
                         #$PageName = (( -join ($MenuBuilder[$Menu][$MenuReport].Name, " ", $MenuBuilder[$Menu][$MenuReport].Date)).Replace(":", "_").Replace(" ", "_"))
                         $PageName = (( -join ($MenuBuilder[$Menu][$MenuReport]['Current'].Name)).Replace(":", "_").Replace(" ", "_"))
-                        New-NavLink -IconRegular calendar-check -Name $MenuBuilder[$Menu][$MenuReport]['Current'].Name -Href "$($Menu)_$($PageName)$($Extension)"
+                        New-NavLink -IconRegular calendar-check -Name $MenuBuilder[$Menu][$MenuReport]['Current'].Name -Href "$($MenuLink)_$($PageName)$($Extension)"
                     }
                 }
             }
@@ -105,10 +106,11 @@
             }
 
             foreach ($MenuReport in $MenuBuilder[$Menu].Keys | Sort-Object) {
+                $MenuLink = $MenuBuilder[$Menu][$MenuReport]['Current'].MenuLink
                 $PathToSubReports = [io.path]::GetDirectoryName($HTMLPath)
                 #$PageName = ( -join ($MenuBuilder[$Menu][$MenuReport].Name, " ", $MenuBuilder[$Menu][$MenuReport].Date)).Replace(":", "_").Replace(" ", "_")
                 $PageName = ($MenuBuilder[$Menu][$MenuReport]['Current'].Name).Replace(":", "_").Replace(" ", "_")
-                $FullPath = [io.path]::Combine($PathToSubReports, "$($Menu)_$PageName$($Extension)")
+                $FullPath = [io.path]::Combine($PathToSubReports, "$($MenuLink)_$PageName$($Extension)")
 
                 $CurrentReport = $MenuBuilder[$Menu][$MenuReport]['Current']
                 $AllReports = $MenuBuilder[$Menu][$MenuReport]['All']
