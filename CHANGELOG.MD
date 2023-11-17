@@ -1,4 +1,7 @@
-﻿### 0.0.20 - 2023.11.17
+﻿### 0.0.21 - 2023.11.17
+- Fix for relative folders
+
+### 0.0.20 - 2023.11.17
 - Make links without spaces
 - Fix links to reports
 
