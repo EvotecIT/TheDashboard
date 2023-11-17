@@ -11,7 +11,9 @@
         $FilesInFolder = Get-ChildItem -LiteralPath $Folders[$FolderName].Path -ErrorAction SilentlyContinue -Filter "*$Extension" | Sort-Object -Property Name
         Write-Color -Text '[i]', "[TheDashboard] ", "Creating Menu from files in folder ", "'$FolderName'", " files in folder ", $($FilesInFolder.Count), ' [Informative] ' -Color Yellow, DarkGray, Yellow, Magenta, Yellow, Magenta, DarkGray
         foreach ($File in $FilesInFolder) {
-            $Href = "$($Folders[$FolderName].Url)/$($File.Name)"
+            $RelativeFolder = Split-Path -Path $Folders[$FolderName].Path -Leaf
+            #$Href = "$($Folders[$FolderName].Url)/$($File.Name)"
+            $Href = "$($RelativeFolder)/$($File.Name)"
 
             $MenuName = $File.BaseName
             if ($Folder.ReplacementsGlobal -eq $true) {
@@ -41,7 +43,7 @@
                 if ($Folder.Replacements.SplitOn) {
                     $Splitted = $MenuName -split $Folder.Replacements.SplitOn
                     $Name = $Splitted[0]
-                   # $NameDate = $Splitted[1]
+                    # $NameDate = $Splitted[1]
                 } else {
                     $Name = $MenuName
                     #$NameDate = $MenuName
