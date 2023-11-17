@@ -66,6 +66,7 @@
                     Href     = $Href
                     FileName = "$($Folder.Url)_$($File.Name)"
                     Menu     = $FolderName
+                    MenuLink = $Folder.Url
                     Date     = $File.LastWriteTime
                 }
             } else {
