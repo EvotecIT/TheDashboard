@@ -1,4 +1,8 @@
-﻿### 0.0.19 - 2023.11.16
+﻿### 0.0.20 - 2023.11.17
+- Make links without spaces
+- Fix links to reports
+
+### 0.0.19 - 2023.11.16
 - Fix for sorting of reports in menu (again)
 - Remove not needed field
 
