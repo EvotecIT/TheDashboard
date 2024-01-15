@@ -11,6 +11,7 @@
         [string] $HTMLPath,
         [switch] $ShowHTML,
         [switch] $Online,
+        [Uri] $UrlPath,
         [switch] $Force
     )
     $TimeLogHTML = Start-TimeLog
@@ -21,24 +22,38 @@
 
     # Build report
     New-HTML {
-        New-HTMLNavTop -HomeLinkHome -Logo $Logo {
-            foreach ($Menu in $MenuBuilder.Keys) {
-                $TopMenuSplat = @{
-                    Name = $Menu
-                }
-                if ($Configuration.Folders.$Menu.IconType) {
-                    $TopMenuSplat[$Configuration.Folders.$Menu.IconType] = $Configuration.Folders.$Menu.Icon
-                }
-                New-NavTopMenu @TopMenuSplat {
-                    foreach ($MenuReport in $MenuBuilder[$Menu].Keys | Sort-Object) {
-                        $MenuLink = $MenuBuilder[$Menu][$MenuReport]['Current'].MenuLink
-                        #$PageName = (( -join ($MenuBuilder[$Menu][$MenuReport].Name, " ", $MenuBuilder[$Menu][$MenuReport].Date)).Replace(":", "_").Replace(" ", "_"))
-                        $PageName = (( -join ($MenuBuilder[$Menu][$MenuReport]['Current'].Name)).Replace(":", "_").Replace(" ", "_"))
-                        New-NavLink -IconRegular calendar-check -Name $MenuBuilder[$Menu][$MenuReport]['Current'].Name -Href "$($MenuLink)_$($PageName)$($Extension)"
+        $newHTMLNavTopSplat = @{
+            Logo            = $Logo
+            MenuItemsWidth  = '250px'
+            NavigationLinks = {
+                foreach ($Menu in $MenuBuilder.Keys) {
+                    $TopMenuSplat = @{
+                        Name = $Menu
+                    }
+                    if ($Configuration.Folders.$Menu.IconType) {
+                        $TopMenuSplat[$Configuration.Folders.$Menu.IconType] = $Configuration.Folders.$Menu.Icon
+                    }
+                    New-NavTopMenu @TopMenuSplat {
+                        foreach ($MenuReport in $MenuBuilder[$Menu].Keys | Sort-Object) {
+                            $MenuLink = $MenuBuilder[$Menu][$MenuReport]['Current'].MenuLink
+                            $PageName = (( -join ($MenuBuilder[$Menu][$MenuReport]['Current'].Name)).Replace(":", "_").Replace(" ", "_"))
+                            if ($UrlPath) {
+                                New-NavLink -IconRegular calendar-check -Name $MenuBuilder[$Menu][$MenuReport]['Current'].Name -Href "$UrlPath/$($MenuLink)_$($PageName)$($Extension)"
+                            } else {
+                                New-NavLink -IconRegular calendar-check -Name $MenuBuilder[$Menu][$MenuReport]['Current'].Name -Href "$($MenuLink)_$($PageName)$($Extension)"
+                            }
+                        }
                     }
                 }
             }
-        } -MenuItemsWidth 250px
+        }
+        if ($UrlPath) {
+            $FileNameHome = [System.IO.Path]::GetFileName($HTMLPath)
+            $newHTMLNavTopSplat['HomeLink'] = "$UrlPath/$FileNameHome"
+        } else {
+            $newHTMLNavTopSplat['HomeLinkHome'] = $true
+        }
+        New-HTMLNavTop @newHTMLNavTopSplat
 
         # primary page data
         New-HTMLSectionStyle -BorderRadius 0px -HeaderBackGroundColor Grey -RemoveShadow

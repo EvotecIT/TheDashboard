@@ -23,6 +23,11 @@
     Folders that will be used to generate TheDashboard.
     Can co-exist with Elements parameter, and configuration using both will be merged.
 
+    .PARAMETER UrlPath
+    URL that will be used as a starting point for TheDashboard, and used by all the links.
+    By default the URL uses relative path, but it can be changed to absolute path.
+    This is useful for example when you want to use TheDashboard on a SharePoint site, where the files are stored in a different place.
+
     .PARAMETER Replacements
     Replacements that will be used to replace names within TheDashboard.
 
@@ -46,6 +51,7 @@
         [string] $Logo,
         [System.Collections.IDictionary] $Folders,
         [System.Collections.IDictionary] $Replacements,
+        [Uri] $UrlPath,
         [switch] $ShowHTML,
         [switch] $Online
     )
@@ -110,7 +116,7 @@
     # Prepare menu based on files
     $MenuBuilder = Convert-FilesToMenu -Files $Files -Folders $Folders
 
-    $FilePathsGenerated = New-HTMLReport -OutputElements $GageConfiguration -Logo $Logo -MenuBuilder $MenuBuilder -Configuration $Configuration -TopStats $TopStats -Files $Files -ShowHTML:$ShowHTML.IsPresent -HTMLPath $HTMLPath -Online:$Online.IsPresent -Force:$Force.IsPresent -Extension $Extension
+    $FilePathsGenerated = New-HTMLReport -OutputElements $GageConfiguration -Logo $Logo -MenuBuilder $MenuBuilder -Configuration $Configuration -TopStats $TopStats -Files $Files -ShowHTML:$ShowHTML.IsPresent -HTMLPath $HTMLPath -Online:$Online.IsPresent -Force:$Force.IsPresent -Extension $Extension -UrlPath $UrlPath
     Remove-DiscardedReports -FilePathsGenerated $FilePathsGenerated -FolderPath $FolderPath -Extension $Extension
 
     # Export statistics to file to create charts later on
