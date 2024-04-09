@@ -1,4 +1,7 @@
-﻿$ExtensionFrom = '.html'
+﻿# This script help converting HTML to ASPX files.
+# It's a part of the process of converting the reports to SharePoint compatible format.
+
+$ExtensionFrom = '.html'
 $ExtensionTo = '.aspx'
 
 #$ExtensionFrom = '.aspx'
