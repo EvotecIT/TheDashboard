@@ -42,7 +42,8 @@
         [string] $ExtensionFrom = '.aspx',
         [string] $Search,
         [string] $Replace,
-        [switch] $EscapeRegex
+        [switch] $EscapeRegex,
+        [int] $OnlyNewerThan
     )
 
     if ($EscapeRegex) {
@@ -56,6 +57,11 @@
     $Files = Get-ChildItem -Path $Directory -File -Recurse -Include "*$ExtensionFrom"
     foreach ($File in $Files) {
         if ($File.Extension -eq $ExtensionFrom) {
+            if ($OnlyNewerThan -and $File.LastWriteTime -lt (Get-Date).AddDays(-$OnlyNewerThan)) {
+                #Write-Color -Text '[i]', "[TheDashboard] ", "Skipping $($File.FullName) as it's older than $OnlyNewerThan days" -Color Yellow
+                continue
+            }
+            Write-Color -Text '[i]', "[TheDashboard] ", "Processing fixes $($File.FullName) / $($File.LastWriteTime)" -Color Yellow
             # Store original dates
             $originalCreationTime = $File.CreationTime
             $originalLastWriteTime = $File.LastWriteTime
@@ -63,7 +69,7 @@
             $Encoding = Get-FileEncoding -Path $File.FullName
             $FileContent = Get-Content -Raw -Path $File.FullName -Encoding $Encoding
             if ($FileContent -match $SearchString) {
-                Write-Color -Text "Replacing wrong content in $($File.FullName) ($SearchString / $ReplaceString) / Encoding: $Encoding" -Color Green
+                Write-Color -Text '[i]', "[TheDashboard] ", "Processing fixes $($File.FullName) for ($SearchString)" -Color Green
                 $FileContent -replace $SearchString, $ReplaceString | Set-Content -Path $File.FullName -Encoding $Encoding
 
                 # Restore original dates
