@@ -70,7 +70,13 @@
     if ($Elements) {
         $TimeLogElements = Start-TimeLog
         Write-Color -Text '[i]', "[TheDashboard] ", 'Executing nested elements (data gathering/conversions)', ' [Informative] ' -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
-        $OutputElements = & $Elements
+
+        try {
+            $OutputElements = & $Elements
+        } catch {
+            Write-Color -Text '[e]', "[TheDashboard] ", 'Failed to execute nested elements', ' [Error] ', $_.Exception.Message -Color Yellow, DarkGray, Yellow, DarkGray, Red
+            return
+        }
         foreach ($E in $OutputElements) {
             if ($E.Type -eq 'Gage') {
                 $GageConfiguration.Add($E.Settings)

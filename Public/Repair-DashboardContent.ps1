@@ -1,4 +1,4 @@
-﻿function Repair-ReportContent {
+﻿function Repair-DashboardContent {
     <#
     .SYNOPSIS
     This function helps to replace content in files with a specific extension in a specific directory with a new content.
@@ -73,8 +73,14 @@
                 $FileContent -replace $SearchString, $ReplaceString | Set-Content -Path $File.FullName -Encoding $Encoding
 
                 # Restore original dates
-                (Get-Item $File.FullName).CreationTime = $originalCreationTime
-                (Get-Item $File.FullName).LastWriteTime = $originalLastWriteTime
+          (Get-Item $File.FullName).CreationTime = $originalCreationTime
+                $item = Get-Item $File.FullName
+                $item.CreationTime = $originalCreationTime
+                if ($AddOneMinute) {
+                    $item.LastWriteTime = $originalLastWriteTime.AddMinutes(1)
+                } else {
+                    $item.LastWriteTime = $originalLastWriteTime
+                }
             }
         }
     }

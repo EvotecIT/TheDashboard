@@ -12,7 +12,6 @@
         Write-Color -Text '[i]', "[TheDashboard] ", "Creating Menu from files in folder ", "'$FolderName'", " files in folder ", $($FilesInFolder.Count), ' [Informative] ' -Color Yellow, DarkGray, Yellow, Magenta, Yellow, Magenta, DarkGray
         foreach ($File in $FilesInFolder) {
             $RelativeFolder = Split-Path -Path $Folders[$FolderName].Path -Leaf
-            #$Href = "$($Folders[$FolderName].Url)/$($File.Name)"
             $Href = "$($RelativeFolder)/$($File.Name)"
 
             $MenuName = $File.BaseName
@@ -22,19 +21,33 @@
                 }
                 if ($Replacements.SplitOn) {
                     $Splitted = $MenuName -split $Replacements.SplitOn
-                    $Name = $Splitted[0]
-                    #$NameDate = $Splitted[1]
+                    if ($null -ne $Replacements.AfterSplitPositionName) {
+                        $Name = ''
+                        [Array] $PositionPlace = $Replacements.AfterSplitPositionName
+                        $NameParts = foreach ($Position in $PositionPlace) {
+                            $Splitted[$Position]
+                        }
+                        $Name = $NameParts -join ' '
+                    } else {
+                        $Name = $Splitted[0]
+                    }
                 } else {
                     $Name = $MenuName
-                    #$NameDate = $MenuName
                 }
-                if ($Replacements.AddSpaceToName) {
-                    $Name = Format-AddSpaceToSentence -Text $Name
+
+                $formatStringToSentenceSplat = @{
+                    Text                = $Name
+                    RemoveCharsBefore   = $Replacements.BeforeRemoveChars
+                    RemoveCharsAfter    = $Replacements.AfterRemoveChars
+                    RemoveDoubleSpaces  = $Replacements.AfterRemoveDoubleSpaces
+                    MakeWordsUpperCase  = $Replacements.AfterUpperChars
+                    DisableAddingSpace  = -not $Replacements.AddSpaceToName
                 }
+                $Name = Format-StringToSentence @formatStringToSentenceSplat
+
                 foreach ($Replace in $Replacements.AfterSplit.Keys) {
                     $Name = $Name.Replace($Replace, $Replacements.AfterSplit[$Replace])
                 }
-                # $NameDate = $Splitted[1]
                 $Type = 'global replacements'
             } elseif ($Folder.Replacements) {
                 foreach ($Replace in $Folder.Replacements.BeforeSplit.Keys) {
@@ -42,23 +55,37 @@
                 }
                 if ($Folder.Replacements.SplitOn) {
                     $Splitted = $MenuName -split $Folder.Replacements.SplitOn
-                    $Name = $Splitted[0]
-                    # $NameDate = $Splitted[1]
+                    if ($null -ne $Folder.Replacements.AfterSplitPositionName) {
+                        $Name = ''
+                        [Array] $PositionPlace = $Folder.Replacements.AfterSplitPositionName
+                        $NameParts = foreach ($Position in $PositionPlace) {
+                            $Splitted[$Position]
+                        }
+                        $Name = $NameParts -join ' '
+                    } else {
+                        $Name = $Splitted[0]
+                    }
                 } else {
                     $Name = $MenuName
-                    #$NameDate = $MenuName
                 }
-                if ($Folder.Replacements.AddSpaceToName) {
-                    $Name = Format-AddSpaceToSentence -Text $Name
+
+                $formatStringToSentenceSplat = @{
+                    Text                = $Name
+                    RemoveCharsBefore   = $Folder.Replacements.BeforeRemoveChars
+                    RemoveCharsAfter    = $Folder.Replacements.AfterRemoveChars
+                    RemoveDoubleSpaces  = $Folder.Replacements.AfterRemoveDoubleSpaces
+                    MakeWordsUpperCase  = $Folder.Replacements.AfterUpperChars
+                    DisableAddingSpace  = -not $Folder.Replacements.AddSpaceToName
                 }
+
+                $Name = Format-StringToSentence @formatStringToSentenceSplat
+
                 foreach ($Replace in $Folder.Replacements.AfterSplit.Keys) {
                     $Name = $Name.Replace($Replace, $Folder.Replacements.AfterSplit[$Replace])
                 }
-                # $NameDate = $Splitted[1]
                 $Type = 'folder replacements'
             } else {
                 $Name = $MenuName
-                #$NameDate = $MenuName
                 $Type = 'no replacements applied'
             }
             if ($Name) {
