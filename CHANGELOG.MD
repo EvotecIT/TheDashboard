@@ -1,4 +1,10 @@
-﻿### 0.0.22 - 2024.02.29
+﻿### 0.0.25 - 2024.04.26
+- Improvements overall
+- Added `Repair-DashboardContent` to fix issues with HTML incompatible with SharePoint
+- Added `Repair-DashboardExtension` to convert HTML files to ASPX files or vice versa (for SharePoint)
+- New options to `New-DashboardReplacement` to allow for more complex replacements
+
+### 0.0.22 - 2024.02.29
 - Improvements overall
 
 ### 0.0.21 - 2023.11.17
