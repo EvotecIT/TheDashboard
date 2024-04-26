@@ -54,6 +54,10 @@
         $ReplaceString = $Replace
     }
 
+    if (-not (Test-Path -Path $Directory)) {
+        Write-Color -Text '[i]', "[TheDashboard] ", "Directory $Directory does not exist" -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
+        return
+    }
     $Files = Get-ChildItem -Path $Directory -File -Recurse -Include "*$ExtensionFrom"
     foreach ($File in $Files) {
         if ($File.Extension -eq $ExtensionFrom) {
@@ -61,7 +65,7 @@
                 #Write-Color -Text '[i]', "[TheDashboard] ", "Skipping $($File.FullName) as it's older than $OnlyNewerThan days" -Color Yellow
                 continue
             }
-            Write-Color -Text '[i]', "[TheDashboard] ", "Processing fixes $($File.FullName) / $($File.LastWriteTime)" -Color Yellow
+            Write-Color -Text '[i]', "[TheDashboard] ", "Processing fixes $($File.FullName) / $($File.LastWriteTime)" -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
             # Store original dates
             $originalCreationTime = $File.CreationTime
             $originalLastWriteTime = $File.LastWriteTime
