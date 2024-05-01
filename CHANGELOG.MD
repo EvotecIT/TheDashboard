@@ -1,4 +1,7 @@
-﻿### 0.0.27 - 2024.05.01
+﻿### 0.0.28 - 2024.05.01
+- Improve `Repair-DashboardContent` to fix issues with PS 5.1
+
+### 0.0.27 - 2024.05.01
 - Improve `Repair-DashboardContent` to add ability to bump time by one minute
 - Improve `New-DashboardReplacement` to allow for more complex replacements
 
