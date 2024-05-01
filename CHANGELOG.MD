@@ -1,4 +1,7 @@
-﻿### 0.0.25 - 2024.04.26
+﻿### 0.0.27 - 2024.05.01
+- Improve `Repair-DashboardContent` to add ability to bump time by one minute
+
+### 0.0.25 - 2024.04.26
 - Improvements overall
 - Added `Repair-DashboardContent` to fix issues with HTML incompatible with SharePoint
 - Added `Repair-DashboardExtension` to convert HTML files to ASPX files or vice versa (for SharePoint)
