@@ -19,11 +19,37 @@
                 foreach ($Replace in $Replacements.BeforeSplit.Keys) {
                     $MenuName = $MenuName.Replace($Replace, $Replacements.BeforeSplit[$Replace])
                 }
+                # if ($Replacements.SplitOn) {
+                #     $Splitted = $MenuName -split $Replacements.SplitOn
+                #     if ($null -ne $Replacements.AfterSplitPositionName) {
+                #         $Name = ''
+                #         [Array] $PositionPlace = $Replacements.AfterSplitPositionName
+                #         $NameParts = foreach ($Position in $PositionPlace) {
+                #             $Splitted[$Position]
+                #         }
+                #         $Name = $NameParts -join ' '
+                #     } else {
+                #         $Name = $Splitted[0]
+                #     }
+                # } else {
+                #     $Name = $MenuName
+                # }
+
                 if ($Replacements.SplitOn) {
                     $Splitted = $MenuName -split $Replacements.SplitOn
                     if ($null -ne $Replacements.AfterSplitPositionName) {
+                        $PositionPlace = @(0)
                         $Name = ''
-                        [Array] $PositionPlace = $Replacements.AfterSplitPositionName
+                        if ($Replacements.AfterSplitPositionName -is [System.Collections.IDictionary]) {
+                            foreach ($FileNameToFind in $Replacements.AfterSplitPositionName.Keys) {
+                                [Array] $PositionPlace = $Replacements.AfterSplitPositionName[$FileNameToFind]
+                                if ($MenuName -like $FileNameToFind) {
+                                    break
+                                }
+                            }
+                        } else {
+                            [Array] $PositionPlace = $Replacements.AfterSplitPositionName
+                        }
                         $NameParts = foreach ($Position in $PositionPlace) {
                             $Splitted[$Position]
                         }
@@ -36,12 +62,12 @@
                 }
 
                 $formatStringToSentenceSplat = @{
-                    Text                = $Name
-                    RemoveCharsBefore   = $Replacements.BeforeRemoveChars
-                    RemoveCharsAfter    = $Replacements.AfterRemoveChars
-                    RemoveDoubleSpaces  = $Replacements.AfterRemoveDoubleSpaces
-                    MakeWordsUpperCase  = $Replacements.AfterUpperChars
-                    DisableAddingSpace  = -not $Replacements.AddSpaceToName
+                    Text               = $Name
+                    RemoveCharsBefore  = $Replacements.BeforeRemoveChars
+                    RemoveCharsAfter   = $Replacements.AfterRemoveChars
+                    RemoveDoubleSpaces = $Replacements.AfterRemoveDoubleSpaces
+                    MakeWordsUpperCase = $Replacements.AfterUpperChars
+                    DisableAddingSpace = -not $Replacements.AddSpaceToName
                 }
                 $Name = Format-StringToSentence @formatStringToSentenceSplat
 
@@ -56,8 +82,18 @@
                 if ($Folder.Replacements.SplitOn) {
                     $Splitted = $MenuName -split $Folder.Replacements.SplitOn
                     if ($null -ne $Folder.Replacements.AfterSplitPositionName) {
+                        $PositionPlace = @(0)
                         $Name = ''
-                        [Array] $PositionPlace = $Folder.Replacements.AfterSplitPositionName
+                        if ($Folder.Replacements.AfterSplitPositionName -is [System.Collections.IDictionary]) {
+                            foreach ($FileNameToFind in $Folder.Replacements.AfterSplitPositionName.Keys) {
+                                [Array] $PositionPlace = $Folder.Replacements.AfterSplitPositionName[$FileNameToFind]
+                                if ($MenuName -like $FileNameToFind) {
+                                    break
+                                }
+                            }
+                        } else {
+                            [Array] $PositionPlace = $Folder.Replacements.AfterSplitPositionName
+                        }
                         $NameParts = foreach ($Position in $PositionPlace) {
                             $Splitted[$Position]
                         }
@@ -70,12 +106,12 @@
                 }
 
                 $formatStringToSentenceSplat = @{
-                    Text                = $Name
-                    RemoveCharsBefore   = $Folder.Replacements.BeforeRemoveChars
-                    RemoveCharsAfter    = $Folder.Replacements.AfterRemoveChars
-                    RemoveDoubleSpaces  = $Folder.Replacements.AfterRemoveDoubleSpaces
-                    MakeWordsUpperCase  = $Folder.Replacements.AfterUpperChars
-                    DisableAddingSpace  = -not $Folder.Replacements.AddSpaceToName
+                    Text               = $Name
+                    RemoveCharsBefore  = $Folder.Replacements.BeforeRemoveChars
+                    RemoveCharsAfter   = $Folder.Replacements.AfterRemoveChars
+                    RemoveDoubleSpaces = $Folder.Replacements.AfterRemoveDoubleSpaces
+                    MakeWordsUpperCase = $Folder.Replacements.AfterUpperChars
+                    DisableAddingSpace = -not $Folder.Replacements.AddSpaceToName
                 }
 
                 $Name = Format-StringToSentence @formatStringToSentenceSplat

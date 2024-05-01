@@ -7,8 +7,7 @@
         [alias('RemoveCharsBefore')][string[]] $BeforeRemoveChars,
         [Array] $AfterSplit,
         [alias('AfterAddSpaceToName')][switch] $AddSpaceToName,
-        [int[]] $AfterSplitPositionName,
-
+        [object] $AfterSplitPositionName,
         [alias('RemoveCharsAfter')][string[]] $AfterRemoveChars,
         [alias('ConvertToUpperChars')][string[]] $AfterUpperChars,
         [alias('RemoveDoubleSpaces')][switch] $AfterRemoveDoubleSpaces
