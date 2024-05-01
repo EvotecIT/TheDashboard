@@ -19,22 +19,6 @@
                 foreach ($Replace in $Replacements.BeforeSplit.Keys) {
                     $MenuName = $MenuName.Replace($Replace, $Replacements.BeforeSplit[$Replace])
                 }
-                # if ($Replacements.SplitOn) {
-                #     $Splitted = $MenuName -split $Replacements.SplitOn
-                #     if ($null -ne $Replacements.AfterSplitPositionName) {
-                #         $Name = ''
-                #         [Array] $PositionPlace = $Replacements.AfterSplitPositionName
-                #         $NameParts = foreach ($Position in $PositionPlace) {
-                #             $Splitted[$Position]
-                #         }
-                #         $Name = $NameParts -join ' '
-                #     } else {
-                #         $Name = $Splitted[0]
-                #     }
-                # } else {
-                #     $Name = $MenuName
-                # }
-
                 if ($Replacements.SplitOn) {
                     $Splitted = $MenuName -split $Replacements.SplitOn
                     if ($null -ne $Replacements.AfterSplitPositionName) {

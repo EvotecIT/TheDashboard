@@ -72,10 +72,20 @@
             $originalLastWriteTime = $File.LastWriteTime
 
             $Encoding = Get-FileEncoding -Path $File.FullName
-            $FileContent = Get-Content -Raw -Path $File.FullName -Encoding $Encoding
+            if ($PSVersionTable.PSVersion.Major -ge 7) {
+                $FileContent = Get-Content -Raw -Path $File.FullName -Encoding $Encoding
+            } else {
+                # PowerShell 5.1 doesn't have encoding UTF8BOM, but writes everything as UTF8BOM anyway
+                # So we fix only reading
+                if ($Encoding -eq 'UTF8BOM') {
+                    $Encoding = 'UTF8'
+                }
+                $FileContent = Get-Content -Raw -Path $File.FullName -Encoding $Encoding
+            }
             if ($FileContent -match $SearchString) {
                 Write-Color -Text '[i]', "[TheDashboard] ", "Processing fixes $($File.FullName) for ($SearchString)" -Color Green
-                $FileContent -replace $SearchString, $ReplaceString | Set-Content -Path $File.FullName -Encoding $Encoding
+                $NewContent = $FileContent -replace $SearchString, $ReplaceString
+                $NewContent | Set-Content -Path $File.FullName -Encoding $Encoding
 
                 # Restore original dates
                 $item = Get-Item $File.FullName
