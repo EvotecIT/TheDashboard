@@ -78,7 +78,6 @@
                 $FileContent -replace $SearchString, $ReplaceString | Set-Content -Path $File.FullName -Encoding $Encoding
 
                 # Restore original dates
-          (Get-Item $File.FullName).CreationTime = $originalCreationTime
                 $item = Get-Item $File.FullName
                 $item.CreationTime = $originalCreationTime
                 if ($AddOneMinute) {
