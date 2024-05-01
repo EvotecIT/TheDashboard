@@ -1,5 +1,6 @@
 ﻿### 0.0.27 - 2024.05.01
 - Improve `Repair-DashboardContent` to add ability to bump time by one minute
+- Improve `New-DashboardReplacement` to allow for more complex replacements
 
 ### 0.0.25 - 2024.04.26
 - Improvements overall
