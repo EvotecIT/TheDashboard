@@ -43,7 +43,8 @@
         [string] $Search,
         [string] $Replace,
         [switch] $EscapeRegex,
-        [int] $OnlyNewerThan
+        [int] $OnlyNewerThan,
+        [switch] $AddOneMinute
     )
 
     if ($EscapeRegex) {
