@@ -1,4 +1,7 @@
-﻿### 0.0.28 - 2024.05.01
+﻿### 0.0.29 - 2024.10.18
+- Add `Title` to the pages for better page destinction
+
+### 0.0.28 - 2024.05.01
 - Improve `Repair-DashboardContent` to fix issues with PS 5.1
 
 ### 0.0.27 - 2024.05.01
