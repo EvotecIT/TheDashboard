@@ -14,7 +14,7 @@
     } else {
         Write-Color -Text '[i]', '[HTML ] ', "Generating HTML page ($MenuReport) report ($FilePath)" -Color Yellow, DarkGray, Yellow
     }
-    New-HTMLPage -Name $Name {
+    New-HTMLPage -Name $Name -Title "TheDashboard - $Name" {
         New-HTMLSection -HeaderText "Summary for $($Report.Name)" -HeaderBackGroundColor Black {
             New-HTMLSection -Invisible {
                 New-HTMLPanel {
