@@ -123,7 +123,6 @@
             foreach ($MenuReport in $MenuBuilder[$Menu].Keys | Sort-Object) {
                 $MenuLink = $MenuBuilder[$Menu][$MenuReport]['Current'].MenuLink
                 $PathToSubReports = [io.path]::GetDirectoryName($HTMLPath)
-                #$PageName = ( -join ($MenuBuilder[$Menu][$MenuReport].Name, " ", $MenuBuilder[$Menu][$MenuReport].Date)).Replace(":", "_").Replace(" ", "_")
                 $PageName = ($MenuBuilder[$Menu][$MenuReport]['Current'].Name).Replace(":", "_").Replace(" ", "_")
                 $FullPath = [io.path]::Combine($PathToSubReports, "$($MenuLink)_$PageName$($Extension)")
 
@@ -136,9 +135,6 @@
                 $FilePathsGenerated.Add($FullPath)  # return filepath for main report
 
                 foreach ($Report in $AllReports) {
-                    #if ($Report.Name -eq $CurrentReport.Name -and $Report.Date -eq $CurrentReport.Date) {
-                    #    #continue
-                    #}
                     $FullPathOther = [io.path]::Combine($PathToSubReports, $Report.FileName)
                     $Name = $Report.Name + ' - ' + $Report.Date
                     $FilePathsGenerated.Add($FullPathOther) # return filepath for other reports
