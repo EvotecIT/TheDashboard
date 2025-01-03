@@ -1,7 +1,7 @@
 ﻿function New-HTMLReportPage {
     [cmdletBinding()]
     param(
-        [System.Collections.IDictionary] $Report,
+        [PSCustomObject] $Report,
         [Array] $AllReports,
         [Array] $HistoryReports,
         [string] $FilePath,
