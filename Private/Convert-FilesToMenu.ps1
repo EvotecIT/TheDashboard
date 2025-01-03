@@ -1,4 +1,23 @@
 ﻿function Convert-FilesToMenu {
+    <#
+    .SYNOPSIS
+    Generates a structured menu from a collection of files and folders.
+
+    .DESCRIPTION
+    Builds ordered folders and file entries, applies filtering and history logic.
+
+    .PARAMETER Folders
+    Dictionary defining folder metadata and optional limits configuration.
+
+    .PARAMETER Files
+    Array of file data, each containing attributes such as Date, Menu, and Name.
+
+    .EXAMPLE
+    Convert-FilesToMenu -Folders $Folders -Files $FileList
+
+    .NOTES
+    Part of TheDashboard module, creates the navigation menu from report files.
+    #>
     [CmdletBinding()]
     param(
         [System.Collections.IDictionary] $Folders,
