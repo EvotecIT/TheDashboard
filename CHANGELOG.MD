@@ -1,4 +1,7 @@
-﻿### 0.0.29 - 2024.10.18
+﻿### 0.0.30
+- Added `PassThru` to get the output of `Start-TheDashboard` to be able to use it in other scripts
+
+### 0.0.29 - 2024.10.18
 - Add `Title` to the pages for better page distinction
 
 ### 0.0.28 - 2024.05.01
