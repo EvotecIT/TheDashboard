@@ -117,6 +117,10 @@
                     Menu     = $FolderName
                     MenuLink = $Folder.Url
                     Date     = $File.LastWriteTime
+                    # Useful for SharePoint upload capabilities
+                    FullPath = $File.FullName
+                    # Include is used to determine if file should be included to copy/remove
+                    Include  = $null
                 }
             } else {
                 Write-Color -Text "[e]", "[TheDashboard] ", "Creating Menu ", "[error] ", "Couldn't create menu item for $($File.FullName). Problem with $Type" -Color Red, DarkGray, Red, DarkGray, Red
