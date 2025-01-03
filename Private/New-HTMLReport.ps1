@@ -127,7 +127,7 @@
                 $FullPath = [io.path]::Combine($PathToSubReports, "$($MenuLink)_$PageName$($Extension)")
 
                 $CurrentReport = $MenuBuilder[$Menu][$MenuReport]['Current']
-                $AllReports = $MenuBuilder[$Menu][$MenuReport]['All']
+                [Array] $AllReports = $MenuBuilder[$Menu][$MenuReport]['All']
                 [Array] $HistoryReports = $MenuBuilder[$Menu][$MenuReport]['History']
 
                 $Name = $CurrentReport.Name
