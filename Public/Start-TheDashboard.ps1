@@ -141,13 +141,14 @@
 
     if ($PassThru) {
         [ordered] @{
-            Folders        = $Folders
-            Extension      = $Extension
-            Files          = $Files
-            MenuBuilder    = $MenuBuilder
-            TopStats       = $TopStats
-            StatisticsPath = $StatisticsPath
-            Replacements   = $Replacements
+            Folders            = $Folders
+            Extension          = $Extension
+            Files              = $Files
+            MenuBuilder        = $MenuBuilder
+            TopStats           = $TopStats
+            StatisticsPath     = $StatisticsPath
+            Replacements       = $Replacements
+            FilePathsGenerated = $FilePathsGenerated
         }
     }
 }
