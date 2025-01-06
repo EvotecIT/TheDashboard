@@ -47,6 +47,8 @@ $Dashboard = Start-TheDashboard -HTMLPath "$PSScriptRoot\Reports\Index.html" -Lo
         '-test .evotec .pl' = '- test.evotec.pl'
     }
     New-DashboardLimit -LimitItem 1 -IncludeHistoryLimit 2
-} -StatisticsPath "$PSScriptRoot\Dashboard.xml" -Verbose -Online -ShowHTML -PassThru
+} -StatisticsPath "$PSScriptRoot\Dashboard.xml" -Verbose -Online -ShowHTML -PassThru -WhatIf -RemoveNotIncluded
 
+# We can output some data if needed
+$Dashboard.FilesToKeepOrRemove | Format-Table -AutoSize
 $Dashboard.Files | Format-Table -AutoSize Name, Href, Menu, Date, Include, FullPath
