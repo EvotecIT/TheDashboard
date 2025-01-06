@@ -14,17 +14,16 @@
                 Path    = $File
                 Include = $true
                 Date    = (Get-Item -LiteralPath $File).LastWriteTime
-                Status  = if ($Include) { 'Included' } else { 'Excluded' }
+                Status  = 'Included'
             }
-
-            foreach ($File in $Files) {
-                [PSCustomObject] @{
-                    Type    = 'Report'
-                    Path    = $File.FullPath
-                    Include = $File.Include
-                    Date    = $File.Date
-                    Status  = if ($File.Include) { 'Included' } else { 'Excluded' }
-                }
+        }
+        foreach ($File in $Files) {
+            [PSCustomObject] @{
+                Type    = 'Report'
+                Path    = $File.FullPath
+                Include = $File.Include
+                Date    = $File.Date
+                Status  = if ($File.Include) { 'Included' } else { 'Excluded' }
             }
         }
     )
