@@ -4,7 +4,7 @@ Import-Module .\TheDashboard.psd1 -Force
 # This is configuration that should be used for SharePoint
 # Please notice HTMLPath which has ASPX extension, as this is the only one supported by SharePoint
 # Please notice UrlPath which is absolute path to SharePoint site. This is required if you want to use SharePoint with ASPX file as HomePage
-Start-TheDashboard -HTMLPath "$PSScriptRoot\Reports\Index.html" -UrlPath "https://evotecpoland.sharepoint.com/sites/TheDashboard/SitePages" -Logo 'https://evotec.xyz/wp-content/uploads/2021/04/Logo-evotec-bb.png' -ShowHTML:$true {
+Start-TheDashboard -HTMLPath "$PSScriptRoot\Reports\Index.aspx" -UrlPath "https://evotecpoland.sharepoint.com/sites/TheDashboard/SitePages" -Logo 'https://evotec.xyz/wp-content/uploads/2021/04/Logo-evotec-bb.png' -ShowHTML:$true {
     $Today = Get-Date
     $Forest = Get-ADForest
     # $AllUsersCount = $Forest.Domains | ForEach-Object { (Get-ADObject -LDAPFilter "(objectClass=user)" -Server $_).Count }
@@ -49,7 +49,7 @@ Start-TheDashboard -HTMLPath "$PSScriptRoot\Reports\Index.html" -UrlPath "https:
     New-DashboardFolder -Name 'Windows Updates' -IconBrands android -UrlName 'WindowsUpdates' -Path $PSScriptRoot\Reports\WindowsUpdates {
         $newDashboardReplacementSplat = @{
             BeforeSplit             = @{
-                'GroupMembership-' = '';
+                'GroupMembership-' = ''
                 '_Regional'        = ' Regional'
                 'GPOZaurr'         = ''
                 'PingCastle-'      = ''
@@ -63,13 +63,13 @@ Start-TheDashboard -HTMLPath "$PSScriptRoot\Reports\Index.html" -UrlPath "https:
             AfterRemoveDoubleSpaces = $true
             AfterUpperChars         = "evotec.com", "test.com"
             AfterSplit              = @{
-                'G P O'     = 'GPO' ;
-                'L D A P'   = 'LDAP' ;
+                'G P O'     = 'GPO'
+                'L D A P'   = 'LDAP'
                 'D H C P'   = 'DHCP'
-                'A D'       = 'AD';
-                'I T R X X' = 'ITRXX' ;
+                'A D'       = 'AD'
+                'I T R X X' = 'ITRXX'
                 'I N S'     = 'INS'
-                'L A P S'   = 'LAPS' ;
+                'L A P S'   = 'LAPS'
                 'K R B G T' = 'KRBGT'
             }
             SplitOn                 = "[_-]"
