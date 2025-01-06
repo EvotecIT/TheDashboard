@@ -4,7 +4,7 @@ Import-Module .\TheDashboard.psd1 -Force
 # This is configuration that should be used for SharePoint
 # Please notice HTMLPath which has ASPX extension, as this is the only one supported by SharePoint
 # Please notice UrlPath which is absolute path to SharePoint site. This is required if you want to use SharePoint with ASPX file as HomePage
-Start-TheDashboard -HTMLPath "$PSScriptRoot\Reports\Index.aspx" -UrlPath "https://evotecpoland.sharepoint.com/sites/TheDashboard/SitePages" -Logo 'https://evotec.xyz/wp-content/uploads/2021/04/Logo-evotec-bb.png' -ShowHTML:$true {
+Start-TheDashboard -HTMLPath "$PSScriptRoot\Reports\Index.aspx" -UrlPath "https://evotecpoland.sharepoint.com/sites/TheDashboardTest/SitePages" -Logo 'https://evotec.xyz/wp-content/uploads/2021/04/Logo-evotec-bb.png' -ShowHTML:$true {
     $Today = Get-Date
     $Forest = Get-ADForest
     # $AllUsersCount = $Forest.Domains | ForEach-Object { (Get-ADObject -LDAPFilter "(objectClass=user)" -Server $_).Count }
