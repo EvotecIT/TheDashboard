@@ -1,0 +1,11 @@
+﻿Ignore/*
+Examples/Logs/*
+Examples/Reports/Reports/
+Examples/Reports/Statistics/*
+Releases/*
+*.html
+*.xlsx
+*.xml
+*.aspx
+ReleasesUnpacked/*
+Artefacts/*
