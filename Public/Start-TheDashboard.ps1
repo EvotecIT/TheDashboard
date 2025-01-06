@@ -31,6 +31,16 @@
     .PARAMETER Replacements
     Replacements that will be used to replace names within TheDashboard.
 
+    .PARAMETER RemoveNotIncluded
+    Removes files that are not included in the menu.
+    This is useful to clean up files that are not displayed, but be careful during testing.
+
+    .PARAMETER DeleteMethod
+    Specifies how files are removed when they are not included in the menu.
+    By default, files are moved to the Recycle Bin.
+    All options are: RemoveItem, DotNetDelete, RecycleBin.
+
+
     .PARAMETER ShowHTML
     Show TheDashboard in browser after generating it.
 
@@ -46,7 +56,7 @@
     .NOTES
     General notes
     #>
-    [cmdletBinding()]
+    [cmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Position = 0)][ScriptBlock] $Elements,
         [Parameter(Position = 1, Mandatory)][alias('FilePath')][string] $HTMLPath,
@@ -54,6 +64,9 @@
         [string] $Logo,
         [System.Collections.IDictionary] $Folders,
         [System.Collections.IDictionary] $Replacements,
+        [switch] $RemoveNotIncluded,
+        [ValidateSet("RemoveItem", "DotNetDelete", "RecycleBin")]
+        [string] $DeleteMethod = "RecycleBin",
         [Uri] $UrlPath,
         [switch] $ShowHTML,
         [switch] $Online,
@@ -139,16 +152,19 @@
     }
     Write-Color -Text '[i]', "[TheDashboard] ", 'Done', ' [Informative] ' -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
 
+    $FilesToKeepOrRemove = Convert-FilesToKeepOrRemove -FilePathsGenerated $FilePathsGenerated -Files $Files -DeleteMethod $DeleteMethod -RemoveNotIncluded:$RemoveNotIncluded.IsPresent -WhatIf:$WhatIfPreference
+
     if ($PassThru) {
         [ordered] @{
-            Folders            = $Folders
-            Extension          = $Extension
-            Files              = $Files
-            MenuBuilder        = $MenuBuilder
-            TopStats           = $TopStats
-            StatisticsPath     = $StatisticsPath
-            Replacements       = $Replacements
-            FilePathsGenerated = $FilePathsGenerated
+            FilesToKeepOrRemove = $FilesToKeepOrRemove
+            Folders             = $Folders
+            Extension           = $Extension
+            Files               = $Files
+            MenuBuilder         = $MenuBuilder
+            TopStats            = $TopStats
+            StatisticsPath      = $StatisticsPath
+            Replacements        = $Replacements
+            FilePathsGenerated  = $FilePathsGenerated
         }
     }
 }
