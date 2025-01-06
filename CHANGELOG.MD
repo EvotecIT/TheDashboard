@@ -1,5 +1,7 @@
-﻿### 0.0.30
+﻿### 0.0.30 - 2025.01.06
 - Added `PassThru` to get the output of `Start-TheDashboard` to be able to use it in other scripts
+- Added ability to cleanup files not in use by the dashboard (it actually deletes the files, be sure you want to do it)
+- Supports `WhatIf` for cleanup of files
 
 ### 0.0.29 - 2024.10.18
 - Add `Title` to the pages for better page distinction
