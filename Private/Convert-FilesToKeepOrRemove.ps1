@@ -9,12 +9,26 @@
     )
     [Array] $FullSummary = @(
         foreach ($File in $FilePathsGenerated) {
-            [PSCustomObject] @{
-                Type    = 'Dashboard'
-                Path    = $File
-                Include = $true
-                Date    = (Get-Item -LiteralPath $File).LastWriteTime
-                Status  = 'Included'
+            try {
+                $FileInfo = Get-Item -LiteralPath $File -ErrorAction Stop
+                $Output = [PSCustomObject] @{
+                    Type    = 'Dashboard'
+                    Path    = $File
+                    Include = $true
+                    Date    = ($FileInfo).LastWriteTime
+                    Status  = 'Included'
+                }
+            } catch {
+                $Output = [PSCustomObject] @{
+                    Type    = 'Dashboard'
+                    Path    = $File
+                    Include = $false
+                    Date    = $null
+                    Status  = 'Included (WhatIf)'
+                }
+            }
+            if ($WhatIfPreference) {
+                $Output.Status = 'Included (WhatIf)'
             }
         }
         foreach ($File in $Files) {
