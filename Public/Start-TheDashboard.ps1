@@ -40,6 +40,10 @@
     By default, files are moved to the Recycle Bin.
     All options are: RemoveItem, DotNetDelete, RecycleBin.
 
+    .PARAMETER TestMode
+    Pretends to generate TheDashboard, but does not actually generate it.
+    Other processes are executed, but no HTML files are created.
+    This is useful for testing along with PassThru parameter, which will return all the data that would be used to generate TheDashboard.
 
     .PARAMETER ShowHTML
     Show TheDashboard in browser after generating it.
@@ -70,12 +74,18 @@
         [Uri] $UrlPath,
         [switch] $ShowHTML,
         [switch] $Online,
-        [switch] $PassThru
+        [switch] $PassThru,
+        [switch] $TestMode
     )
     $Script:Reporting = [ordered] @{}
     $Script:Reporting['Version'] = Get-GitHubVersion -Cmdlet 'Start-TheDashboard' -RepositoryOwner 'evotecit' -RepositoryName 'TheDashboard'
 
     Write-Color '[i]', "[TheDashboard] ", 'Version', ' [Informative] ', $Script:Reporting['Version'] -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
+
+    if ($TestMode) {
+        Write-Color -Text '[i]', "[TheDashboard] ", 'TestMode enabled', ' [Informative] ' -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
+        $WhatIfPreference = $true
+    }
 
     $TopStats = [ordered] @{}
     if (-not $Folders) {
@@ -139,13 +149,13 @@
     # Prepare menu based on files
     $MenuBuilder = Convert-FilesToMenu -Files $Files -Folders $Folders
 
-    $FilePathsGenerated = New-HTMLReport -OutputElements $GageConfiguration -Logo $Logo -MenuBuilder $MenuBuilder -Configuration $Configuration -TopStats $TopStats -Files $Files -ShowHTML:$ShowHTML.IsPresent -HTMLPath $HTMLPath -Online:$Online.IsPresent -Force:$Force.IsPresent -Extension $Extension -UrlPath $UrlPath
+    $FilePathsGenerated = New-HTMLReport -OutputElements $GageConfiguration -Logo $Logo -MenuBuilder $MenuBuilder -Configuration $Configuration -TopStats $TopStats -Files $Files -ShowHTML:$ShowHTML.IsPresent -HTMLPath $HTMLPath -Online:$Online.IsPresent -Force:$Force.IsPresent -Extension $Extension -UrlPath $UrlPath -Pretend:$TestMode.IsPresent
     Remove-DiscardedReports -FilePathsGenerated $FilePathsGenerated -FolderPath $FolderPath -Extension $Extension
 
     # Export statistics to file to create charts later on
     if ($StatisticsPath) {
         try {
-            $TopStats | Export-Clixml -Depth 3 -LiteralPath $StatisticsPath -ErrorAction Stop
+            $TopStats | Export-Clixml -Depth 3 -LiteralPath $StatisticsPath -ErrorAction Stop -WhatIf:$false
         } catch {
             Write-Color -Text '[e]', "[TheDashboard] ", 'Failed to export statistics', ' [Error] ', $_.Exception.Message -Color Yellow, DarkGray, Yellow, DarkGray, Red
         }
