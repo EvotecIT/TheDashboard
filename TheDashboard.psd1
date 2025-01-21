@@ -6,9 +6,9 @@
     CompatiblePSEditions = @('Desktop', 'Core')
     Copyright            = '(c) 2011 - 2025 Przemyslaw Klys @ Evotec. All rights reserved.'
     Description          = 'TheDashboard is a module that allows you to create a dashboard for your HTML reports'
-    FunctionsToExport    = @('New-DashboardFolder', 'New-DashboardGage', 'New-DashboardLimit', 'New-DashboardReplacement', 'Repair-DashboardContent', 'Repair-DashboardExtension', 'Start-TheDashboard')
+    FunctionsToExport    = @('New-DashboardEmailParameter', 'New-DashboardFolder', 'New-DashboardGage', 'New-DashboardLimit', 'New-DashboardNotification', 'New-DashboardReplacement', 'Repair-DashboardContent', 'Repair-DashboardExtension', 'Start-TheDashboard')
     GUID                 = '0aacc01f-5861-407e-b5e9-2bf57256fb04'
-    ModuleVersion        = '0.0.30'
+    ModuleVersion        = '0.0.31'
     PowerShellVersion    = '5.1'
     PrivateData          = @{
         PSData = @{
