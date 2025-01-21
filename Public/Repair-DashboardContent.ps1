@@ -7,10 +7,10 @@
     This function helps to replace content in files with a specific extension in a specific directory with a new content.
 
     .PARAMETER Directory
-    Parameter description
+    Directory where files are located
 
     .PARAMETER ExtensionFrom
-    Parameter description
+    File extension to look for. Default is .aspx
 
     .EXAMPLE
     $SearchString = "_|:|@|#|<-|←|<:|<%|=|=>|⇒|>:"
