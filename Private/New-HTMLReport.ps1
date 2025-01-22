@@ -131,10 +131,14 @@
                                 foreach ($CalendarEntry in $AllReports) {
                                     # The check make sure that report doesn't run over midnight when using +30 minutes. If it runs over midnight it looks bad as it spans over 2 days
                                     # we then remove 30 minutes instead to prevent this
-                                    if ($($CalendarEntry.Date).Day -eq $($($CalendarEntry.Date).AddMinutes(30)).Day) {
-                                        New-CalendarEvent -Title $CalendarEntry.Name -StartDate $CalendarEntry.Date -EndDate $($CalendarEntry.Date).AddMinutes(30) -Url $CalendarEntry.FileName
+                                    if ($CalendarEntry.Include) {
+                                        if ($($CalendarEntry.Date).Day -eq $($($CalendarEntry.Date).AddMinutes(30)).Day) {
+                                            New-CalendarEvent -Title $CalendarEntry.Name -StartDate $CalendarEntry.Date -EndDate $($CalendarEntry.Date).AddMinutes(30) -Url $CalendarEntry.FileName
+                                        } else {
+                                            New-CalendarEvent -Title $CalendarEntry.Name -StartDate $CalendarEntry.Date.AddMinutes(-30) -EndDate $($CalendarEntry.Date) -Url $CalendarEntry.FileName
+                                        }
                                     } else {
-                                        New-CalendarEvent -Title $CalendarEntry.Name -StartDate $CalendarEntry.Date.AddMinutes(-30) -EndDate $($CalendarEntry.Date) -Url $CalendarEntry.FileName
+                                        #Write-Color -Text '[i]', '[HTML ] ', "Skipping report ", $CalendarEntry.Name -Color Yellow, DarkGray, Yellow
                                     }
                                 }
                                 # We don't add history reports to calendar as history reports are only shown in iframe with current report
@@ -167,10 +171,14 @@
                     $FilePathsGenerated.Add($FullPath)  # return filepath for main report
 
                     foreach ($Report in $AllReports) {
-                        $FullPathOther = [io.path]::Combine($PathToSubReports, $Report.FileName)
-                        $Name = $Report.Name + ' - ' + $Report.Date
-                        $FilePathsGenerated.Add($FullPathOther) # return filepath for other reports
-                        New-HTMLReportPage -SubReport -Report $Report -AllReports $AllReports -FilePath $FullPathOther -PathToSubReports $PathToSubReports -Name $Name -HistoryReports $HistoryReports
+                        if ($Report.Include) {
+                            $FullPathOther = [io.path]::Combine($PathToSubReports, $Report.FileName)
+                            $Name = $Report.Name + ' - ' + $Report.Date
+                            $FilePathsGenerated.Add($FullPathOther) # return filepath for other reports
+                            New-HTMLReportPage -SubReport -Report $Report -AllReports $AllReports -FilePath $FullPathOther -PathToSubReports $PathToSubReports -Name $Name -HistoryReports $HistoryReports
+                        } else {
+                            #Write-Color -Text '[i]', '[HTML ] ', "Skipping report ", $Report.Name -Color Yellow, DarkGray, Yellow
+                        }
                     }
                 }
                 Write-Color -Text '[i]', '[HTML ] ', "Ending Menu for ", $Menu -Color Yellow, DarkGray, Yellow, DarkCyan
