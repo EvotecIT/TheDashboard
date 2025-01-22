@@ -3,14 +3,22 @@
     param(
         [string] $StatisticsPath
     )
-    $TopStats = [ordered] @{}
+    $ExportData = [ordered] @{
+        Pages      = [ordered] @{}
+        Statistics = [ordered] @{}
+    }
     if ($StatisticsPath -and (Test-Path -LiteralPath $StatisticsPath)) {
         Write-Color -Text '[i]', "[TheDashboard] ", 'Importing Statistics', ' [Informative] ', $StatisticsPath -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
-        $TopStats = Import-Clixml -LiteralPath $StatisticsPath
+        $ImportedData = Import-Clixml -LiteralPath $StatisticsPath
+        if (-not $ImportedData.Statistics) {
+            $ExportData.Statistics = $ExportData
+        } else {
+            $ExportData = $ImportedData
+        }
     }
     foreach ($E in $GageConfiguration) {
-        $TopStats[$E.Date] = [ordered] @{}
-        $TopStats[$E.Date].Date = $E.Date
+        $ExportData['Statistics'][$E.Date] = [ordered] @{}
+        $ExportData['Statistics'][$E.Date].Date = $E.Date
     }
-    $TopStats
+    $ExportData
 }
