@@ -107,7 +107,7 @@
     $Extension = [io.path]::GetExtension($HTMLPath)
     $FolderPath = [io.path]::GetDirectoryName($HTMLPath)
 
-    $TopStats = Import-DashboardStatistics -StatisticsPath $StatisticsPath
+    $ExportData = Import-DashboardStatistics -StatisticsPath $StatisticsPath
 
     # convert replacements into a single entry
     # this is to make sure user can use different ways of replacing things
@@ -125,18 +125,8 @@
     # Prepare menu based on files
     $MenuBuilder = Convert-FilesToMenu -Files $Files -Folders $Folders
 
-    $FilePathsGenerated = New-HTMLReport -OutputElements $GageConfiguration -Logo $Logo -MenuBuilder $MenuBuilder -Configuration $Configuration -TopStats $TopStats -Files $Files -ShowHTML:$ShowHTML.IsPresent -HTMLPath $HTMLPath -Online:$Online.IsPresent -Force:$Force.IsPresent -Extension $Extension -UrlPath $UrlPath -Pretend:$TestMode.IsPresent
+    $FilePathsGenerated = New-HTMLReport -OutputElements $GageConfiguration -Logo $Logo -MenuBuilder $MenuBuilder -Configuration $Configuration -ExportData $ExportData -Files $Files -ShowHTML:$ShowHTML.IsPresent -HTMLPath $HTMLPath -Online:$Online.IsPresent -Force:$Force.IsPresent -Extension $Extension -UrlPath $UrlPath -Pretend:$TestMode.IsPresent
     Remove-DiscardedReports -FilePathsGenerated $FilePathsGenerated -FolderPath $FolderPath -Extension $Extension
-
-    # Export statistics to file to create charts later on
-    if ($StatisticsPath) {
-        try {
-            $TopStats | Export-Clixml -Depth 3 -LiteralPath $StatisticsPath -ErrorAction Stop -WhatIf:$false
-        } catch {
-            Write-Color -Text '[e]', "[TheDashboard] ", 'Failed to export statistics', ' [Error] ', $_.Exception.Message -Color Yellow, DarkGray, Yellow, DarkGray, Red
-        }
-    }
-    Write-Color -Text '[i]', "[TheDashboard] ", 'Done', ' [Informative] ' -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
 
     $FilesToKeepOrRemove = Convert-FilesToKeepOrRemove -FilePathsGenerated $FilePathsGenerated -Files $Files -DeleteMethod $DeleteMethod -RemoveNotIncluded:$RemoveNotIncluded.IsPresent -WhatIf:$WhatIfPreference
 
@@ -147,10 +137,20 @@
             Extension           = $Extension
             Files               = $Files
             MenuBuilder         = $MenuBuilder
-            TopStats            = $TopStats
+            ExportData          = $ExportData
             StatisticsPath      = $StatisticsPath
             Replacements        = $Replacements
             FilePathsGenerated  = $FilePathsGenerated
         }
     }
+
+    # Export statistics to file to create charts later on
+    if ($StatisticsPath) {
+        try {
+            $ExportData | Export-Clixml -Depth 5 -LiteralPath $StatisticsPath -ErrorAction Stop -WhatIf:$false
+        } catch {
+            Write-Color -Text '[e]', "[TheDashboard] ", 'Failed to export statistics', ' [Error] ', $_.Exception.Message -Color Yellow, DarkGray, Yellow, DarkGray, Red
+        }
+    }
+    Write-Color -Text '[i]', "[TheDashboard] ", 'Done', ' [Informative] ' -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
 }
