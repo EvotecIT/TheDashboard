@@ -6,7 +6,7 @@
         [string] $Extension,
         [System.Collections.IDictionary] $MenuBuilder,
         [System.Collections.IDictionary] $Configuration,
-        [System.Collections.IDictionary] $TopStats,
+        [System.Collections.IDictionary] $ExportData,
         [Array] $Files,
         [string] $HTMLPath,
         [switch] $ShowHTML,
@@ -96,20 +96,20 @@
                 foreach ($E in $OutputElements) {
                     New-HTMLPanel {
                         New-HTMLGage -Label $E.Label -MinValue $E.MinValue -MaxValue $E.MaxValue -Value $E.Value -Counter
-                        $TopStats[$E.Date][$($E.Label)] = $E.Value
+                        $ExportData['Statistics'][$E.Date][$($E.Label)] = $E.Value
                         # New-HTMLText -Text 'Change since last + ', $DifferenceUsers -Color Red -Alignment right -FontSize 20px -SkipParagraph
                     }
                 }
             }
             New-HTMLSection -Invisible {
                 New-HTMLPanel {
-                    $StatisticsKeys = $TopStats.Keys | Sort-Object | Select-Object -Last 50
+                    $StatisticsKeys = $ExportData['Statistics'].Keys | Sort-Object | Select-Object -Last 50
                     [Array] $Dates = foreach ($Day in $StatisticsKeys) {
-                        $TopStats[$Day].Date
+                        $ExportData['Statistics'][$Day].Date
                     }
 
                     foreach ($UserInput in $Dates) {
-                        $TopStats[$Day].$($UserInput.Label) = $UserInput.Value
+                        $ExportData['Statistics'][$Day].$($UserInput.Label) = $UserInput.Value
                     }
                     New-HTMLChart -Title 'Domain Summary' -TitleAlignment center {
                         New-ChartAxisX -Type datetime -Names $Dates
@@ -117,7 +117,7 @@
 
                         foreach ($UserInput in $OutputElements) {
                             $Values = foreach ($Day in $StatisticsKeys) {
-                                $TopStats[$Day].$($UserInput.Label)
+                                $ExportData['Statistics'][$Day].$($UserInput.Label)
                             }
                             New-ChartLine -Name $UserInput.Label -Value $Values
                         }
