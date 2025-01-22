@@ -12,7 +12,7 @@
             $Folder.Url = $Folder.Name
         }
 
-        if ($FolderLimit -and -not $Folder.DisableGlobalLimits) {
+        if ($FolderLimit -and $FolderLimit.Name -and -not $Folder.DisableGlobalLimits) {
             $Folder.LimitsConfiguration[$FolderLimit.Name] = $FolderLimit
         }
         $Folders[$Folder.Name] = $Folder
