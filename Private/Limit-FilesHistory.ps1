@@ -31,9 +31,6 @@
         [System.Collections.IDictionary] $Limits,
         [DateTime] $CurrentDate
     )
-    #if ($Entry.Include -eq $true) {
-    #    return
-    #}
     if ($Limits.IncludeHistory) {
         if ($null -ne $Limits.IncludeHistoryLimit) {
             if ($MenuBuilder[$Entry.Menu][$Entry.Name]['History'].Count -ge $Limits.IncludeHistoryLimit) {
