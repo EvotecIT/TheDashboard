@@ -38,13 +38,13 @@
                 $FullPath = [io.path]::Combine($PathToSubReports, "$($MenuLink)_$PageName$($Extension)")
 
                 $CurrentReport = $MenuBuilder[$Menu][$MenuReport]['Current']
-                [Array] $AllReports = $MenuBuilder[$Menu][$MenuReport]['All']
+                [Array] $FullReports = $MenuBuilder[$Menu][$MenuReport]['Full']
                 [Array] $HistoryReports = $MenuBuilder[$Menu][$MenuReport]['History']
 
                 $Name = $CurrentReport.Name
                 $FilePathsGenerated.Add($FullPath)  # return filepath for main report
 
-                foreach ($Report in $AllReports) {
+                foreach ($Report in $FullReports) {
                     $FullPathOther = [io.path]::Combine($PathToSubReports, $Report.FileName)
                     $Name = $Report.Name + ' - ' + $Report.Date
                     $FilePathsGenerated.Add($FullPathOther) # return filepath for other reports
@@ -127,8 +127,8 @@
                     New-HTMLCalendar {
                         foreach ($Menu in $MenuBuilder.Keys) {
                             foreach ($MenuReport in $MenuBuilder[$Menu].Keys) {
-                                [Array] $AllReports = $MenuBuilder[$Menu][$MenuReport]['All']
-                                foreach ($CalendarEntry in $AllReports) {
+                                [Array] $FullReports = $MenuBuilder[$Menu][$MenuReport]['Full']
+                                foreach ($CalendarEntry in $FullReports) {
                                     # The check make sure that report doesn't run over midnight when using +30 minutes. If it runs over midnight it looks bad as it spans over 2 days
                                     # we then remove 30 minutes instead to prevent this
                                     if ($CalendarEntry.Include) {
@@ -163,19 +163,19 @@
                     $FullPath = [io.path]::Combine($PathToSubReports, "$($MenuLink)_$PageName$($Extension)")
 
                     $CurrentReport = $MenuBuilder[$Menu][$MenuReport]['Current']
-                    [Array] $AllReports = $MenuBuilder[$Menu][$MenuReport]['All']
+                    [Array] $FullReports = $MenuBuilder[$Menu][$MenuReport]['Full']
                     [Array] $HistoryReports = $MenuBuilder[$Menu][$MenuReport]['History']
 
                     $Name = $CurrentReport.Name
-                    New-HTMLReportPage -Report $CurrentReport -AllReports $AllReports -HistoryReports $HistoryReports -FilePath $FullPath -PathToSubReports $PathToSubReports -Name $Name
+                    New-HTMLReportPage -Report $CurrentReport -FullReports $FullReports -HistoryReports $HistoryReports -FilePath $FullPath -PathToSubReports $PathToSubReports -Name $Name
                     $FilePathsGenerated.Add($FullPath)  # return filepath for main report
 
-                    foreach ($Report in $AllReports) {
+                    foreach ($Report in $FullReports) {
                         if ($Report.Include) {
                             $FullPathOther = [io.path]::Combine($PathToSubReports, $Report.FileName)
                             $Name = $Report.Name + ' - ' + $Report.Date
                             $FilePathsGenerated.Add($FullPathOther) # return filepath for other reports
-                            New-HTMLReportPage -SubReport -Report $Report -AllReports $AllReports -FilePath $FullPathOther -PathToSubReports $PathToSubReports -Name $Name -HistoryReports $HistoryReports
+                            New-HTMLReportPage -SubReport -Report $Report -FullReports $FullReports -FilePath $FullPathOther -PathToSubReports $PathToSubReports -Name $Name -HistoryReports $HistoryReports
                         } else {
                             Write-Color -Text '[i]', '[HTML ] ', "Skipping report ", $Report.Name -Color Yellow, DarkGray, Yellow
                         }
