@@ -49,37 +49,49 @@
         }
         # we start creating menu based on files
         if (-not $MenuBuilder[$Entry.Menu][$Entry.Name]) {
+            Write-Verbose -Message "Creating menu for $($Entry.Menu) - $($Entry.Name)"
             $Entry.Include = $true
             $MenuBuilder[$Entry.Menu][$Entry.Name] = @{
                 Current = $Entry
                 All     = [System.Collections.Generic.List[Object]]::new()
                 History = [System.Collections.Generic.List[Object]]::new()
             }
-        } else {
-            if ($MenuBuilder[$Entry.Menu][$Entry.Name]['Current'].Date -lt $Entry.Date) {
-                $Entry.Include = $true
-                $MenuBuilder[$Entry.Menu][$Entry.Name]['Current'] = $Entry
+        }
+        # if ($MenuBuilder[$Entry.Menu][$Entry.Name]['Current'].Date -lt $Entry.Date) {
+        #     #$MenuBuilder[$Entry.Menu][$Entry.Name]['Current'].Include = $false
+        #     $Entry.Include = $true
+        #     $MenuBuilder[$Entry.Menu][$Entry.Name]['Current'] = $Entry
+        # } else {
+        #     if ($null -eq $Limits) {
+        #         $Entry.Include = $true
+        #     }
+        # }
+
+        if ($Entry.Include -ne $true) {
+            if ($Limits.LimitItem) {
+                if ($MenuBuilder[$Entry.Menu][$Entry.Name]['All'].Count -ge $Limits.LimitItem) {
+                    $Entry.Include = $true
+                    # User limited input in standard way, we just add it to history which will be treated differently
+                    Limit-FilesHistory -MenuBuilder $MenuBuilder -Entry $Entry -Limits $Limits -CurrentDate $CurrentDate
+                    continue
+                }
+            } elseif ($Limits.LimitDate) {
+                if ($Entry.Date -lt $Limits.LimitDate) {
+                    $Entry.Include = $true
+                    # User limited input in standard way, we just add it to history which will be treated differently
+                    Limit-FilesHistory -MenuBuilder $MenuBuilder -Entry $Entry -Limits $Limits -CurrentDate $CurrentDate
+                    continue
+                }
+            } elseif ($Limits.LimitDays) {
+                if ($Entry.Date -lt ($CurrentDate).AddDays(-$Limits.LimitDays)) {
+                    $Entry.Include = $true
+                    # User limited input in standard way, we just add it to history which will be treated differently
+                    Limit-FilesHistory -MenuBuilder $MenuBuilder -Entry $Entry -Limits $Limits -CurrentDate $CurrentDate
+                    continue
+                }
             }
         }
-        if ($Limits.LimitItem) {
-            if ($MenuBuilder[$Entry.Menu][$Entry.Name]['All'].Count -ge $Limits.LimitItem) {
-                # User limited input in standard way, we just add it to history which will be treated differently
-                Limit-FilesHistory -MenuBuilder $MenuBuilder -Entry $Entry -Limits $Limits -CurrentDate $CurrentDate
-                #continue
-            }
-        } elseif ($Limits.LimitDate) {
-            if ($Entry.Date -lt $Limits.LimitDate) {
-                # User limited input in standard way, we just add it to history which will be treated differently
-                Limit-FilesHistory -MenuBuilder $MenuBuilder -Entry $Entry -Limits $Limits -CurrentDate $CurrentDate
-                #continue
-            }
-        } elseif ($Limits.LimitDays) {
-            if ($Entry.Date -lt ($CurrentDate).AddDays(-$Limits.LimitDays)) {
-                # User limited input in standard way, we just add it to history which will be treated differently
-                Limit-FilesHistory -MenuBuilder $MenuBuilder -Entry $Entry -Limits $Limits -CurrentDate $CurrentDate
-                #continue
-            }
-        }
+        $Entry.Include = $true
         $MenuBuilder[$Entry.Menu][$Entry.Name]['All'].Add($Entry)
     }
     $MenuBuilder
