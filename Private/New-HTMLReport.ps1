@@ -42,14 +42,12 @@
                 [Array] $HistoryReports = $MenuBuilder[$Menu][$MenuReport]['History']
 
                 $Name = $CurrentReport.Name
-                #New-HTMLReportPage -Report $CurrentReport -AllReports $AllReports -HistoryReports $HistoryReports -FilePath $FullPath -PathToSubReports $PathToSubReports -Name $Name
                 $FilePathsGenerated.Add($FullPath)  # return filepath for main report
 
                 foreach ($Report in $AllReports) {
                     $FullPathOther = [io.path]::Combine($PathToSubReports, $Report.FileName)
                     $Name = $Report.Name + ' - ' + $Report.Date
                     $FilePathsGenerated.Add($FullPathOther) # return filepath for other reports
-                    #New-HTMLReportPage -SubReport -Report $Report -AllReports $AllReports -FilePath $FullPathOther -PathToSubReports $PathToSubReports -Name $Name -HistoryReports $HistoryReports
                 }
             }
             Write-Color -Text '[i]', '[HTML ] ', "Ending Menu for ", $Menu -Color Yellow, DarkGray, Yellow, DarkCyan
@@ -97,7 +95,6 @@
             New-HTMLSection -Invisible {
                 foreach ($E in $OutputElements) {
                     New-HTMLPanel {
-                        #New-HTMLText -Text 'Users' -Color Red -Alignment center -FontSize 20px
                         New-HTMLGage -Label $E.Label -MinValue $E.MinValue -MaxValue $E.MaxValue -Value $E.Value -Counter
                         $TopStats[$E.Date][$($E.Label)] = $E.Value
                         # New-HTMLText -Text 'Change since last + ', $DifferenceUsers -Color Red -Alignment right -FontSize 20px -SkipParagraph
