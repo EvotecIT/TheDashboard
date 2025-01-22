@@ -31,19 +31,25 @@
         [System.Collections.IDictionary] $Limits,
         [DateTime] $CurrentDate
     )
+    #if ($Entry.Include -eq $true) {
+    #    return
+    #}
     if ($Limits.IncludeHistory) {
         if ($null -ne $Limits.IncludeHistoryLimit) {
             if ($MenuBuilder[$Entry.Menu][$Entry.Name]['History'].Count -ge $Limits.IncludeHistoryLimit) {
+                $Entry.Include = $false
                 return
             }
         }
         if ($null -ne $Limits.IncludeHistoryLimitDate) {
             if ($Entry.Date -lt $Limits.IncludeHistoryLimitDate) {
+                $Entry.Include = $false
                 return
             }
         }
         if ($null -ne $Limits.IncludeHistoryLimitDays) {
             if ($Entry.Date -lt ($CurrentDate).AddDays(-$Limits.IncludeHistoryLimitDays)) {
+                $Entry.Include = $false
                 return
             }
         }
