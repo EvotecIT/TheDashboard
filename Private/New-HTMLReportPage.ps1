@@ -2,7 +2,7 @@
     [cmdletBinding()]
     param(
         [PSCustomObject] $Report,
-        [Array] $AllReports,
+        [Array] $FullReports,
         [Array] $HistoryReports,
         [string] $FilePath,
         [string] $PathToSubReports,
@@ -21,19 +21,19 @@
                     New-HTMLText -Text "Report name: ", $CurrentReport.Name -FontSize 12px
                     New-HTMLText -Text "Report date: ", $CurrentReport.Date -FontSize 12px
 
-                    New-HTMLText -Text "All reports in this catagory: ", $AllReports.Count -FontSize 12px
+                    New-HTMLText -Text "All reports in this catagory: ", $FullReports.Count -FontSize 12px
                     New-HTMLList {
-                        if ($AllReports.Count -eq 1) {
-                            New-HTMLListItem -Text "Date in report: ", $AllReports[0].Date -FontSize 12px -FontWeight normal, bold -TextDecoration none, underline
+                        if ($FullReports.Count -eq 1) {
+                            New-HTMLListItem -Text "Date in report: ", $FullReports[0].Date -FontSize 12px -FontWeight normal, bold -TextDecoration none, underline
                         } else {
-                            New-HTMLListItem -Text "Date ranges from: ", $AllReports[$AllReports.Count - 1].Date, " to ", $AllReports[0].Date -FontSize 12px -FontWeight normal, bold, normal, bold -TextDecoration none, underline, none, underline
+                            New-HTMLListItem -Text "Date ranges from: ", $FullReports[$FullReports.Count - 1].Date, " to ", $FullReports[0].Date -FontSize 12px -FontWeight normal, bold, normal, bold -TextDecoration none, underline, none, underline
                         }
                     }
                     if ($HistoryReports.Count) {
                         New-HTMLText -Text "History reports in this catagory: ", $HistoryReports.Count -FontSize 12px
                         New-HTMLList {
                             if ($HistoryReports.Count -gt 1) {
-                                New-HTMLListItem -Text "Date ranges from: ", $HistoryReports[$AllReports.Count - 1].Date, " to ", $HistoryReports[0].Date -FontSize 12px -FontWeight normal, bold, normal, bold -TextDecoration none, underline, none, underline
+                                New-HTMLListItem -Text "Date ranges from: ", $HistoryReports[$FullReports.Count - 1].Date, " to ", $HistoryReports[0].Date -FontSize 12px -FontWeight normal, bold, normal, bold -TextDecoration none, underline, none, underline
                             } else {
                                 New-HTMLListItem -Text "Date in report: ", $HistoryReports[0].Date -FontSize 12px -FontWeight normal, bold -TextDecoration none, underline
                             }
@@ -43,7 +43,7 @@
             }
             New-HTMLSection -Invisible {
                 New-HTMLCalendar {
-                    foreach ($CalendarEntry in $AllReports) {
+                    foreach ($CalendarEntry in $FullReports) {
                         # The check make sure that report doesn't run over midnight when using +30 minutes. If it runs over midnight it looks bad as it spans over 2 days
                         # we then remove 30 minutes instead to prevent this
                         if ($($CalendarEntry.Date).Day -eq $($($CalendarEntry.Date).AddMinutes(30)).Day) {
