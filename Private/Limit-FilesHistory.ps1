@@ -32,15 +32,17 @@
         [DateTime] $CurrentDate
     )
     if ($Limits.IncludeHistory) {
-        if ($Limits.IncludeHistoryLimit) {
+        if ($null -ne $Limits.IncludeHistoryLimit) {
             if ($MenuBuilder[$Entry.Menu][$Entry.Name]['History'].Count -ge $Limits.IncludeHistoryLimit) {
                 return
             }
-        } elseif ($Limits.IncludeHistoryLimitDate) {
+        }
+        if ($null -ne $Limits.IncludeHistoryLimitDate) {
             if ($Entry.Date -lt $Limits.IncludeHistoryLimitDate) {
                 return
             }
-        } elseif ($Limits.IncludeHistoryLimitDays) {
+        }
+        if ($null -ne $Limits.IncludeHistoryLimitDays) {
             if ($Entry.Date -lt ($CurrentDate).AddDays(-$Limits.IncludeHistoryLimitDays)) {
                 return
             }
