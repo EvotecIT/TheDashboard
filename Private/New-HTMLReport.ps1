@@ -177,7 +177,7 @@
                             $FilePathsGenerated.Add($FullPathOther) # return filepath for other reports
                             New-HTMLReportPage -SubReport -Report $Report -AllReports $AllReports -FilePath $FullPathOther -PathToSubReports $PathToSubReports -Name $Name -HistoryReports $HistoryReports
                         } else {
-                            #Write-Color -Text '[i]', '[HTML ] ', "Skipping report ", $Report.Name -Color Yellow, DarkGray, Yellow
+                            Write-Color -Text '[i]', '[HTML ] ', "Skipping report ", $Report.Name -Color Yellow, DarkGray, Yellow
                         }
                     }
                 }
