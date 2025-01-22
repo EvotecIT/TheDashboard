@@ -30,6 +30,7 @@
             if ($WhatIfPreference) {
                 $Output.Status = 'Included (WhatIf)'
             }
+            $Output
         }
         foreach ($File in $Files) {
             [PSCustomObject] @{
