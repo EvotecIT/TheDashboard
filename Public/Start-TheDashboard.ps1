@@ -137,12 +137,14 @@
             Extension           = $Extension
             Files               = $Files
             MenuBuilder         = $MenuBuilder
-            ExportData          = $ExportData
+            Statistics          = $ExportData.Statistics
             StatisticsPath      = $StatisticsPath
             Replacements        = $Replacements
             FilePathsGenerated  = $FilePathsGenerated
         }
     }
+
+    $ExportData['MenuBuilder'] = $MenuBuilder
 
     # Export statistics to file to create charts later on
     if ($StatisticsPath) {
