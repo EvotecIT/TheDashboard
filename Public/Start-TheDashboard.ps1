@@ -86,52 +86,28 @@
         Write-Color -Text '[i]', "[TheDashboard] ", 'TestMode enabled', ' [Informative] ' -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
         $WhatIfPreference = $true
     }
-
-    $TopStats = [ordered] @{}
     if (-not $Folders) {
         $Folders = [ordered] @{}
     }
     $GageConfiguration = [System.Collections.Generic.List[System.Collections.IDictionary]]::new()
     $FoldersConfiguration = [System.Collections.Generic.List[System.Collections.IDictionary]]::new()
     $ReplacementConfiguration = [System.Collections.Generic.List[System.Collections.IDictionary]]::new()
-    if ($Elements) {
-        $TimeLogElements = Start-TimeLog
-        Write-Color -Text '[i]', "[TheDashboard] ", 'Executing nested elements (data gathering/conversions)', ' [Informative] ' -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
+    $FolderLimit = [ordered] @{}
 
-        try {
-            $OutputElements = & $Elements
-        } catch {
-            Write-Color -Text '[e]', "[TheDashboard] ", 'Failed to execute nested elements', ' [Error] ', $_.Exception.Message -Color Yellow, DarkGray, Yellow, DarkGray, Red
-            return
-        }
-        foreach ($E in $OutputElements) {
-            if ($E.Type -eq 'Gage') {
-                $GageConfiguration.Add($E.Settings)
-            } elseif ($E.Type -eq 'Folder') {
-                $FoldersConfiguration.Add($E.Settings)
-            } elseif ($E.Type -eq 'Replacement') {
-                $ReplacementConfiguration.Add($E.Settings)
-            } elseif ($E.Type -eq 'FolderLimit') {
-                $FolderLimit = $E.Settings
-            }
-        }
-
-        $TimeLogElements = Stop-TimeLog -Time $TimeLogElements -Option OneLiner
-        Write-Color -Text '[i]', "[TheDashboard] ", 'Executing nested elements (data gathering/conversions)', ' [Time to execute: ', $TimeLogElements, ']' -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
+    $convertNestedElementsSplat = @{
+        Elements                 = $Elements
+        GageConfiguration        = $GageConfiguration
+        FoldersConfiguration     = $FoldersConfiguration
+        ReplacementConfiguration = $ReplacementConfiguration
+        FolderLimit              = $FolderLimit
     }
 
-    if ($StatisticsPath -and (Test-Path -LiteralPath $StatisticsPath)) {
-        Write-Color -Text '[i]', "[TheDashboard] ", 'Importing Statistics', ' [Informative] ', $StatisticsPath -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
-        $TopStats = Import-Clixml -LiteralPath $StatisticsPath
-    }
+    Convert-NestedElements @convertNestedElementsSplat
 
     $Extension = [io.path]::GetExtension($HTMLPath)
     $FolderPath = [io.path]::GetDirectoryName($HTMLPath)
 
-    foreach ($E in $GageConfiguration) {
-        $TopStats[$E.Date] = [ordered] @{}
-        $TopStats[$E.Date].Date = $E.Date
-    }
+    $TopStats = Import-DashboardStatistics -StatisticsPath $StatisticsPath
 
     # convert replacements into a single entry
     # this is to make sure user can use different ways of replacing things
