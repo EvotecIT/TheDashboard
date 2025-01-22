@@ -4,14 +4,14 @@
         [string] $StatisticsPath
     )
     $ExportData = [ordered] @{
-        Pages      = [ordered] @{}
-        Statistics = [ordered] @{}
+        MenuBuilder = [ordered] @{}
+        Statistics  = [ordered] @{}
     }
     if ($StatisticsPath -and (Test-Path -LiteralPath $StatisticsPath)) {
         Write-Color -Text '[i]', "[TheDashboard] ", 'Importing Statistics', ' [Informative] ', $StatisticsPath -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
         $ImportedData = Import-Clixml -LiteralPath $StatisticsPath
         if (-not $ImportedData.Statistics) {
-            $ExportData.Statistics = $ExportData
+            $ExportData.Statistics = $ImportedData
         } else {
             $ExportData = $ImportedData
         }
