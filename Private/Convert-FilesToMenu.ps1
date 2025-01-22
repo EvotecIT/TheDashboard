@@ -65,19 +65,19 @@
             if ($MenuBuilder[$Entry.Menu][$Entry.Name]['All'].Count -ge $Limits.LimitItem) {
                 # User limited input in standard way, we just add it to history which will be treated differently
                 Limit-FilesHistory -MenuBuilder $MenuBuilder -Entry $Entry -Limits $Limits -CurrentDate $CurrentDate
-                continue
+                #continue
             }
         } elseif ($Limits.LimitDate) {
             if ($Entry.Date -lt $Limits.LimitDate) {
                 # User limited input in standard way, we just add it to history which will be treated differently
                 Limit-FilesHistory -MenuBuilder $MenuBuilder -Entry $Entry -Limits $Limits -CurrentDate $CurrentDate
-                continue
+                #continue
             }
         } elseif ($Limits.LimitDays) {
             if ($Entry.Date -lt ($CurrentDate).AddDays(-$Limits.LimitDays)) {
                 # User limited input in standard way, we just add it to history which will be treated differently
                 Limit-FilesHistory -MenuBuilder $MenuBuilder -Entry $Entry -Limits $Limits -CurrentDate $CurrentDate
-                continue
+                #continue
             }
         }
         $MenuBuilder[$Entry.Menu][$Entry.Name]['All'].Add($Entry)
