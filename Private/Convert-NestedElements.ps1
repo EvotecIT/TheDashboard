@@ -26,7 +26,9 @@
             } elseif ($E.Type -eq 'Replacement') {
                 $ReplacementConfiguration.Add($E.Settings)
             } elseif ($E.Type -eq 'FolderLimit') {
-                $FolderLimit = $E.Settings
+                foreach ($Setting in $E.Settings.Keys) {
+                    $FolderLimit[$Setting] = $E.Settings[$Setting]
+                }
             }
         }
 
