@@ -123,7 +123,7 @@
     $Files = Convert-FilesToMenuData -Folders $Folders -Replacements $Replacements -Extension $Extension
 
     # Prepare menu based on files
-    $MenuBuilder = Convert-FilesToMenu -Files $Files -Folders $Folders
+    $MenuBuilder = Convert-FilesToMenu -Files $Files -Folders $Folders -ExportData $ExportData
 
     $FilePathsGenerated = New-HTMLReport -OutputElements $GageConfiguration -Logo $Logo -MenuBuilder $MenuBuilder -Configuration $Configuration -ExportData $ExportData -Files $Files -ShowHTML:$ShowHTML.IsPresent -HTMLPath $HTMLPath -Online:$Online.IsPresent -Force:$Force.IsPresent -Extension $Extension -UrlPath $UrlPath -Pretend:$TestMode.IsPresent
     Remove-DiscardedReports -FilePathsGenerated $FilePathsGenerated -FolderPath $FolderPath -Extension $Extension
