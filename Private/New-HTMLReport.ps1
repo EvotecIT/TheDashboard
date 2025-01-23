@@ -137,8 +137,6 @@
                                         } else {
                                             New-CalendarEvent -Title $CalendarEntry.Name -StartDate $CalendarEntry.Date.AddMinutes(-30) -EndDate $($CalendarEntry.Date) -Url $CalendarEntry.FileName
                                         }
-                                    } else {
-                                        #Write-Color -Text '[i]', '[HTML ] ', "Skipping report ", $CalendarEntry.Name -Color Yellow, DarkGray, Yellow
                                     }
                                 }
                                 # We don't add history reports to calendar as history reports are only shown in iframe with current report
@@ -167,7 +165,11 @@
                     [Array] $HistoryReports = $MenuBuilder[$Menu][$MenuReport]['History']
 
                     $Name = $CurrentReport.Name
-                    New-HTMLReportPage -Report $CurrentReport -FullReports $FullReports -HistoryReports $HistoryReports -FilePath $FullPath -PathToSubReports $PathToSubReports -Name $Name
+                    if (-not $CurrentReport.SkipGeneration) {
+                        New-HTMLReportPage -Report $CurrentReport -FullReports $FullReports -HistoryReports $HistoryReports -FilePath $FullPath -PathToSubReports $PathToSubReports -Name $Name
+                    } else {
+                        Write-Color -Text '[i]', '[HTML ] ', "Skipping generation of ", $FullPath, ". generation not required..." -Color Yellow, DarkGray, Yellow
+                    }
                     $FilePathsGenerated.Add($FullPath)  # return filepath for main report
 
                     foreach ($Report in $FullReports) {
@@ -175,9 +177,11 @@
                             $FullPathOther = [io.path]::Combine($PathToSubReports, $Report.FileName)
                             $Name = $Report.Name + ' - ' + $Report.Date
                             $FilePathsGenerated.Add($FullPathOther) # return filepath for other reports
-                            New-HTMLReportPage -SubReport -Report $Report -FullReports $FullReports -FilePath $FullPathOther -PathToSubReports $PathToSubReports -Name $Name -HistoryReports $HistoryReports
-                        } else {
-                            Write-Color -Text '[i]', '[HTML ] ', "Skipping report ", $Report.Name -Color Yellow, DarkGray, Yellow
+                            if (-not $Report.SkipGeneration) {
+                                New-HTMLReportPage -SubReport -Report $Report -FullReports $FullReports -FilePath $FullPathOther -PathToSubReports $PathToSubReports -Name $Name -HistoryReports $HistoryReports
+                            } else {
+                                Write-Color -Text '[i]', '[HTML ] ', "Skipping generation of ", $FullPathOther, ". generation not required..." -Color Yellow, DarkGray, Yellow
+                            }
                         }
                     }
                 }
