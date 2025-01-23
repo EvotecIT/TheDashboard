@@ -21,7 +21,8 @@
     [CmdletBinding()]
     param(
         [System.Collections.IDictionary] $Folders,
-        [Array] $Files
+        [Array] $Files,
+        [System.Collections.IDictionary] $ExportData
     )
     $CurrentDate = Get-Date
     # Prepare menu based on files
@@ -82,6 +83,65 @@
         }
         $Entry.Include = $true
         $MenuBuilder[$Entry.Menu][$Entry.Name]['Full'].Add($Entry)
+    }
+
+    # Lets compare if we need to regenerate the menu, as it's time consuming and potentially not needed, to reupload all those files
+    if ($ExportData.MenuBuilder.Keys.Count -eq 0) {
+        # We need to regenerate the menu fully, as this is first time we generated menu
+        return $MenuBuilder
+    }
+    if ($MenuBuilder.Keys -and $ExportData.MenuBuilder.Keys -and $MenuBuilder.Keys.Count -ne $ExportData.MenuBuilder.Keys.Count) {
+        # We need to regenerate the menu fully, as things don't match
+        return $MenuBuilder
+    }
+    $Comparison = Compare-Object -ReferenceObject $MenuBuilder.Keys -DifferenceObject $ExportData.MenuBuilder.Keys
+    if ($Comparison) {
+        # We need to regenerate the menu fully, as things are different
+        return $MenuBuilder
+    }
+
+
+    foreach ($Section in $MenuBuilder.Keys) {
+        if ($ExportData.MenuBuilder[$Section].Count -ne $MenuBuilder[$Section].Count) {
+            # We need to regenerate the menu fully, as things are different on section level
+            return $MenuBuilder
+        }
+        $Comparison = Compare-Object -ReferenceObject $MenuBuilder[$Section].Keys -DifferenceObject $ExportData.MenuBuilder[$Section].Keys
+        if ($Comparison) {
+            # We need to regenerate the menu fully, as things are different on section level
+            return $MenuBuilder
+        }
+    }
+
+    foreach ($Section in $MenuBuilder.Keys) {
+        foreach ($Name in $MenuBuilder[$Section].Keys) {
+            $MenuData = $MenuBuilder[$Section][$Name]
+            $MenuDataFromImport = $ExportData.MenuBuilder[$Section][$Name]
+            #$MenuData
+
+            $RegenerateNotRequired = $true
+            $Comparison = Compare-Object -ReferenceObject $MenuData.Current -DifferenceObject $MenuDataFromImport.Current -Property Date, Name, Href
+            if ($Comparison) {
+                $RegenerateNotRequired = $false
+            }
+            $Comparison = Compare-Object -ReferenceObject $MenuData.Full -DifferenceObject $MenuDataFromImport.Full -Property Date, Name, Href
+            if ($Comparison) {
+                $RegenerateNotRequired = $false
+            }
+            $Comparison = Compare-Object -ReferenceObject $MenuData.History -DifferenceObject $MenuDataFromImport.History -Property Date, Name, Href
+            if ($Comparison) {
+                $RegenerateNotRequired = $false
+            }
+            if ($RegenerateNotRequired -eq $true) {
+                $MenuData.Current.SkipGeneration = $true
+                foreach ($Entry in $MenuData.Full) {
+                    $Entry.SkipGeneration = $true
+                }
+                foreach ($Entry in $MenuData.History) {
+                    $Entry.SkipGeneration = $true
+                }
+            }
+        }
     }
     $MenuBuilder
 }
