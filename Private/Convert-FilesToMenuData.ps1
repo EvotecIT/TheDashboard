@@ -110,17 +110,18 @@
             }
             if ($Name) {
                 [PSCustomObject] @{
-                    Name     = $Name
-                    #NameDate = $NameDate
-                    Href     = $Href
-                    FileName = "$($Folder.Url)_$($File.Name)"
-                    Menu     = $FolderName
-                    MenuLink = $Folder.Url
-                    Date     = $File.LastWriteTime
+                    Name           = $Name
+                    Href           = $Href
+                    FileName       = "$($Folder.Url)_$($File.Name)"
+                    Menu           = $FolderName
+                    MenuLink       = $Folder.Url
+                    Date           = $File.LastWriteTime
                     # Useful for SharePoint upload capabilities
-                    FullPath = $File.FullName
+                    FullPath       = $File.FullName
                     # Include is used to determine if file should be included to copy/remove
-                    Include  = $false
+                    Include        = $false
+                    # SkipGeneration is used to determine if file for Dashboard should be regenerated or not
+                    SkipGeneration = $false
                 }
             } else {
                 Write-Color -Text "[e]", "[TheDashboard] ", "Creating Menu ", "[error] ", "Couldn't create menu item for $($File.FullName). Problem with $Type" -Color Red, DarkGray, Red, DarkGray, Red
