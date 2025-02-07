@@ -39,7 +39,7 @@
     #>
     [CmdletBinding()]
     param(
-        [string] $Name = '*',
+        [string] $Name,
         [nullable[int]] $LimitItem,
         [nullable[DateTime]] $LimitDate,
         [nullable[int]] $LimitDays,
@@ -48,6 +48,11 @@
         [nullable[int]] $IncludeHistoryLimitDays,
         [nullable[int]] $IncludeHistoryLimit
     )
+
+    if (-not $Name) {
+        $Name = '*'
+    }
+
     if ($IncludeHistoryLimitDate -or $IncludeHistoryLimitDays -or $IncludeHistoryLimit) {
         $IncludeHistory = $true
     }
