@@ -1,4 +1,7 @@
-﻿### 0.0.33 - 2025.01.22
+﻿### 0.0.34 - 2025.01.24
+- Added ability to log things
+
+### 0.0.33 - 2025.01.22
 - Improves dashboard logic for excluding files
 
 ### 0.0.32 - 2025.01.22
