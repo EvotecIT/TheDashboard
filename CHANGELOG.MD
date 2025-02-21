@@ -1,4 +1,7 @@
-﻿### 0.0.34 - 2025.01.24
+﻿### 0.0.35 - 2025.02.21
+- Add ability to force regeneration
+
+### 0.0.34 - 2025.01.24
 - Added ability to log things
 
 ### 0.0.33 - 2025.01.22
