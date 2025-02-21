@@ -68,6 +68,9 @@
     .PARAMETER LogTimeFormat
     Time format to use in log file. Default "yyyy-MM-dd HH:mm:ss"
 
+    .PARAMETER Force
+    Forces the script to regenerate existing files regardless if they need to be updated or not.
+
     .EXAMPLE
     An example
 
@@ -93,7 +96,8 @@
         [string] $LogPath,
         [int] $LogMaximum,
         [switch] $LogShowTime,
-        [string] $LogTimeFormat
+        [string] $LogTimeFormat,
+        [switch] $Force
     )
     $Script:Reporting = [ordered] @{}
     $Script:Reporting['Version'] = Get-GitHubVersion -Cmdlet 'Start-TheDashboard' -RepositoryOwner 'evotecit' -RepositoryName 'TheDashboard'
@@ -143,7 +147,7 @@
     $Files = Convert-FilesToMenuData -Folders $Folders -Replacements $Replacements -Extension $Extension
 
     # Prepare menu based on files
-    $MenuBuilder = Convert-FilesToMenu -Files $Files -Folders $Folders -ExportData $ExportData
+    $MenuBuilder = Convert-FilesToMenu -Files $Files -Folders $Folders -ExportData $ExportData -Force:$Force.IsPresent
 
     $FilePathsGenerated = New-HTMLReport -OutputElements $GageConfiguration -Logo $Logo -MenuBuilder $MenuBuilder -Configuration $Configuration -ExportData $ExportData -Files $Files -ShowHTML:$ShowHTML.IsPresent -HTMLPath $HTMLPath -Online:$Online.IsPresent -Force:$Force.IsPresent -Extension $Extension -UrlPath $UrlPath -Pretend:$TestMode.IsPresent
     Remove-DiscardedReports -FilePathsGenerated $FilePathsGenerated -FolderPath $FolderPath -Extension $Extension
