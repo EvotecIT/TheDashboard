@@ -12,6 +12,12 @@
     .PARAMETER Files
     Array of file data, each containing attributes such as Date, Menu, and Name.
 
+    .PARAMETER ExportData
+    Dictionary containing exported data from previous runs.
+
+    .PARAMETER Force
+    Forces the regeneration of the menu.
+
     .EXAMPLE
     Convert-FilesToMenu -Folders $Folders -Files $FileList
 
@@ -22,7 +28,8 @@
     param(
         [System.Collections.IDictionary] $Folders,
         [Array] $Files,
-        [System.Collections.IDictionary] $ExportData
+        [System.Collections.IDictionary] $ExportData,
+        [switch] $Force
     )
     $CurrentDate = Get-Date
     # Prepare menu based on files
@@ -83,6 +90,10 @@
         }
         $Entry.Include = $true
         $MenuBuilder[$Entry.Menu][$Entry.Name]['Full'].Add($Entry)
+    }
+
+    if ($Force) {
+        return $MenuBuilder
     }
 
     # Lets compare if we need to regenerate the menu, as it's time consuming and potentially not needed, to reupload all those files
