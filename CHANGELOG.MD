@@ -1,4 +1,7 @@
-﻿### 0.0.35 - 2025.02.21
+﻿### 0.0.36 - 2025.03.05
+- Improve dashboard logic for menu generation and added some docs around it
+
+### 0.0.35 - 2025.02.21
 - Add ability to force regeneration
 
 ### 0.0.34 - 2025.01.24
