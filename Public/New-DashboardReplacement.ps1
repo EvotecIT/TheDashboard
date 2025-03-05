@@ -71,7 +71,6 @@
     - This works fine for most cases, but sometimes we need to do additional replacements, for example 'GPO' becomes 'G P O', 'PingCastle' becomes 'Ping Castle'
     - We then do AfterSplit replacements, for example replacing 'G P O' with 'GPO' or 'Ping Castle' back to 'PingCastle'
 
-
     #>
     [alias('New-TheDashboardReplacement')]
     [CmdletBinding()]
