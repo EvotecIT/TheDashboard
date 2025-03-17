@@ -5,6 +5,9 @@
         [Array] $FoldersConfiguration,
         [System.Collections.IDictionary]$FolderLimit
     )
+
+    Write-Color -Text '[i]', "[TheDashboard] ", 'Setting Folder Configuration', ' [Informative] ' -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
+
     foreach ($Folder in $FoldersConfiguration) {
         if (-not $Folder.Name -and $Folder.Url) {
             $Folder.Name = $Folder.Url
