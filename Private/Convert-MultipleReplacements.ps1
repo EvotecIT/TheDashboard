@@ -4,6 +4,8 @@
         [System.Collections.IDictionary] $Replacements,
         [Array] $ReplacementConfiguration
     )
+    Write-Color -Text '[i]', "[TheDashboard] ", 'Converting Multiple Replacements', ' [Informative] ' -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
+
     # otherwise try to build the replacement configuration
     if (-not $Replacements) {
         $ReplacementSetting = [ordered] @{
