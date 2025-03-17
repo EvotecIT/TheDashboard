@@ -193,6 +193,6 @@
             DisableGlobalLimits = $DisableGlobalLimits.IsPresent
         }
     }
-    Remove-EmptyValue -Hashtable $Folder -Recursive
+    Remove-EmptyValue -Hashtable $Folder -Recursive -ExcludeParameter 'LimitsConfiguration', 'Replacements'
     $Folder
 }
