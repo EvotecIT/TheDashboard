@@ -1,4 +1,8 @@
-﻿### 0.0.38 - 2025.03.17
+﻿### 0.0.39 - 2025.03.17
+- Fix issues around removing empty properties
+- Added additional logging
+
+### 0.0.38 - 2025.03.17
 - Fix issues around removing empty properties
 
 ### 0.0.37 - 2025.03.17
