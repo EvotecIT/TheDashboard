@@ -1,4 +1,7 @@
-﻿### 0.0.39 - 2025.03.17
+﻿### 0.0.40 - 2025.06.11
+- Added ability to link logo or use home link
+
+### 0.0.39 - 2025.03.17
 - Fix issues around removing empty properties
 - Added additional logging
 
