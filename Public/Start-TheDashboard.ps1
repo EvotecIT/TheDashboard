@@ -19,6 +19,12 @@
     .PARAMETER Logo
     Path to logo that will be used in the header.
 
+    .PARAMETER LogoLink
+    Link to logo that will be used in the header, when logo is clicked.
+
+    .PARAMETER LogoLinkHome
+    If set, the logo will be a link to the home page. Default $false.
+
     .PARAMETER Folders
     Folders that will be used to generate TheDashboard.
     Can co-exist with Elements parameter, and configuration using both will be merged.
@@ -83,6 +89,8 @@
         [Parameter(Position = 1, Mandatory)][alias('FilePath')][string] $HTMLPath,
         [string] $StatisticsPath,
         [string] $Logo,
+        [string] $LogoLink,
+        [switch] $LogoLinkHome,
         [System.Collections.IDictionary] $Folders,
         [System.Collections.IDictionary] $Replacements,
         [switch] $RemoveNotIncluded,
@@ -149,7 +157,25 @@
     # Prepare menu based on files
     $MenuBuilder = Convert-FilesToMenu -Files $Files -Folders $Folders -ExportData $ExportData -Force:$Force.IsPresent
 
-    $FilePathsGenerated = New-HTMLReport -OutputElements $GageConfiguration -Logo $Logo -MenuBuilder $MenuBuilder -Configuration $Configuration -ExportData $ExportData -Files $Files -ShowHTML:$ShowHTML.IsPresent -HTMLPath $HTMLPath -Online:$Online.IsPresent -Force:$Force.IsPresent -Extension $Extension -UrlPath $UrlPath -Pretend:$TestMode.IsPresent
+    $newHTMLReportSplat = @{
+        OutputElements = $GageConfiguration
+        Logo           = $Logo
+        LogoLink       = $LogoLink
+        LogoLinkHome   = $LogoLinkHome.IsPresent
+        MenuBuilder    = $MenuBuilder
+        Configuration  = $Configuration
+        ExportData     = $ExportData
+        Files          = $Files
+        ShowHTML       = $ShowHTML.IsPresent
+        HTMLPath       = $HTMLPath
+        Online         = $Online.IsPresent
+        Force          = $Force.IsPresent
+        Extension      = $Extension
+        UrlPath        = $UrlPath
+        Pretend        = $TestMode.IsPresent
+    }
+
+    $FilePathsGenerated = New-HTMLReport @newHTMLReportSplat
     Remove-DiscardedReports -FilePathsGenerated $FilePathsGenerated -FolderPath $FolderPath -Extension $Extension
 
     $FilesToKeepOrRemove = Convert-FilesToKeepOrRemove -FilePathsGenerated $FilePathsGenerated -Files $Files -DeleteMethod $DeleteMethod -RemoveNotIncluded:$RemoveNotIncluded.IsPresent -WhatIf:$WhatIfPreference

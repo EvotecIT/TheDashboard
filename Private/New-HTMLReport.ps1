@@ -3,6 +3,8 @@
     param(
         [Array] $OutputElements,
         [string] $Logo,
+        [string] $LogoLink,
+        [switch] $LogoLinkHome,
         [string] $Extension,
         [System.Collections.IDictionary] $MenuBuilder,
         [System.Collections.IDictionary] $Configuration,
@@ -57,6 +59,8 @@
         New-HTML {
             $newHTMLNavTopSplat = @{
                 Logo            = $Logo
+                LogoLink        = $LogoLink
+                LogoLinkHome    = $LogoLinkHome.IsPresent
                 MenuItemsWidth  = '250px'
                 NavigationLinks = {
                     foreach ($Menu in $MenuBuilder.Keys) {
