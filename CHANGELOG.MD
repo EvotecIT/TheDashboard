@@ -1,4 +1,7 @@
-﻿### 0.0.40 - 2025.06.11
+﻿### 0.0.41 - 2025.07.08
+- Improved ability to collapse for better view in reports
+
+### 0.0.40 - 2025.06.11
 - Added ability to link logo or use home link
 
 ### 0.0.39 - 2025.03.17
