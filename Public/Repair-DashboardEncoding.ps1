@@ -9,7 +9,7 @@
     - Ensuring consistent encoding across all report files
     - Fixing emoji display issues caused by encoding mismatches
 
-    The function uses the encoding detection and conversion capabilities from PSSharedGoods module.
+    The function uses built-in encoding detection and conversion capabilities.
 
     .PARAMETER Path
     The path to the dashboard reports directory or a specific file to repair.
@@ -63,8 +63,8 @@
     Repair encoding for all HTML-type files and return detailed results.
 
     .NOTES
-    This function requires the PSSharedGoods module for encoding detection and conversion.
     UTF-8 without BOM is recommended for web content to avoid display issues with emojis and special characters.
+    This function uses encoding detection and conversion capabilities that are built into TheDashboard module.
     #>
     [CmdletBinding(SupportsShouldProcess)]
     param(
@@ -91,9 +91,9 @@
     )
 
     begin {
-        # Check if PSSharedGoods module is available
+        # Check if Get-FileEncoding is available (should be merged from PSSharedGoods)
         if (-not (Get-Command -Name Get-FileEncoding -ErrorAction SilentlyContinue)) {
-            throw "This function requires the PSSharedGoods module. Please install it using: Install-Module PSSharedGoods"
+            throw "Get-FileEncoding command not found. This should be included in TheDashboard module. Please ensure you have the latest version installed."
         }
 
         Write-Color -Text '[i]', '[Encoding] ', 'Starting encoding repair process' -Color Yellow, DarkGray, Yellow

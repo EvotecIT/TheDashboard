@@ -1,4 +1,9 @@
-﻿### 0.0.41 - 2025.07.08
+﻿### 0.0.42 - 2025.07.31
+- Added `Repair-DashboardEncoding` function to fix UTF-8 BOM issues that cause emoji display problems
+- Function can detect and convert files from UTF-8 with BOM to UTF-8 without BOM for better web compatibility
+- Includes emoji detection and detailed reporting capabilities
+
+### 0.0.41 - 2025.07.08
 - Improved ability to collapse for better view in reports
 
 ### 0.0.40 - 2025.06.11

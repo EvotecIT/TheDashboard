@@ -9,3 +9,5 @@ Releases/*
 *.aspx
 ReleasesUnpacked/*
 Artefacts/*
+.claude/*
+CLAUDE.MD
