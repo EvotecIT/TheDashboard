@@ -1,6 +1,6 @@
 ﻿<p align="center">
   <a href="https://www.powershellgallery.com/packages/TheDashboard"><img src="https://img.shields.io/powershellgallery/v/TheDashboard.svg"></a>
-  <a href="https://www.powershellgallery.com/packages/TheDashboard"><img src="https://img.shields.io/powershellgallery/vpre/TheDashboard.svg?label=powershell%20gallery%20preview&colorB=yellow"></a>
+  <a href="https://www.powershellgallery.com/packages/TheDashboard"><img src="https://img.shields.io/powershellgallery/v/TheDashboard.svg?label=powershell%20gallery%20preview&colorB=yellow&include_prereleases"></a>
   <a href="https://github.com/EvotecIT/TheDashboard"><img src="https://img.shields.io/github/license/EvotecIT/TheDashboard.svg"></a>
 </p>
 
