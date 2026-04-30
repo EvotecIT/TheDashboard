@@ -10,18 +10,18 @@
         [switch] $SubReport
     )
     if ($SubReport) {
-        Write-Color -Text '[i]', '[HTML ] ', "Generating HTML page ($MenuReport) sub report ($FilePath)" -Color Yellow, DarkGray, Yellow
+        Write-Color -Text '[i]', '[HTML ] ', "Generating HTML page ($Name) sub report ($FilePath)" -Color Yellow, DarkGray, Yellow
     } else {
-        Write-Color -Text '[i]', '[HTML ] ', "Generating HTML page ($MenuReport) report ($FilePath)" -Color Yellow, DarkGray, Yellow
+        Write-Color -Text '[i]', '[HTML ] ', "Generating HTML page ($Name) report ($FilePath)" -Color Yellow, DarkGray, Yellow
     }
     New-HTMLPage -Name $Name -Title "The Dashboard - $Name" {
         New-HTMLSection -HeaderText "Summary for $($Report.Name)" -HeaderBackGroundColor Black -CanCollapse {
             New-HTMLSection -Invisible {
                 New-HTMLPanel {
-                    New-HTMLText -Text "Report name: ", $CurrentReport.Name -FontSize 12px
-                    New-HTMLText -Text "Report date: ", $CurrentReport.Date -FontSize 12px
+                    New-HTMLText -Text "Report name: ", $Report.Name -FontSize 12px
+                    New-HTMLText -Text "Report date: ", $Report.Date -FontSize 12px
 
-                    New-HTMLText -Text "All reports in this catagory: ", $FullReports.Count -FontSize 12px
+                    New-HTMLText -Text "All reports in this category: ", $FullReports.Count -FontSize 12px
                     New-HTMLList {
                         if ($FullReports.Count -eq 1) {
                             New-HTMLListItem -Text "Date in report: ", $FullReports[0].Date -FontSize 12px -FontWeight normal, bold -TextDecoration none, underline
@@ -30,10 +30,10 @@
                         }
                     }
                     if ($HistoryReports.Count) {
-                        New-HTMLText -Text "History reports in this catagory: ", $HistoryReports.Count -FontSize 12px
+                        New-HTMLText -Text "History reports in this category: ", $HistoryReports.Count -FontSize 12px
                         New-HTMLList {
                             if ($HistoryReports.Count -gt 1) {
-                                New-HTMLListItem -Text "Date ranges from: ", $HistoryReports[$FullReports.Count - 1].Date, " to ", $HistoryReports[0].Date -FontSize 12px -FontWeight normal, bold, normal, bold -TextDecoration none, underline, none, underline
+                                New-HTMLListItem -Text "Date ranges from: ", $HistoryReports[$HistoryReports.Count - 1].Date, " to ", $HistoryReports[0].Date -FontSize 12px -FontWeight normal, bold, normal, bold -TextDecoration none, underline, none, underline
                             } else {
                                 New-HTMLListItem -Text "Date in report: ", $HistoryReports[0].Date -FontSize 12px -FontWeight normal, bold -TextDecoration none, underline
                             }
