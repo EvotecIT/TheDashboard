@@ -163,7 +163,9 @@
         LogoLink       = $LogoLink
         LogoLinkHome   = $LogoLinkHome.IsPresent
         MenuBuilder    = $MenuBuilder
-        Configuration  = $Configuration
+        Configuration  = @{
+            Folders = $Folders
+        }
         ExportData     = $ExportData
         Files          = $Files
         ShowHTML       = $ShowHTML.IsPresent
