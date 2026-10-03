@@ -146,6 +146,7 @@ Describe 'Generated pages and incremental publishing' {
         $First.FilePathsGenerated.Count | Should -Be 5
         foreach ($Path in $First.FilePathsGenerated) { Test-Path -LiteralPath $Path -PathType Leaf | Should -BeTrue }
         $HTML = Get-Content -LiteralPath (Join-Path $Root 'Index.html') -Raw
+        $HTML | Should -Match '"data"\s*:\s*\[\s*12\s*\]'
         foreach ($Entry in $First.MenuBuilder.Reports.Values.Current) {
             $HTML | Should -Match ([regex]::Escape([uri]::EscapeDataString($Entry.PageName)))
             $Page = Get-Content -LiteralPath (Join-Path $Root $Entry.PageName) -Raw

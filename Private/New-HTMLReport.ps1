@@ -116,7 +116,7 @@
                         New-ChartAxisY -TitleText 'Numbers' -Show
 
                         foreach ($UserInput in $OutputElements) {
-                            $Values = foreach ($Day in $StatisticsKeys) {
+                            [Array] $Values = foreach ($Day in $StatisticsKeys) {
                                 $ExportData['Statistics'][$Day].$($UserInput.Label)
                             }
                             New-ChartLine -Name $UserInput.Label -Value $Values
