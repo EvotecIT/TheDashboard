@@ -135,7 +135,7 @@ Describe 'Retention and safe planning' {
         $Root = Join-Path $TestDrive 'preview-copy'
         New-TestReports -Root $Source -Names 'Report_2026-10-02_090000.html'
         $Result = Start-TheDashboard -HTMLPath (Join-Path $Root 'Index.html') -TestMode -PassThru {
-            New-DashboardFolder -Name Reports -UrlName Reports -Path (Join-Path $Root 'Reports') -CopyFrom $Source
+            New-DashboardFolder -Name Reports -UrlName Reports -Path ((Join-Path $Root 'Reports') + [IO.Path]::DirectorySeparatorChar) -CopyFrom $Source
             New-DashboardFolder -Name Archive -UrlName Archive -Path (Join-Path $Root 'Reports') -CopyFrom $Source
         }
         $Result.Files.Count | Should -Be 2
@@ -189,6 +189,19 @@ Describe 'Retention and safe planning' {
             }
             @($Existing.FilesToKeepOrRemove | Where-Object Type -eq Asset).Count | Should -Be 2
         }
+    }
+
+    It 'plans an asset-only destination before the first report arrives' -TestCases @(@{ Preview = $true }, @{ Preview = $false }) {
+        param($Preview)
+        $Root = Join-Path $TestDrive ("asset-only-$Preview")
+        $Source = Join-Path $TestDrive ("asset-only-source-$Preview")
+        New-TestReports -Root (Join-Path $Source 'assets') -Names 'report.css'
+        $Result = Start-TheDashboard -HTMLPath (Join-Path $Root 'Index.html') -Online -TestMode:$Preview -PassThru {
+            New-DashboardFolder -Name Reports -UrlName Reports -Path (Join-Path $Root 'Reports') -CopyFrom $Source -Extension '.css'
+        }
+        $Result.Files.Count | Should -Be 0
+        @($Result.FilesToKeepOrRemove | Where-Object Type -eq Asset).Count | Should -Be 1
+        (Test-Path -LiteralPath (Join-Path $Root 'Reports/assets/report.css')) | Should -Be (-not $Preview)
     }
 
     It 'fails on a collector error, unsupported element, or missing report folder before publishing' {

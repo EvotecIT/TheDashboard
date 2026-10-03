@@ -11,14 +11,15 @@ function Convert-FilesToMenuData {
     $Entries = [System.Collections.Generic.List[object]]::new()
     foreach ($FolderName in $Folders.Keys) {
         $Folder = $Folders[$FolderName]
-        $FolderPath = [IO.Path]::GetFullPath($Folder.Path)
+        $FolderPath = [IO.Path]::GetFullPath($Folder.Path).TrimEnd('\', '/')
         if ($OutputRoot) {
             $Root = [IO.Path]::GetFullPath($OutputRoot).TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar
             if (-not $FolderPath.StartsWith($Root, [StringComparison]::OrdinalIgnoreCase)) {
                 throw "Report folder '$FolderPath' must be beneath the dashboard output directory. Use CopyFrom for external reports."
             }
         }
-        $FolderCopies = @($CopyPlan | Where-Object { [IO.Path]::GetDirectoryName($_.Destination) -eq $FolderPath -and [IO.Path]::GetExtension($_.Destination) -eq $Extension })
+        $FolderRoot = $FolderPath + [IO.Path]::DirectorySeparatorChar
+        $FolderCopies = @($CopyPlan | Where-Object { $_.Destination.StartsWith($FolderRoot, [StringComparison]::OrdinalIgnoreCase) })
         $Inputs = @{}
         if (Test-Path -LiteralPath $FolderPath -PathType Container) {
             foreach ($File in Get-ChildItem -LiteralPath $FolderPath -File -Filter "*$Extension" -ErrorAction Stop) { $Inputs[$File.Name] = $File }
@@ -26,7 +27,7 @@ function Convert-FilesToMenuData {
             throw "Report folder '$FolderPath' does not exist."
         }
         if ($Pretend) {
-            foreach ($Copy in $FolderCopies) {
+            foreach ($Copy in $FolderCopies | Where-Object { [IO.Path]::GetDirectoryName($_.Destination) -eq $FolderPath -and [IO.Path]::GetExtension($_.Destination) -eq $Extension }) {
                 $Inputs[[IO.Path]::GetFileName($Copy.Destination)] = Get-Item -LiteralPath $Copy.Source -ErrorAction Stop
             }
         }
