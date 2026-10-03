@@ -18,14 +18,15 @@ function Convert-FilesToMenuData {
                 throw "Report folder '$FolderPath' must be beneath the dashboard output directory. Use CopyFrom for external reports."
             }
         }
+        $FolderCopies = @($CopyPlan | Where-Object { [IO.Path]::GetDirectoryName($_.Destination) -eq $FolderPath -and [IO.Path]::GetExtension($_.Destination) -eq $Extension })
         $Inputs = @{}
         if (Test-Path -LiteralPath $FolderPath -PathType Container) {
             foreach ($File in Get-ChildItem -LiteralPath $FolderPath -File -Filter "*$Extension" -ErrorAction Stop) { $Inputs[$File.Name] = $File }
-        } elseif (-not ($Pretend -and @($CopyPlan | Where-Object { $_.Folder -eq $FolderName }).Count)) {
+        } elseif (-not ($Pretend -and $FolderCopies.Count)) {
             throw "Report folder '$FolderPath' does not exist."
         }
         if ($Pretend) {
-            foreach ($Copy in $CopyPlan | Where-Object { $_.Folder -eq $FolderName -and [IO.Path]::GetDirectoryName($_.Destination) -eq $FolderPath -and [IO.Path]::GetExtension($_.Destination) -eq $Extension }) {
+            foreach ($Copy in $FolderCopies) {
                 $Inputs[[IO.Path]::GetFileName($Copy.Destination)] = Get-Item -LiteralPath $Copy.Source -ErrorAction Stop
             }
         }

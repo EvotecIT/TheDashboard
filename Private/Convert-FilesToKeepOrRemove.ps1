@@ -3,6 +3,7 @@
     param(
         [Array] $FilePathsGenerated,
         [Array] $Files,
+        [Array] $SupportingFiles,
         [switch] $RemoveNotIncluded,
         [ValidateSet("RemoveItem", "DotNetDelete", "RecycleBin")]
         [string] $DeleteMethod = "RecycleBin"
@@ -32,13 +33,24 @@
             }
             $Output
         }
-        foreach ($File in $Files) {
+        foreach ($Group in $Files | Group-Object FullPath) {
+            $File = $Group.Group[0]
+            $Included = @($Group.Group | Where-Object Include).Count -gt 0
             [PSCustomObject] @{
                 Type    = 'Report'
                 Path    = $File.FullPath
-                Include = $File.Include
+                Include = $Included
                 Date    = $File.Date
-                Status  = if ($File.Include) { 'Included' } else { 'Excluded' }
+                Status  = if ($Included) { 'Included' } else { 'Excluded' }
+            }
+        }
+        foreach ($File in $SupportingFiles) {
+            [PSCustomObject] @{
+                Type    = 'Asset'
+                Path    = $File.FullPath
+                Include = $true
+                Date    = $File.Date
+                Status  = if ($WhatIfPreference) { 'Included (WhatIf)' } else { 'Included' }
             }
         }
     )

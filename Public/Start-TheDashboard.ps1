@@ -119,9 +119,15 @@
     $Extension = [IO.Path]::GetExtension($HTMLPath)
     if (-not $Extension) { throw 'HTMLPath must include a file extension.' }
     if ($StatisticsPath) { $StatisticsPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($StatisticsPath) }
+    if (-not $Preview -and -not $PSCmdlet.ShouldProcess($HTMLPath, 'Generate and publish dashboard')) { $Preview = $true }
+    # Keep logging defaults local, including in merged modules where a previous run may have set them.
+    $LoggingDefaults = @{}
+    foreach ($Key in $PSDefaultParameterValues.Keys) { $LoggingDefaults[$Key] = $PSDefaultParameterValues[$Key] }
+    $LoggingDefaults['Write-Color:LogFile'] = $null
+    $PSDefaultParameterValues = $LoggingDefaults
     $Script:Reporting['Version'] = (Get-Command Start-TheDashboard).Version
     if ($CheckForUpdates -and -not $Preview) { $Script:Reporting['Version'] = Get-GitHubVersion -Cmdlet 'Start-TheDashboard' -RepositoryOwner 'evotecit' -RepositoryName 'TheDashboard' }
-    if (-not $Preview) { Set-LoggingCapabilities -LogPath $LogPath -LogMaximum $LogMaximum -ShowTime:$LogShowTime -TimeFormat $LogTimeFormat -ScriptPath $MyInvocation.ScriptName -ParameterPSDefaultParameterValues $Script:PSDefaultParameterValues }
+    if (-not $Preview) { Set-LoggingCapabilities -LogPath $LogPath -LogMaximum $LogMaximum -ShowTime:$LogShowTime -TimeFormat $LogTimeFormat -ScriptPath $MyInvocation.ScriptName -ParameterPSDefaultParameterValues $PSDefaultParameterValues }
 
     Write-Color '[i]', "[TheDashboard] ", 'Version', ' [Informative] ', $Script:Reporting['Version'] -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
 
@@ -155,7 +161,6 @@
     Set-FolderConfiguration -Folders $Folders -FoldersConfiguration $FoldersConfiguration -FolderLimit $FolderLimit
 
     $CopyPlan = @(Get-DashboardCopyPlan -Folders $Folders -Extension $Extension -OutputRoot $FolderPath)
-    if (-not $Preview -and -not $PSCmdlet.ShouldProcess($HTMLPath, 'Generate and publish dashboard')) { $Preview = $true }
     $Lock = $null
     $Stage = $null
     try {
@@ -176,6 +181,7 @@
         }
         if (-not $Preview) { Copy-HTMLFiles -Plan $CopyPlan -Confirm:$false }
         $Files = @(Convert-FilesToMenuData -Folders $Folders -Replacements $Replacements -Extension $Extension -OutputRoot $FolderPath -CopyPlan $CopyPlan -Pretend:$Preview)
+        $SupportingFiles = @(Get-DashboardSupportingFiles -Folders $Folders -Extension $Extension -CopyPlan $CopyPlan -Pretend:$Preview)
         $MenuBuilder = Convert-FilesToMenu -Files $Files -Folders $Folders
         $Configuration = [ordered] @{ Folders = $Folders; Logo = $Logo; LogoLink = $LogoLink; LogoLinkHome = $LogoLinkHome.IsPresent; Online = $Online.IsPresent; UrlPath = [string] $UrlPath }
         $FilePathsGenerated = @(Set-DashboardPagePlan -MenuBuilder $MenuBuilder -Configuration $Configuration -ExportData $ExportData -HTMLPath $HTMLPath -Force:$Force)
@@ -226,7 +232,7 @@
                 Remove-Item -LiteralPath $Copy.Source -ErrorAction Stop
             }
         }
-        $FilesToKeepOrRemove = Convert-FilesToKeepOrRemove -FilePathsGenerated $FilePathsGenerated -Files $Files -DeleteMethod $DeleteMethod -RemoveNotIncluded:$RemoveNotIncluded -WhatIf:$Preview
+        $FilesToKeepOrRemove = Convert-FilesToKeepOrRemove -FilePathsGenerated $FilePathsGenerated -Files $Files -SupportingFiles $SupportingFiles -DeleteMethod $DeleteMethod -RemoveNotIncluded:$RemoveNotIncluded -WhatIf:$Preview
         if ($ShowHTML -and -not $Preview) { Start-Process -FilePath $HTMLPath }
         if ($PassThru) {
             [ordered] @{

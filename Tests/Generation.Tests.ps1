@@ -103,6 +103,22 @@ Describe 'Retention and safe planning' {
         @($Result.FilesToKeepOrRemove | Where-Object { $_.Type -eq 'Report' -and $_.Include }).Count | Should -Be 1
     }
 
+    It 'preserves a shared raw report retained by another section' -TestCases @(@{ Method = 'RemoveItem' }, @{ Method = 'DotNetDelete' }) {
+        param($Method)
+        $Root = Join-Path $TestDrive ("shared-retention-$Method")
+        $ReportRoot = Join-Path $Root 'Reports'
+        New-TestReports -Root $ReportRoot -Names 'Report_2026-10-03_090000.html', 'Report_2026-10-02_090000.html', 'Report_2026-10-01_090000.html'
+        $Result = Start-TheDashboard -HTMLPath (Join-Path $Root 'Index.html') -Online -RemoveNotIncluded -DeleteMethod $Method -PassThru {
+            New-DashboardFolder -Name Latest -UrlName Latest -Path $ReportRoot -DisableGlobalLimits { New-DashboardLimit -LimitItem 1 }
+            New-DashboardFolder -Name Archive -UrlName Archive -Path $ReportRoot -DisableGlobalLimits { New-DashboardLimit -LimitItem 1 -IncludeHistory -IncludeHistoryLimit 1 }
+        }
+        Test-Path -LiteralPath (Join-Path $ReportRoot 'Report_2026-10-02_090000.html') | Should -BeTrue
+        Test-Path -LiteralPath (Join-Path $ReportRoot 'Report_2026-10-01_090000.html') | Should -BeFalse
+        @($Result.FilesToKeepOrRemove | Where-Object { $_.Type -eq 'Report' -and $_.Include }).Count | Should -Be 2
+        @($Result.FilesToKeepOrRemove | Where-Object { $_.Path -eq (Join-Path $ReportRoot 'Report_2026-10-02_090000.html') }).Count | Should -Be 1
+        $Result.MenuBuilder.Archive.report.History.Count | Should -Be 1
+    }
+
     It 'does not write HTML, statistics, manifests, logs, or locks in either preview mode' -TestCases @(@{ Mode = 'TestMode' }, @{ Mode = 'WhatIf' }) {
         param($Mode)
         $Root = Join-Path $TestDrive $Mode
@@ -120,9 +136,59 @@ Describe 'Retention and safe planning' {
         New-TestReports -Root $Source -Names 'Report_2026-10-02_090000.html'
         $Result = Start-TheDashboard -HTMLPath (Join-Path $Root 'Index.html') -TestMode -PassThru {
             New-DashboardFolder -Name Reports -UrlName Reports -Path (Join-Path $Root 'Reports') -CopyFrom $Source
+            New-DashboardFolder -Name Archive -UrlName Archive -Path (Join-Path $Root 'Reports') -CopyFrom $Source
         }
-        $Result.Files.Count | Should -Be 1
+        $Result.Files.Count | Should -Be 2
+        $Result.MenuBuilder.Archive.Count | Should -Be 1
+        @($Result.FilesToKeepOrRemove | Where-Object Type -eq Report).Count | Should -Be 1
         Test-Path -LiteralPath $Root | Should -BeFalse
+    }
+
+    It 'suppresses inherited logging defaults during preview' -TestCases @(@{ Mode = 'TestMode' }, @{ Mode = 'WhatIf' }) {
+        param($Mode)
+        $Root = Join-Path $TestDrive ("inherited-log-$Mode")
+        New-TestReports -Root (Join-Path $Root 'Reports') -Names 'Report_2026-10-02_090000.html'
+        $Log = Join-Path $Root 'previous.log'
+        [IO.File]::WriteAllText($Log, 'Previous run')
+        $Before = (Get-FileHash -LiteralPath $Log).Hash
+        & $script:DashboardModule {
+            param($Log, $Root, $Mode)
+            $PreviousDefaults = $Script:PSDefaultParameterValues
+            try {
+                $Script:PSDefaultParameterValues = @{ 'Write-Color:LogFile' = $Log }
+                $Arguments = @{ HTMLPath = (Join-Path $Root 'Index.html'); LogPath = (Join-Path $Root 'new.log') }
+                $Arguments[$Mode] = $true
+                Start-TheDashboard @Arguments { New-DashboardFolder -Name Reports -UrlName Reports -Path (Join-Path $Root 'Reports') }
+            } finally { $Script:PSDefaultParameterValues = $PreviousDefaults }
+        } $Log $Root $Mode
+        (Get-FileHash -LiteralPath $Log).Hash | Should -Be $Before
+        Test-Path -LiteralPath (Join-Path $Root 'new.log') | Should -BeFalse
+    }
+
+    It 'includes supporting assets in deployment without creating menu entries' -TestCases @(@{ Preview = $true }, @{ Preview = $false }) {
+        param($Preview)
+        $Root = Join-Path $TestDrive ("assets-$Preview")
+        $Source = Join-Path $TestDrive ("asset-source-$Preview")
+        New-TestReports -Root $Source -Names 'Report_2026-10-02_090000.html'
+        New-TestReports -Root (Join-Path $Source 'assets') -Names 'report.css', 'report.js', 'unconfigured.txt'
+        $Elements = {
+            New-DashboardFolder -Name Reports -UrlName Reports -Path (Join-Path $Root 'Reports') -CopyFrom $Source -Extension '.css', '.js'
+        }
+        $Result = Start-TheDashboard -HTMLPath (Join-Path $Root 'Index.html') -Online -TestMode:$Preview -PassThru $Elements
+        $Result.MenuBuilder.Reports.Count | Should -Be 1
+        $Assets = @($Result.FilesToKeepOrRemove | Where-Object Type -eq Asset)
+        $Assets.Count | Should -Be 2
+        @($Assets | Where-Object Include).Count | Should -Be 2
+        foreach ($Asset in $Assets) {
+            $Asset.Path | Should -Match 'Reports[\\/]assets[\\/]report\.(css|js)$'
+            (Test-Path -LiteralPath $Asset.Path) | Should -Be (-not $Preview)
+        }
+        if (-not $Preview) {
+            $Existing = Start-TheDashboard -HTMLPath (Join-Path $Root 'Index.html') -Online -PassThru {
+                New-DashboardFolder -Name Reports -UrlName Reports -Path (Join-Path $Root 'Reports') -Extension '.css', '.js'
+            }
+            @($Existing.FilesToKeepOrRemove | Where-Object Type -eq Asset).Count | Should -Be 2
+        }
     }
 
     It 'fails on a collector error, unsupported element, or missing report folder before publishing' {
