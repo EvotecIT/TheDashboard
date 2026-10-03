@@ -16,7 +16,7 @@
             $OutputElements = & $Elements
         } catch {
             Write-Color -Text '[e]', "[TheDashboard] ", 'Failed to execute nested elements', ' [Error] ', $_.Exception.Message -Color Yellow, DarkGray, Yellow, DarkGray, Red
-            return
+            throw
         }
         foreach ($E in $OutputElements) {
             if ($E.Type -eq 'Gage') {
@@ -29,6 +29,8 @@
                 foreach ($Setting in $E.Settings.Keys) {
                     $FolderLimit[$Setting] = $E.Settings[$Setting]
                 }
+            } elseif ($E.Type) {
+                throw "Dashboard element '$($E.Type)' is not supported by Start-TheDashboard."
             }
         }
 

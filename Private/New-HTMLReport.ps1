@@ -36,8 +36,7 @@
             foreach ($MenuReport in $MenuBuilder[$Menu].Keys | Sort-Object) {
                 $MenuLink = $MenuBuilder[$Menu][$MenuReport]['Current'].MenuLink
                 $PathToSubReports = [io.path]::GetDirectoryName($HTMLPath)
-                $PageName = ($MenuBuilder[$Menu][$MenuReport]['Current'].Name).Replace(":", "_").Replace(" ", "_")
-                $FullPath = [io.path]::Combine($PathToSubReports, "$($MenuLink)_$PageName$($Extension)")
+                $FullPath = [io.path]::Combine($PathToSubReports, $MenuBuilder[$Menu][$MenuReport]['Current'].PageName)
 
                 $CurrentReport = $MenuBuilder[$Menu][$MenuReport]['Current']
                 [Array] $FullReports = $MenuBuilder[$Menu][$MenuReport]['Full']
@@ -73,11 +72,11 @@
                         New-NavTopMenu @TopMenuSplat {
                             foreach ($MenuReport in $MenuBuilder[$Menu].Keys | Sort-Object) {
                                 $MenuLink = $MenuBuilder[$Menu][$MenuReport]['Current'].MenuLink
-                                $PageName = (( -join ($MenuBuilder[$Menu][$MenuReport]['Current'].Name)).Replace(":", "_").Replace(" ", "_"))
+                                $PageName = [uri]::EscapeDataString($MenuBuilder[$Menu][$MenuReport]['Current'].PageName)
                                 if ($UrlPath) {
-                                    New-NavLink -IconRegular calendar-check -Name $MenuBuilder[$Menu][$MenuReport]['Current'].Name -Href "$UrlPath/$($MenuLink)_$($PageName)$($Extension)"
+                                    New-NavLink -IconRegular calendar-check -Name $MenuBuilder[$Menu][$MenuReport]['Current'].Name -Href "$($UrlPath.ToString().TrimEnd('/'))/$PageName"
                                 } else {
-                                    New-NavLink -IconRegular calendar-check -Name $MenuBuilder[$Menu][$MenuReport]['Current'].Name -Href "$($MenuLink)_$($PageName)$($Extension)"
+                                    New-NavLink -IconRegular calendar-check -Name $MenuBuilder[$Menu][$MenuReport]['Current'].Name -Href $PageName
                                 }
                             }
                         }
@@ -85,8 +84,8 @@
                 }
             }
             if ($UrlPath) {
-                $FileNameHome = [System.IO.Path]::GetFileName($HTMLPath)
-                $newHTMLNavTopSplat['HomeLink'] = "$UrlPath/$FileNameHome"
+                $FileNameHome = [uri]::EscapeDataString([System.IO.Path]::GetFileName($HTMLPath))
+                $newHTMLNavTopSplat['HomeLink'] = "$($UrlPath.ToString().TrimEnd('/'))/$FileNameHome"
             } else {
                 $newHTMLNavTopSplat['HomeLinkHome'] = $true
             }
@@ -112,9 +111,6 @@
                         $ExportData['Statistics'][$Day].Date
                     }
 
-                    foreach ($UserInput in $Dates) {
-                        $ExportData['Statistics'][$Day].$($UserInput.Label) = $UserInput.Value
-                    }
                     New-HTMLChart -Title 'Domain Summary' -TitleAlignment center {
                         New-ChartAxisX -Type datetime -Names $Dates
                         New-ChartAxisY -TitleText 'Numbers' -Show
@@ -137,9 +133,9 @@
                                     # we then remove 30 minutes instead to prevent this
                                     if ($CalendarEntry.Include) {
                                         if ($($CalendarEntry.Date).Day -eq $($($CalendarEntry.Date).AddMinutes(30)).Day) {
-                                            New-CalendarEvent -Title $CalendarEntry.Name -StartDate $CalendarEntry.Date -EndDate $($CalendarEntry.Date).AddMinutes(30) -Url $CalendarEntry.FileName
+                                            New-CalendarEvent -Title $CalendarEntry.Name -StartDate $CalendarEntry.Date -EndDate $($CalendarEntry.Date).AddMinutes(30) -Url ([uri]::EscapeDataString($CalendarEntry.FileName))
                                         } else {
-                                            New-CalendarEvent -Title $CalendarEntry.Name -StartDate $CalendarEntry.Date.AddMinutes(-30) -EndDate $($CalendarEntry.Date) -Url $CalendarEntry.FileName
+                                            New-CalendarEvent -Title $CalendarEntry.Name -StartDate $CalendarEntry.Date.AddMinutes(-30) -EndDate $($CalendarEntry.Date) -Url ([uri]::EscapeDataString($CalendarEntry.FileName))
                                         }
                                     }
                                 }
@@ -161,8 +157,7 @@
                 foreach ($MenuReport in $MenuBuilder[$Menu].Keys | Sort-Object) {
                     $MenuLink = $MenuBuilder[$Menu][$MenuReport]['Current'].MenuLink
                     $PathToSubReports = [io.path]::GetDirectoryName($HTMLPath)
-                    $PageName = ($MenuBuilder[$Menu][$MenuReport]['Current'].Name).Replace(":", "_").Replace(" ", "_")
-                    $FullPath = [io.path]::Combine($PathToSubReports, "$($MenuLink)_$PageName$($Extension)")
+                    $FullPath = [io.path]::Combine($PathToSubReports, $MenuBuilder[$Menu][$MenuReport]['Current'].PageName)
 
                     $CurrentReport = $MenuBuilder[$Menu][$MenuReport]['Current']
                     [Array] $FullReports = $MenuBuilder[$Menu][$MenuReport]['Full']
@@ -181,7 +176,7 @@
                             $FullPathOther = [io.path]::Combine($PathToSubReports, $Report.FileName)
                             $Name = $Report.Name + ' - ' + $Report.Date
                             $FilePathsGenerated.Add($FullPathOther) # return filepath for other reports
-                            if (-not $Report.SkipGeneration) {
+                            if (-not $Report.SkipSnapshotGeneration) {
                                 New-HTMLReportPage -SubReport -Report $Report -FullReports $FullReports -FilePath $FullPathOther -PathToSubReports $PathToSubReports -Name $Name -HistoryReports $HistoryReports
                             } else {
                                 Write-Color -Text '[i]', '[HTML ] ', "Skipping generation of ", $FullPathOther, ". generation not required..." -Color Yellow, DarkGray, Yellow

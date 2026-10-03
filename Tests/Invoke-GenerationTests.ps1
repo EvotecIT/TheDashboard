@@ -1,0 +1,20 @@
+[CmdletBinding()]
+param(
+    [string] $SharedGoodsManifest,
+    [string] $WriteHTMLManifest,
+    [string] $ResultPath
+)
+$ErrorActionPreference = 'Stop'
+if ($SharedGoodsManifest) { Import-Module $SharedGoodsManifest -ErrorAction Stop }
+if ($WriteHTMLManifest) { Import-Module $WriteHTMLManifest -ErrorAction Stop }
+Import-Module Pester -MinimumVersion 5.7.1 -MaximumVersion 5.99.0 -ErrorAction Stop
+$Configuration = New-PesterConfiguration
+$Configuration.Run.Path = Join-Path $PSScriptRoot 'Generation.Tests.ps1'
+$Configuration.Run.PassThru = $true
+$Configuration.Output.Verbosity = 'Normal'
+if ($ResultPath) {
+    $Configuration.TestResult.Enabled = $true
+    $Configuration.TestResult.OutputPath = $ResultPath
+}
+$Result = Invoke-Pester -Configuration $Configuration
+if ($Result.FailedCount -gt 0 -or $Result.PassedCount -eq 0) { exit 1 }

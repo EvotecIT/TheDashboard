@@ -90,7 +90,7 @@
     General notes
     #>
     [alias('New-TheDashboardFolder')]
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'FontAwesomeSolid')]
     param(
         [Parameter(Position = 0)][scriptblock] $Entries,
         [Parameter(Mandatory)][string] $Name,
@@ -168,6 +168,8 @@
                 $ReplacementConfiguration.Add($E.Settings)
             } elseif ($E.Type -eq 'FolderLimit') {
                 $LimitsConfiguration[$E.Settings.Name] = $E.Settings
+            } elseif ($E.Type) {
+                throw "Folder element '$($E.Type)' is not supported. Use replacements or retention limits."
             }
         }
         $ReplacementsConfiguration = Convert-MultipleReplacements -ReplacementConfiguration $ReplacementConfiguration

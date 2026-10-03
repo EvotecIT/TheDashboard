@@ -22,7 +22,7 @@
                 $Output = [PSCustomObject] @{
                     Type    = 'Dashboard'
                     Path    = $File
-                    Include = $false
+                    Include = $true
                     Date    = $null
                     Status  = 'Included (WhatIf)'
                 }
@@ -44,8 +44,8 @@
     )
     if ($RemoveNotIncluded) {
         foreach ($File in $FullSummary) {
-            if (-not $File.Include) {
-                Remove-FileItem -Paths $File.Path -DeleteMethod $DeleteMethod -WhatIf:$WhatIfPreference
+            if ($File.Type -eq 'Report' -and -not $File.Include) {
+                Remove-FileItem -Paths $File.Path -DeleteMethod $DeleteMethod -WhatIf:$WhatIfPreference -ErrorAction Stop
                 if ($WhatIfPreference) {
                     $File.Status = 'Removed (WhatIf)'
                 } else {

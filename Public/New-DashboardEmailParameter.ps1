@@ -46,7 +46,7 @@
         [Parameter(ParameterSetName = 'SecureString')]
         [Parameter(ParameterSetName = 'oAuth')]
         [Parameter(ParameterSetName = 'Compatibility')]
-        [MailKit.Net.Smtp.DeliveryStatusNotificationType] $DeliveryStatusNotificationType,
+        [object] $DeliveryStatusNotificationType,
 
         [Parameter(ParameterSetName = 'oAuth')]
         [Parameter(Mandatory, ParameterSetName = 'Graph')]
@@ -63,7 +63,7 @@
         [Parameter(ParameterSetName = 'SecureString')]
         [Parameter(ParameterSetName = 'oAuth')]
         [Parameter(ParameterSetName = 'Compatibility')]
-        [MailKit.Security.SecureSocketOptions] $SecureSocketOptions,
+        [object] $SecureSocketOptions,
 
         [Parameter(ParameterSetName = 'SecureString')]
         [Parameter(ParameterSetName = 'oAuth')]
@@ -138,7 +138,7 @@
             SecureSocketOptions            = if ($PSBoundParameters.ContainsKey('SecureSocketOptions')) { $SecureSocketOptions } else { $null }
             UseSsl                         = if ($PSBoundParameters.ContainsKey('UseSsl')) { $UseSsl } else { $null }
             SkipCertificateRevocation      = if ($PSBoundParameters.ContainsKey('SkipCertificateRevocation')) { $SkipCertificateRevocation } else { $null }
-            SkipCertificateValidation      = if ($PSBoundParameters.ContainsKey('SkipCertificateValidatation')) { $SkipCertificateValidation } else { $null }
+            SkipCertificateValidation      = if ($PSBoundParameters.ContainsKey('SkipCertificateValidation')) { $SkipCertificateValidation } else { $null }
             Timeout                        = if ($PSBoundParameters.ContainsKey('Timeout')) { $Timeout } else { $null }
             oAuth2                         = if ($PSBoundParameters.ContainsKey('oAuth2')) { $oAuth2 } else { $null }
             RequestReadReceipt             = if ($PSBoundParameters.ContainsKey('RequestReadReceipt')) { $RequestReadReceipt } else { $null }
@@ -149,6 +149,7 @@
             SendGrid                       = if ($PSBoundParameters.ContainsKey('SendGrid')) { $SendGrid } else { $null }
             SeparateTo                     = if ($PSBoundParameters.ContainsKey('SeparateTo')) { $SeparateTo } else { $null }
             DoNotSaveToSentItems           = if ($PSBoundParameters.ContainsKey('DoNotSaveToSentItems')) { $DoNotSaveToSentItems } else { $null }
+            LocalDomain                    = if ($PSBoundParameters.ContainsKey('LocalDomain')) { $LocalDomain } else { $null }
             WhatIf                         = $WhatIfPreference
         }
     }

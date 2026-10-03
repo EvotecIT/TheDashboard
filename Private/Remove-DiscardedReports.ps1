@@ -1,15 +1,15 @@
-﻿function Remove-DiscardedReports {
-    [CmdletBinding()]
-    param(
-        [Array] $FilePathsGenerated,
-        [string] $FolderPath,
-        [string] $Extension
-    )
-    $FilePathsCurrent = Get-ChildItem -LiteralPath $FolderPath -File -Filter "*$($Extension)" | Select-Object -ExpandProperty FullName
-    foreach ($File in $FilePathsCurrent) {
-        if ($File -notin $FilePathsGenerated) {
-            Write-Color -Text '[i]', '[FILE ] ', "Removing discarded report: $File" -Color Yellow, DarkGray, Yellow
-            Remove-Item -LiteralPath $File -Force
+function Remove-DiscardedReports {
+    [CmdletBinding(SupportsShouldProcess)]
+    param([Array] $FilePathsGenerated, [string] $FolderPath, [Array] $OwnedFiles)
+    $Keep = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+    foreach ($Path in $FilePathsGenerated) { $null = $Keep.Add([IO.Path]::GetFullPath($Path)) }
+    foreach ($Name in $OwnedFiles) {
+        if (-not $Name -or [IO.Path]::GetFileName($Name) -ne $Name -or $Name -in @('.', '..')) {
+            throw "Invalid owned dashboard filename '$Name'."
+        }
+        $Path = Join-Path $FolderPath $Name
+        if (-not $Keep.Contains($Path) -and (Test-Path -LiteralPath $Path -PathType Leaf) -and $PSCmdlet.ShouldProcess($Path, 'Remove obsolete dashboard page')) {
+            Remove-Item -LiteralPath $Path -ErrorAction Stop
         }
     }
 }

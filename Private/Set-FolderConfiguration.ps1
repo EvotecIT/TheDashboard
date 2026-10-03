@@ -20,4 +20,13 @@
         }
         $Folders[$Folder.Name] = $Folder
     }
+    foreach ($Name in $Folders.Keys) {
+        $Folder = $Folders[$Name]
+        $Folder.Path = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Folder.Path)
+        if (-not $Folder.Name) { $Folder.Name = $Name }
+        if (-not $Folder.Url) { $Folder.Url = $Name }
+        if (-not $Folder.Contains('ReplacementsGlobal')) { $Folder.ReplacementsGlobal = $true }
+        if (-not $Folder.LimitsConfiguration) { $Folder.LimitsConfiguration = [ordered] @{} }
+        if ($FolderLimit -and $FolderLimit.Name -and -not $Folder.DisableGlobalLimits) { $Folder.LimitsConfiguration[$FolderLimit.Name] = $FolderLimit }
+    }
 }

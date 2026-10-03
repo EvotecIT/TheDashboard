@@ -33,13 +33,13 @@
                 }
             } elseif ($R -eq 'beforeSplit') {
                 foreach ($Before in $Replacement[$R]) {
-                    foreach ($Key in $Before.Keys) {
+                    foreach ($Key in Get-DashboardReplacementKeys -Dictionary $Before) {
                         $ReplacementSetting['BeforeSplit'][$Key] = $Before[$Key]
                     }
                 }
             } elseif ($R -eq 'afterSplit') {
                 foreach ($After in $Replacement[$R]) {
-                    foreach ($Key in $After.Keys) {
+                    foreach ($Key in Get-DashboardReplacementKeys -Dictionary $After) {
                         $ReplacementSetting['AfterSplit'][$Key] = $After[$Key]
                     }
                 }

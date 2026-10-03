@@ -90,13 +90,13 @@
 
     $BeforeEntry = [ordered] @{}
     foreach ($Before in $BeforeSplit) {
-        foreach ($Key in $Before.Keys) {
+        foreach ($Key in Get-DashboardReplacementKeys -Dictionary $Before) {
             $BeforeEntry[$Key] = $Before[$Key]
         }
     }
     $AfterEntry = [ordered] @{}
     foreach ($After in $AfterSplit) {
-        foreach ($Key in $After.Keys) {
+        foreach ($Key in Get-DashboardReplacementKeys -Dictionary $After) {
             $AfterEntry[$Key] = $After[$Key]
         }
     }

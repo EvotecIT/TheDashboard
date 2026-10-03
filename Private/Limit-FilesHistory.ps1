@@ -31,9 +31,10 @@
         [System.Collections.IDictionary] $Limits,
         [DateTime] $CurrentDate
     )
+    $Entry.Include = $false
     if ($Limits.IncludeHistory) {
         if ($null -ne $Limits.IncludeHistoryLimit) {
-            if ($MenuBuilder[$Entry.Menu][$Entry.Name]['History'].Count -ge $Limits.IncludeHistoryLimit) {
+            if ($MenuBuilder[$Entry.Menu][$Entry.Identity]['History'].Count -ge $Limits.IncludeHistoryLimit) {
                 $Entry.Include = $false
                 return
             }
@@ -51,6 +52,6 @@
             }
         }
         $Entry.Include = $true
-        $MenuBuilder[$Entry.Menu][$Entry.Name]['History'].Add($Entry)
+        $MenuBuilder[$Entry.Menu][$Entry.Identity]['History'].Add($Entry)
     }
 }
