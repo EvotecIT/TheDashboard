@@ -32,8 +32,11 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-          Install-PackageProvider -Name NuGet -Force -Scope CurrentUser
+          if ($PSVersionTable.PSEdition -eq 'Desktop') {
+            Install-PackageProvider -Name NuGet -Force -Scope CurrentUser
+          }
           Install-Module Pester -RequiredVersion 5.7.1 -Scope CurrentUser -Force -SkipPublisherCheck
+          Install-Module PSWriteColor -RequiredVersion 1.0.3 -Scope CurrentUser -Force
           Install-Module PSSharedGoods -RequiredVersion 0.0.313 -Scope CurrentUser -Force
           Install-Module PSWriteHTML -RequiredVersion 1.41.0 -Scope CurrentUser -Force
       - name: Validate dashboard generation

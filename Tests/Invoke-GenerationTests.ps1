@@ -7,6 +7,8 @@ param(
 $ErrorActionPreference = 'Stop'
 if ($SharedGoodsManifest) { Import-Module $SharedGoodsManifest -ErrorAction Stop }
 if ($WriteHTMLManifest) { Import-Module $WriteHTMLManifest -ErrorAction Stop }
+# Source tests need the logging helper that the package builder normally merges into the module.
+Import-Module PSWriteColor -RequiredVersion 1.0.3 -ErrorAction Stop
 Import-Module Pester -MinimumVersion 5.7.1 -MaximumVersion 5.99.0 -ErrorAction Stop
 $Configuration = New-PesterConfiguration
 $Configuration.Run.Path = Join-Path $PSScriptRoot 'Generation.Tests.ps1'

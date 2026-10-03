@@ -72,7 +72,7 @@ Normal generation runs without checking GitHub. Use `-CheckForUpdates` to reques
 
 ### Validate generation
 
-The regression suite exercises naming, domain separation, retained history, preview mode, missing-page recovery, configuration changes, ownership cleanup, and publication failure. It uses the module's existing PSSharedGoods and PSWriteHTML dependencies and Pester 5.7.1 or later in the 5.x series.
+The regression suite exercises naming, domain separation, retained history, preview mode, missing-page recovery, configuration changes, ownership cleanup, and publication failure. Source tests use the existing PSSharedGoods and PSWriteHTML dependencies, PSWriteColor 1.0.3 (the logging helper merged into the package), and Pester 5.7.1 or later in the 5.x series. CI installs these test dependencies explicitly.
 
 ```powershell
 pwsh -NoProfile -File ./Tests/Invoke-GenerationTests.ps1
