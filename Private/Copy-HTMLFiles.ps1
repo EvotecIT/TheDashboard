@@ -1,4 +1,16 @@
 function Copy-HTMLFiles {
+    <#
+    .SYNOPSIS
+    Copies changed report inputs and assets from a validated copy plan.
+
+    .DESCRIPTION
+    Skips unchanged destinations and replaces changed files through a temporary file
+    beside the destination. Preserves source last-write times. Move sources are left
+    intact; Start-TheDashboard removes them only after successful publication.
+
+    .PARAMETER Plan
+    Copy records containing Source and Destination paths.
+    #>
     [CmdletBinding(SupportsShouldProcess)]
     param(
         [Array] $Plan

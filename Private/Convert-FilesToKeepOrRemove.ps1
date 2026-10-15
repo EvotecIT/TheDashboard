@@ -1,4 +1,31 @@
 ﻿function Convert-FilesToKeepOrRemove {
+    <#
+    .SYNOPSIS
+    Builds the deployment list and optionally removes excluded raw reports.
+
+    .DESCRIPTION
+    Includes generated pages and supporting assets. A raw report shared by several
+    sections is retained if any section includes it. Only excluded raw reports are
+    eligible for deletion; preview returns their planned status without deleting them.
+
+    .PARAMETER FilePathsGenerated
+    Full paths of planned or generated dashboard pages.
+
+    .PARAMETER Files
+    Discovered report records with FullPath, Date, and Include properties.
+
+    .PARAMETER SupportingFiles
+    Supporting-asset records with FullPath and Date properties.
+
+    .PARAMETER RemoveNotIncluded
+    Removes raw reports excluded by every section's retention settings.
+
+    .PARAMETER DeleteMethod
+    Removal method passed to Remove-FileItem for excluded raw reports.
+
+    .OUTPUTS
+    Records containing Type, Path, Include, Date, and Status for deployment or inspection.
+    #>
     [CmdletBinding(SupportsShouldProcess)]
     param(
         [Array] $FilePathsGenerated,
@@ -8,7 +35,7 @@
         [ValidateSet("RemoveItem", "DotNetDelete", "RecycleBin")]
         [string] $DeleteMethod = "RecycleBin"
     )
-    [Array] $FullSummary = @(
+    $FullSummary = @(
         foreach ($File in $FilePathsGenerated) {
             try {
                 $FileInfo = Get-Item -LiteralPath $File -ErrorAction Stop

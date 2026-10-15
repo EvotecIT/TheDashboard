@@ -1,4 +1,21 @@
 function Remove-DiscardedReports {
+    <#
+    .SYNOPSIS
+    Removes obsolete pages previously owned by this dashboard.
+
+    .DESCRIPTION
+    Preserves planned outputs and files absent from the previous ownership manifest.
+    Owned filenames must be leaf names so cleanup cannot traverse other directories.
+
+    .PARAMETER FilePathsGenerated
+    Full paths of pages retained by the current generation.
+
+    .PARAMETER FolderPath
+    Dashboard output directory containing the owned pages.
+
+    .PARAMETER OwnedFiles
+    Leaf filenames read from the previous ownership manifest.
+    #>
     [CmdletBinding(SupportsShouldProcess)]
     param(
         [Array] $FilePathsGenerated,

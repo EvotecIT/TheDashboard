@@ -1,4 +1,18 @@
 ﻿function Convert-MultipleReplacements {
+    <#
+    .SYNOPSIS
+    Combines replacement configuration into one effective naming definition.
+
+    .PARAMETER Replacements
+    Existing naming configuration to combine with the configuration elements.
+
+    .PARAMETER ReplacementConfiguration
+    Naming settings returned by New-DashboardReplacement. Later specified values
+    override earlier values, and replacement-map keys use deterministic ordering.
+
+    .OUTPUTS
+    The effective naming-settings dictionary, with defaults when no settings are supplied.
+    #>
     [CmdletBinding()]
     param(
         [System.Collections.IDictionary] $Replacements,

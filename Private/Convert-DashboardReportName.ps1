@@ -43,6 +43,7 @@ function Convert-DashboardReportName {
         $Positions = @(Get-DashboardNamePositions -Name $Name -Rules $Replacements.AfterSplitPositionName)
         $Name = (@(foreach ($Position in $Positions) {
                     $Index = 0
+                    # Parse as text so invalid positions are rejected rather than numerically coerced.
                     if (-not [int]::TryParse([string] $Position, [ref] $Index) -or $Index -ge $Parts.Count -or $Index -lt - $Parts.Count) {
                         throw "Naming position '$Position' is outside the $($Parts.Count) parts of '$Name'."
                     }

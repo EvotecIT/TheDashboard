@@ -1,10 +1,12 @@
 ﻿function Limit-FilesHistory {
     <#
     .SYNOPSIS
-    Controls how files are moved into history based on specified limits.
+    Marks an older report included only when it meets the history settings.
 
     .DESCRIPTION
-    Checks and applies IncludeHistory settings, filtering by date or count.
+    Updates the report's Include flag and adds it to the group's History collection
+    when history is enabled and count, date, and age limits permit it. Does not move
+    or delete files.
 
     .PARAMETER MenuBuilder
     Contains the menu structure to which entries will be added.

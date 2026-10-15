@@ -1,9 +1,26 @@
 ﻿function Set-FolderConfiguration {
+    <#
+    .SYNOPSIS
+    Combines folder definitions and normalizes their effective settings.
+
+    .DESCRIPTION
+    Updates the supplied folder dictionary in place with configuration elements,
+    absolute paths, naming defaults, and applicable global retention settings.
+
+    .PARAMETER Folders
+    Mutable dictionary of folder definitions supplied to Start-TheDashboard.
+
+    .PARAMETER FoldersConfiguration
+    Folder settings collected from New-DashboardFolder elements.
+
+    .PARAMETER FolderLimit
+    Global retention settings applied unless a folder disables global limits.
+    #>
     [CmdletBinding()]
     param(
-        [System.Collections.IDictionary]$Folders,
+        [System.Collections.IDictionary] $Folders,
         [Array] $FoldersConfiguration,
-        [System.Collections.IDictionary]$FolderLimit
+        [System.Collections.IDictionary] $FolderLimit
     )
 
     Write-Color -Text '[i]', "[TheDashboard] ", 'Setting Folder Configuration', ' [Informative] ' -Color Yellow, DarkGray, Yellow, DarkGray, Magenta

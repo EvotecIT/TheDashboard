@@ -1,4 +1,33 @@
 ﻿function New-HTMLReportPage {
+    <#
+    .SYNOPSIS
+    Renders a report wrapper with summary, calendar, and report iframe.
+
+    .DESCRIPTION
+    Full versions link to their generated wrappers. Retained history opens the raw
+    report in the page's iframe without creating another wrapper per history entry.
+
+    .PARAMETER Report
+    Selected report record containing Name, Date, and Href.
+
+    .PARAMETER FullReports
+    Retained versions with generated wrapper filenames, ordered newest first.
+
+    .PARAMETER HistoryReports
+    Additional retained history records, ordered newest first.
+
+    .PARAMETER FilePath
+    Destination of the wrapper page.
+
+    .PARAMETER PathToSubReports
+    Retained for existing callers; links come from the planned report records.
+
+    .PARAMETER Name
+    Wrapper page name and title text.
+
+    .PARAMETER SubReport
+    Identifies a timestamped wrapper in generation logging.
+    #>
     [cmdletBinding()]
     param(
         [PSCustomObject] $Report,
@@ -68,7 +97,6 @@
             }
         } -Height 300px
         New-HTMLSection -Invisible {
-
         } -Height 15px
         New-HTMLFrame -SourcePath $Report.Href -Scrolling Auto -Height 2000px -Name 'iFrameWithContent'
     } -FilePath $FilePath

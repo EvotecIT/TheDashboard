@@ -1,93 +1,70 @@
 ﻿function New-DashboardFolder {
     <#
     .SYNOPSIS
-        This function is used to define a new folder for the dashboard that will be displayed as a TopLevelMenu.
+    Defines a report folder displayed as a top-level dashboard menu.
 
     .DESCRIPTION
-    This function is used to define a new folder for the dashboard that will be displayed as a TopLevelMenu.
-    It allows you to define the folder name, path, and URL name. You can also specify the icon that will be used for the folder.
+    Configures a report folder, optional copy/move sources, naming rules, retention limits,
+    and a navigation icon. Without an explicit icon, the menu uses a solid folder icon.
+    Nested configuration accepts replacement and retention elements.
 
     .PARAMETER Entries
-    This parameter allows you to define the content of the folder. It should be a script block that contains the content of the folder.
-    The content of the folder can be defined using the New-DashboardReplacement, New-DashboardLimit functions
+    Script block containing New-DashboardReplacement and New-DashboardLimit elements.
 
     .PARAMETER Name
-    The name of the folder that will be displayed in the dashboard.
+    Menu label displayed in the dashboard.
 
     .PARAMETER Path
-    Path to Reports folder where the reports are stored.
+    Report directory beneath the dashboard output directory. Only top-level files with
+    the dashboard page extension create menu entries. Use CopyFrom for external sources.
 
     .PARAMETER UrlName
-    The URL name for the dashboard folder. This is used to create the URL for the folder.
+    Filename prefix for this menu's generated wrappers. Use a valid filename component
+    without path separators; it does not rename the raw report directory.
 
     .PARAMETER CopyFrom
-    Copy files from this location to the existing location that is specified by the Path parameter.
-    This is useful for copying reports from different locations to the expected location.
+    Source directories scanned recursively for reports and configured supporting assets.
+    Matching files are copied into Path with relative subdirectories preserved.
 
     .PARAMETER MoveFrom
-    Move files from this location to the existing location that is specified by the Path parameter.
-    This is useful for moving reports from different locations to the expected location.
+    Imports matching files into Path and removes each source only after successful
+    publication, provided its content still matches the copied destination.
 
     .PARAMETER Extension
-    This parameter specifies the file extensions to include when processing files.
-    It will by default use the same extension as the root of the dashboard, but this one can include additional extensions.
+    Additional extensions to copy and deploy, such as '.css', '.js', or '.png'. Supporting
+    assets are discovered recursively without creating menu entries. The dashboard page
+    extension is included automatically.
 
     .PARAMETER DisableGlobalReplacement
-    This parameter, when set, will disable global replacements for the dashboard for this particular folder.
-    This means that the replacements defined in the root of the dashboard will not be applied to the content of this folder.
+    Uses this folder's replacement settings instead of global naming rules.
 
     .PARAMETER DisableGlobalLimits
-    This parameter, when set, will disable global limits for the dashboard for this particular folder.
-    This means that the limits defined in the root of the dashboard will not be applied to the content of this folder.
+    Uses only this folder's retention settings instead of applying the global limit.
 
     .PARAMETER IconBrands
-    Specifies the icon that will be used for the folder. This is a brand icon from FontAwesome.
+    FontAwesome brand icon for the menu.
 
     .PARAMETER IconRegular
-    Specifies the icon that will be used for the folder. This is a regular icon from FontAwesome.
+    FontAwesome regular icon for the menu.
 
     .PARAMETER IconSolid
-    Specifies the icon that will be used for the folder. This is a solid icon from FontAwesome.
+    FontAwesome solid icon for the menu. Defaults to 'folder' when no icon is supplied.
 
     .EXAMPLE
-    New-DashboardFolder -Name 'Group Policies' -IconBrands android -UrlName 'GPO' -Path $PSScriptRoot\Reports\TestPolicies
+    New-DashboardFolder -Name 'Reports' -UrlName 'Reports' -Path (Join-Path $OutputRoot 'Reports')
+
+    Defines a menu for reports already stored beneath the dashboard output directory.
 
     .EXAMPLE
-     New-DashboardFolder -Name 'Windows Updates' -IconBrands android -UrlName 'WindowsUpdates' -Path $PSScriptRoot\Reports\WindowsUpdates {
-        $newDashboardReplacementSplat = @{
-            BeforeSplit             = @{
-                'GroupMembership-' = ''
-                '_Regional'        = ' Regional'
-                'GPOZaurr'         = ''
-                'Testimo'          = ''
-            }
-            #AfterSplitPositionName  = 1, 2
-            AfterSplitPositionName  = [ordered] @{
-                'PingCastle-Domain-*' = 0, 2
-                '*'                   = 0
-                # '*'              = 1, 2
-            }
-            AfterRemoveDoubleSpaces = $true
-            AfterUpperChars         = "evotec.com", "test.com"
-            AfterSplit              = @{
-                'G P O'     = 'GPO'
-                'L D A P'   = 'LDAP'
-                'D H C P'   = 'DHCP'
-                'A D'       = 'AD'
-                'I T R X X' = 'ITRXX'
-                'I N S'     = 'INS'
-                'L A P S'   = 'LAPS'
-                'K R B G T' = 'KRBGT'
-            }
-            SplitOn                 = "[_-]"
-            AddSpaceToName          = $true
-        }
-        New-DashboardReplacement @newDashboardReplacementSplat
+    New-DashboardFolder -Name 'Policies' -UrlName 'Policies' -Path (Join-Path $OutputRoot 'Policies') -CopyFrom $SourceRoot -Extension '.css', '.js' {
+        New-DashboardReplacement -SplitOn '_' -AfterSplitPositionName 0
         New-DashboardLimit -LimitItem 2 -IncludeHistory
     } -DisableGlobalReplacement
 
-    .NOTES
-    General notes
+    Imports reports and companion assets, selects a display name, and retains older versions.
+
+    .OUTPUTS
+    A folder configuration record consumed by Start-TheDashboard.
     #>
     [alias('New-TheDashboardFolder')]
     [CmdletBinding(DefaultParameterSetName = 'FontAwesomeSolid')]
@@ -104,8 +81,14 @@
         # ICON BRANDS
         [ArgumentCompleter(
             {
-                param($CommandName, $ParameterName, $WordToComplete, $CommandAst, $FakeBoundParameters)
-            ($Global:HTMLIcons.FontAwesomeBrands.Keys)
+                param(
+                    $CommandName,
+                    $ParameterName,
+                    $WordToComplete,
+                    $CommandAst,
+                    $FakeBoundParameters
+                )
+                ($Global:HTMLIcons.FontAwesomeBrands.Keys)
             }
         )]
         [ValidateScript(
@@ -118,8 +101,14 @@
         # ICON REGULAR
         [ArgumentCompleter(
             {
-                param($CommandName, $ParameterName, $WordToComplete, $CommandAst, $FakeBoundParameters)
-            ($Global:HTMLIcons.FontAwesomeRegular.Keys)
+                param(
+                    $CommandName,
+                    $ParameterName,
+                    $WordToComplete,
+                    $CommandAst,
+                    $FakeBoundParameters
+                )
+                ($Global:HTMLIcons.FontAwesomeRegular.Keys)
             }
         )]
         [ValidateScript(
@@ -132,8 +121,14 @@
         # ICON SOLID
         [ArgumentCompleter(
             {
-                param($CommandName, $ParameterName, $WordToComplete, $CommandAst, $FakeBoundParameters)
-            ($Global:HTMLIcons.FontAwesomeSolid.Keys)
+                param(
+                    $CommandName,
+                    $ParameterName,
+                    $WordToComplete,
+                    $CommandAst,
+                    $FakeBoundParameters
+                )
+                ($Global:HTMLIcons.FontAwesomeSolid.Keys)
             }
         )]
         [ValidateScript(

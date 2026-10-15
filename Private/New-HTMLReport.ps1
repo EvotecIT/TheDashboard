@@ -1,4 +1,61 @@
 ﻿function New-HTMLReport {
+    <#
+    .SYNOPSIS
+    Renders the dashboard landing page and required report wrappers.
+
+    .DESCRIPTION
+    Uses planned page names and skip flags to render navigation, gauges, statistics,
+    calendars, and report pages through PSWriteHTML. The caller supplies a staging
+    destination and owns publication and cleanup.
+
+    .PARAMETER OutputElements
+    Gauge settings for the landing page and statistics chart.
+
+    .PARAMETER Logo
+    Logo source passed to the navigation component.
+
+    .PARAMETER LogoLink
+    Destination of the logo link when supplied.
+
+    .PARAMETER LogoLinkHome
+    Links the logo to the dashboard home page.
+
+    .PARAMETER Extension
+    Dashboard page extension, including its leading dot.
+
+    .PARAMETER MenuBuilder
+    Menu groups containing Current, Full, and History records and generation flags.
+
+    .PARAMETER Configuration
+    Effective folder and presentation configuration used for navigation.
+
+    .PARAMETER ExportData
+    Mutable generation state containing collected statistics.
+
+    .PARAMETER Files
+    Discovered report records. Retained for existing callers.
+
+    .PARAMETER HTMLPath
+    Landing-page destination within the caller's staging directory.
+
+    .PARAMETER ShowHTML
+    Retained for existing callers. Start-TheDashboard opens the published result.
+
+    .PARAMETER Online
+    Uses CDN-hosted PSWriteHTML resources instead of embedding them.
+
+    .PARAMETER UrlPath
+    Optional URL prefix for navigation links in the hosted dashboard.
+
+    .PARAMETER Force
+    Retained for existing callers. Set-DashboardPagePlan owns forced regeneration.
+
+    .PARAMETER Pretend
+    Retained for existing callers. Start-TheDashboard skips rendering during preview.
+
+    .OUTPUTS
+    Paths collected while rendering the landing page and report wrappers.
+    #>
     [cmdletBinding()]
     param(
         [Array] $OutputElements,
@@ -39,8 +96,8 @@
                 $FullPath = [io.path]::Combine($PathToSubReports, $MenuBuilder[$Menu][$MenuReport]['Current'].PageName)
 
                 $CurrentReport = $MenuBuilder[$Menu][$MenuReport]['Current']
-                [Array] $FullReports = $MenuBuilder[$Menu][$MenuReport]['Full']
-                [Array] $HistoryReports = $MenuBuilder[$Menu][$MenuReport]['History']
+                $FullReports = $MenuBuilder[$Menu][$MenuReport]['Full']
+                $HistoryReports = $MenuBuilder[$Menu][$MenuReport]['History']
 
                 $Name = $CurrentReport.Name
                 $FilePathsGenerated.Add($FullPath)  # return filepath for main report
@@ -107,6 +164,7 @@
             New-HTMLSection -Invisible {
                 New-HTMLPanel {
                     $StatisticsKeys = $ExportData['Statistics'].Keys | Sort-Object | Select-Object -Last 50
+                    # The chart needs arrays even when statistics contain only one sample.
                     [Array] $Dates = foreach ($Day in $StatisticsKeys) {
                         $ExportData['Statistics'][$Day].Date
                     }
@@ -127,7 +185,7 @@
                     New-HTMLCalendar {
                         foreach ($Menu in $MenuBuilder.Keys) {
                             foreach ($MenuReport in $MenuBuilder[$Menu].Keys) {
-                                [Array] $FullReports = $MenuBuilder[$Menu][$MenuReport]['Full']
+                                $FullReports = $MenuBuilder[$Menu][$MenuReport]['Full']
                                 foreach ($CalendarEntry in $FullReports) {
                                     # The check make sure that report doesn't run over midnight when using +30 minutes. If it runs over midnight it looks bad as it spans over 2 days
                                     # we then remove 30 minutes instead to prevent this
@@ -160,8 +218,8 @@
                     $FullPath = [io.path]::Combine($PathToSubReports, $MenuBuilder[$Menu][$MenuReport]['Current'].PageName)
 
                     $CurrentReport = $MenuBuilder[$Menu][$MenuReport]['Current']
-                    [Array] $FullReports = $MenuBuilder[$Menu][$MenuReport]['Full']
-                    [Array] $HistoryReports = $MenuBuilder[$Menu][$MenuReport]['History']
+                    $FullReports = $MenuBuilder[$Menu][$MenuReport]['Full']
+                    $HistoryReports = $MenuBuilder[$Menu][$MenuReport]['History']
 
                     $Name = $CurrentReport.Name
                     if (-not $CurrentReport.SkipGeneration) {

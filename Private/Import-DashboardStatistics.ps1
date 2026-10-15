@@ -1,4 +1,22 @@
 ﻿function Import-DashboardStatistics {
+    <#
+    .SYNOPSIS
+    Loads saved generation state and adds the current gauge samples.
+
+    .DESCRIPTION
+    Accepts current state dictionaries and the legacy statistics-only layout.
+    Missing state starts empty; unreadable or invalid state is an error. Adds current
+    gauge values in memory without writing the statistics file.
+
+    .PARAMETER StatisticsPath
+    Optional CLIXML state file to read.
+
+    .PARAMETER GageConfiguration
+    Gauge records containing Date, Label, and Value properties.
+
+    .OUTPUTS
+    A dictionary containing MenuBuilder and Statistics dictionaries.
+    #>
     [CmdletBinding()]
     param(
         [string] $StatisticsPath,

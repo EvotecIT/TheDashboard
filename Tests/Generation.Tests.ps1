@@ -3,18 +3,67 @@ BeforeAll {
     Import-Module $ModulePath -Force -ErrorAction Stop
     $script:DashboardModule = Get-Module TheDashboard
     function New-TestReports {
-        param([string] $Root, [string[]] $Names)
+        <#
+        .SYNOPSIS
+        Writes small report fixtures with their filenames visible in the document.
+
+        .PARAMETER Root
+        Test-owned directory to create when needed.
+
+        .PARAMETER Names
+        Report filenames to write beneath Root.
+        #>
+        param(
+            [string] $Root,
+            [string[]] $Names
+        )
         $null = [IO.Directory]::CreateDirectory($Root)
         foreach ($Name in $Names) {
             [IO.File]::WriteAllText((Join-Path $Root $Name), "<html><body><h1>$Name</h1></body></html>")
         }
     }
     function Invoke-TestDashboard {
-        param([string] $Root, [switch] $TestMode, [switch] $WhatIf, [switch] $Online, [string] $Logo, [switch] $Force, [switch] $RemoveNotIncluded)
+        <#
+        .SYNOPSIS
+        Runs the shared report, naming, retention, and gauge fixture.
+
+        .PARAMETER Root
+        Test-owned dashboard output directory containing the Reports subdirectory.
+
+        .PARAMETER TestMode
+        Requests planning without dashboard writes.
+
+        .PARAMETER WhatIf
+        Requests the command's ShouldProcess preview.
+
+        .PARAMETER Online
+        Uses CDN resources to reduce generated fixture size when embedding is unnecessary.
+
+        .PARAMETER Logo
+        Optional presentation setting used to exercise cache invalidation.
+
+        .PARAMETER Force
+        Requests regeneration of existing child pages.
+
+        .PARAMETER RemoveNotIncluded
+        Exercises raw-report deletion using RemoveItem within the test directory.
+        #>
+        param(
+            [string] $Root,
+            [switch] $TestMode,
+            [switch] $WhatIf,
+            [switch] $Online,
+            [string] $Logo,
+            [switch] $Force,
+            [switch] $RemoveNotIncluded
+        )
         $ReportRoot = Join-Path $Root 'Reports'
         Start-TheDashboard -HTMLPath (Join-Path $Root 'Index.html') -StatisticsPath (Join-Path $Root 'Stats.xml') -Logo $Logo -Online:$Online -Force:$Force -TestMode:$TestMode -WhatIf:$WhatIf -RemoveNotIncluded:$RemoveNotIncluded -DeleteMethod RemoveItem -PassThru {
             New-DashboardFolder -Name 'Reports' -UrlName 'Reports' -Path $ReportRoot
-            New-DashboardReplacement -SplitOn '[_-]' -AfterSplitPositionName @{ '*' = 0; 'PingCastle-Domain-*' = 0, 2 }
+            New-DashboardReplacement -SplitOn '[_-]' -AfterSplitPositionName @{
+                '*'                   = 0
+                'PingCastle-Domain-*' = 0, 2
+            }
             New-DashboardLimit -LimitItem 1 -IncludeHistory
             New-DashboardGage -Label 'Users' -MinValue 0 -MaxValue 100 -Value 12 -Date ([datetime] '2026-10-03')
         }
@@ -24,19 +73,32 @@ BeforeAll {
 Describe 'Filename rules and report identity' {
     It 'selects the specific rule ahead of a wildcard in an ordinary hashtable' {
         & $script:DashboardModule {
-            (Get-DashboardNamePositions -Name 'PingCastle-Domain-corp.example_2026-10-02_090000' -Rules @{ '*' = 0; 'PingCastle-Domain-*' = 0, 2 }) -join ','
+            (Get-DashboardNamePositions -Name 'PingCastle-Domain-corp.example_2026-10-02_090000' -Rules @{
+                '*'                   = 0
+                'PingCastle-Domain-*' = 0, 2
+            }) -join ','
         } | Should -Be '0,2'
     }
 
     It 'honors explicit precedence while keeping star as the fallback' {
         & $script:DashboardModule {
-            Get-DashboardNamePositions -Name 'ReportABC' -Rules ([ordered] @{ '*' = 2; 'Report*' = 1; 'ReportABC' = 0 })
+            Get-DashboardNamePositions -Name 'ReportABC' -Rules ([ordered] @{
+                    '*'         = 2
+                    'Report*'   = 1
+                    'ReportABC' = 0
+                })
         } | Should -Be 1
     }
 
     It 'rejects ambiguous equal specificity and invalid split positions' {
-        { & $script:DashboardModule { Get-DashboardNamePositions -Name 'AB' -Rules @{ 'A?' = 0; '?B' = 1 } } } | Should -Throw '*Equally specific*'
-        { & $script:DashboardModule { Convert-DashboardReportName -Name 'One_Two' -Replacements @{ SplitOn = '_'; AfterSplitPositionName = 3 } } } | Should -Throw '*outside*'
+        { & $script:DashboardModule { Get-DashboardNamePositions -Name 'AB' -Rules @{
+                    'A?' = 0
+                    '?B' = 1
+                } } } | Should -Throw '*Equally specific*'
+        { & $script:DashboardModule { Convert-DashboardReportName -Name 'One_Two' -Replacements @{
+                    SplitOn                = '_'
+                    AfterSplitPositionName = 3
+                } } } | Should -Throw '*outside*'
     }
 
     It 'keeps parent, child, and hyphenated domains separate and groups only their versions' {
@@ -62,7 +124,9 @@ Describe 'Filename rules and report identity' {
         New-TestReports -Root (Join-Path $Root 'Reports') -Names 'A B.html', 'A_B.html', 'A-B.html'
         $Result = Start-TheDashboard -HTMLPath (Join-Path $Root 'Index.html') -TestMode -PassThru {
             New-DashboardFolder -Name Reports -UrlName Reports -Path (Join-Path $Root 'Reports')
-            New-DashboardReplacement -BeforeSplit @{ 'A-B' = 'A:B' }
+            New-DashboardReplacement -BeforeSplit @{
+                'A-B' = 'A:B'
+            }
         }
         @($Result.MenuBuilder.Reports.Values.Current.PageName | Sort-Object -Unique).Count | Should -Be 3
         @($Result.FilePathsGenerated | Sort-Object -Unique).Count | Should -Be $Result.FilePathsGenerated.Count
@@ -83,7 +147,10 @@ Describe 'Retention and safe planning' {
         New-TestReports -Root (Join-Path $Root 'Reports') -Names 'One_2026-10-02_090000.html', 'One_2026-10-01_090000.html', 'Two_2026-10-02_090000.html', 'Two_2026-10-01_090000.html'
         $Result = Start-TheDashboard -HTMLPath (Join-Path $Root 'Index.html') -TestMode -PassThru {
             New-DashboardFolder -Name Reports -UrlName Reports -Path (Join-Path $Root 'Reports')
-            New-DashboardReplacement -SplitOn '_' -BeforeSplit @{ 'One' = 'Report'; 'Two' = 'Report' }
+            New-DashboardReplacement -SplitOn '_' -BeforeSplit @{
+                'One' = 'Report'
+                'Two' = 'Report'
+            }
             New-DashboardLimit -Name Report -LimitItem 1
         }
         $Result.MenuBuilder.Reports.Count | Should -Be 2
@@ -103,8 +170,16 @@ Describe 'Retention and safe planning' {
         @($Result.FilesToKeepOrRemove | Where-Object { $_.Type -eq 'Report' -and $_.Include }).Count | Should -Be 1
     }
 
-    It 'preserves a shared raw report retained by another section' -TestCases @(@{ Method = 'RemoveItem' }, @{ Method = 'DotNetDelete' }) {
-        param($Method)
+    It 'preserves a shared raw report retained by another section' -TestCases @(
+        @{
+            Method = 'RemoveItem'
+        }, @{
+            Method = 'DotNetDelete'
+        }
+    ) {
+        param(
+            $Method
+        )
         $Root = Join-Path $TestDrive ("shared-retention-$Method")
         $ReportRoot = Join-Path $Root 'Reports'
         New-TestReports -Root $ReportRoot -Names 'Report_2026-10-03_090000.html', 'Report_2026-10-02_090000.html', 'Report_2026-10-01_090000.html'
@@ -119,11 +194,22 @@ Describe 'Retention and safe planning' {
         $Result.MenuBuilder.Archive.report.History.Count | Should -Be 1
     }
 
-    It 'does not write HTML, statistics, manifests, logs, or locks in either preview mode' -TestCases @(@{ Mode = 'TestMode' }, @{ Mode = 'WhatIf' }) {
-        param($Mode)
+    It 'does not write HTML, statistics, manifests, logs, or locks in either preview mode' -TestCases @(
+        @{
+            Mode = 'TestMode'
+        }, @{
+            Mode = 'WhatIf'
+        }
+    ) {
+        param(
+            $Mode
+        )
         $Root = Join-Path $TestDrive $Mode
         New-TestReports -Root (Join-Path $Root 'Reports') -Names 'Report_2026-10-02_090000.html'
-        $Arguments = @{ Root = $Root }; $Arguments[$Mode] = $true
+        $Arguments = @{
+            Root = $Root
+        }
+        $Arguments[$Mode] = $true
         $Result = Invoke-TestDashboard @Arguments
         $Result.Preview | Should -BeTrue
         @(Get-ChildItem -LiteralPath $Root -File -Force).Count | Should -Be 0
@@ -144,29 +230,56 @@ Describe 'Retention and safe planning' {
         Test-Path -LiteralPath $Root | Should -BeFalse
     }
 
-    It 'suppresses inherited logging defaults during preview' -TestCases @(@{ Mode = 'TestMode' }, @{ Mode = 'WhatIf' }) {
-        param($Mode)
+    It 'suppresses inherited logging defaults during preview' -TestCases @(
+        @{
+            Mode = 'TestMode'
+        }, @{
+            Mode = 'WhatIf'
+        }
+    ) {
+        param(
+            $Mode
+        )
         $Root = Join-Path $TestDrive ("inherited-log-$Mode")
         New-TestReports -Root (Join-Path $Root 'Reports') -Names 'Report_2026-10-02_090000.html'
         $Log = Join-Path $Root 'previous.log'
         [IO.File]::WriteAllText($Log, 'Previous run')
         $Before = (Get-FileHash -LiteralPath $Log).Hash
         & $script:DashboardModule {
-            param($Log, $Root, $Mode)
+            param(
+                $Log,
+                $Root,
+                $Mode
+            )
             $PreviousDefaults = $Script:PSDefaultParameterValues
             try {
-                $Script:PSDefaultParameterValues = @{ 'Write-Color:LogFile' = $Log }
-                $Arguments = @{ HTMLPath = (Join-Path $Root 'Index.html'); LogPath = (Join-Path $Root 'new.log') }
+                $Script:PSDefaultParameterValues = @{
+                    'Write-Color:LogFile' = $Log
+                }
+                $Arguments = @{
+                    HTMLPath = (Join-Path $Root 'Index.html')
+                    LogPath  = (Join-Path $Root 'new.log')
+                }
                 $Arguments[$Mode] = $true
                 Start-TheDashboard @Arguments { New-DashboardFolder -Name Reports -UrlName Reports -Path (Join-Path $Root 'Reports') }
-            } finally { $Script:PSDefaultParameterValues = $PreviousDefaults }
+            } finally {
+                $Script:PSDefaultParameterValues = $PreviousDefaults
+            }
         } $Log $Root $Mode
         (Get-FileHash -LiteralPath $Log).Hash | Should -Be $Before
         Test-Path -LiteralPath (Join-Path $Root 'new.log') | Should -BeFalse
     }
 
-    It 'includes supporting assets in deployment without creating menu entries' -TestCases @(@{ Preview = $true }, @{ Preview = $false }) {
-        param($Preview)
+    It 'includes supporting assets in deployment without creating menu entries' -TestCases @(
+        @{
+            Preview = $true
+        }, @{
+            Preview = $false
+        }
+    ) {
+        param(
+            $Preview
+        )
         $Root = Join-Path $TestDrive ("assets-$Preview")
         $Source = Join-Path $TestDrive ("asset-source-$Preview")
         New-TestReports -Root $Source -Names 'Report_2026-10-02_090000.html'
@@ -191,8 +304,16 @@ Describe 'Retention and safe planning' {
         }
     }
 
-    It 'plans an asset-only destination before the first report arrives' -TestCases @(@{ Preview = $true }, @{ Preview = $false }) {
-        param($Preview)
+    It 'plans an asset-only destination before the first report arrives' -TestCases @(
+        @{
+            Preview = $true
+        }, @{
+            Preview = $false
+        }
+    ) {
+        param(
+            $Preview
+        )
         $Root = Join-Path $TestDrive ("asset-only-$Preview")
         $Source = Join-Path $TestDrive ("asset-only-source-$Preview")
         New-TestReports -Root (Join-Path $Source 'assets') -Names 'report.css'
@@ -209,7 +330,9 @@ Describe 'Retention and safe planning' {
         New-TestReports -Root $Root -Names 'Index.html', 'Unrelated.html'
         $Before = (Get-FileHash -LiteralPath (Join-Path $Root 'Index.html')).Hash
         { Start-TheDashboard -HTMLPath (Join-Path $Root 'Index.html') { throw 'Collector failed' } } | Should -Throw '*Collector failed*'
-        { Start-TheDashboard -HTMLPath (Join-Path $Root 'Index.html') { @{ Type = 'Notification' } } } | Should -Throw '*not supported*'
+        { Start-TheDashboard -HTMLPath (Join-Path $Root 'Index.html') { @{
+                    Type = 'Notification'
+                } } } | Should -Throw '*not supported*'
         { Start-TheDashboard -HTMLPath (Join-Path $Root 'Index.html') { New-DashboardFolder -Name Reports -UrlName Reports -Path (Join-Path $Root 'Absent') } } | Should -Throw '*does not exist*'
         (Get-FileHash -LiteralPath (Join-Path $Root 'Index.html')).Hash | Should -Be $Before
         Test-Path -LiteralPath (Join-Path $Root 'Unrelated.html') | Should -BeTrue
@@ -223,7 +346,9 @@ Describe 'Generated pages and incremental publishing' {
         New-TestReports -Root (Join-Path $Root 'Reports') -Names 'PingCastle-Domain-example.test_2026-10-02_090000.html', 'PingCastle-Domain-group.example.test_2026-10-02_090000.html'
         $First = Invoke-TestDashboard -Root $Root -Online
         $First.FilePathsGenerated.Count | Should -Be 5
-        foreach ($Path in $First.FilePathsGenerated) { Test-Path -LiteralPath $Path -PathType Leaf | Should -BeTrue }
+        foreach ($Path in $First.FilePathsGenerated) {
+            Test-Path -LiteralPath $Path -PathType Leaf | Should -BeTrue
+        }
         $HTML = Get-Content -LiteralPath (Join-Path $Root 'Index.html') -Raw
         $HTML | Should -Match '"data"\s*:\s*\[\s*12\s*\]'
         foreach ($Entry in $First.MenuBuilder.Reports.Values.Current) {
@@ -271,9 +396,21 @@ Describe 'Generated pages and incremental publishing' {
         $Source = Join-Path $Root 'New.html'
         $Destination = Join-Path $Root 'Old.html'
         { & $script:DashboardModule {
-            param($Source, $Destination, $Root)
-            Publish-DashboardFiles -Files @(@{ Source = $Source; Destination = $Destination }, @{ Source = (Join-Path $Root 'Missing.html'); Destination = (Join-Path $Root 'Other.html') })
-        } $Source $Destination $Root } | Should -Throw
+                param(
+                    $Source,
+                    $Destination,
+                    $Root
+                )
+                Publish-DashboardFiles -Files @(
+                    @{
+                        Source      = $Source
+                        Destination = $Destination
+                    }, @{
+                        Source      = (Join-Path $Root 'Missing.html')
+                        Destination = (Join-Path $Root 'Other.html')
+                    }
+                )
+            } $Source $Destination $Root } | Should -Throw
         [IO.File]::ReadAllText($Destination) | Should -Be $Before
         @(Get-ChildItem -LiteralPath $Root -Filter '*.tmp*').Count | Should -Be 0
     }
@@ -287,8 +424,8 @@ Describe 'Generated pages and incremental publishing' {
         New-TestReports -Root $Source -Names 'Two_2026-10-02_090000.html'
         Mock New-HTML -ModuleName TheDashboard { throw 'Renderer failed' }
         { Start-TheDashboard -HTMLPath (Join-Path $Root 'Index.html') -StatisticsPath (Join-Path $Root 'Stats.xml') -Online {
-            New-DashboardFolder -Name Reports -UrlName Reports -Path (Join-Path $Root 'Reports') -MoveFrom $Source
-        } } | Should -Throw '*Renderer failed*'
+                New-DashboardFolder -Name Reports -UrlName Reports -Path (Join-Path $Root 'Reports') -MoveFrom $Source
+            } } | Should -Throw '*Renderer failed*'
         $After = @($First.FilePathsGenerated + (Join-Path $Root 'Stats.xml') + $First.ManifestPath | ForEach-Object { (Get-FileHash -LiteralPath $_).Hash })
         $After -join ',' | Should -Be ($Before -join ',')
         Test-Path -LiteralPath (Join-Path $Source 'Two_2026-10-02_090000.html') | Should -BeTrue
@@ -317,8 +454,11 @@ Describe 'Generated pages and incremental publishing' {
         $Destination = Join-Path $Root 'Reports/Report_2026-10-02_090000.html'
         $Before = (Get-Item -LiteralPath $Destination).LastWriteTimeUtc
         $ReadLock = [IO.File]::Open($Destination, [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::Read)
-        try { $null = Start-TheDashboard -HTMLPath (Join-Path $Root 'Index.html') -Online $Elements }
-        finally { $ReadLock.Dispose() }
+        try {
+            $null = Start-TheDashboard -HTMLPath (Join-Path $Root 'Index.html') -Online $Elements
+        } finally {
+            $ReadLock.Dispose()
+        }
         (Get-Item -LiteralPath $Destination).LastWriteTimeUtc | Should -Be $Before
         [IO.File]::WriteAllText((Join-Path $Source 'Report_2026-10-02_090000.html'), '<html><body>Updated report</body></html>')
         $null = Start-TheDashboard -HTMLPath (Join-Path $Root 'Index.html') -Online $Elements

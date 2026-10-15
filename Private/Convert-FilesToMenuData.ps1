@@ -1,4 +1,34 @@
 function Convert-FilesToMenuData {
+    <#
+    .SYNOPSIS
+    Converts report files into records for menu and retention planning.
+
+    .DESCRIPTION
+    Discovers top-level reports in each folder, derives identity before transforming
+    display names, and disambiguates labels without merging independent reports.
+    Report folders must be beneath the output root. Discovery failures stop generation.
+
+    .PARAMETER Folders
+    Normalized report-folder configuration.
+
+    .PARAMETER Replacements
+    Global naming rules used by folders that have not disabled global replacement.
+
+    .PARAMETER Extension
+    Report page extension, including its leading dot.
+
+    .PARAMETER OutputRoot
+    Dashboard output directory used to validate folders and build relative links.
+
+    .PARAMETER CopyPlan
+    Planned copies used to discover reports at their destination paths during preview.
+
+    .PARAMETER Pretend
+    Includes planned inputs without requiring their destination files to exist.
+
+    .OUTPUTS
+    Report records containing identity, display name, timestamp, links, and file metadata.
+    #>
     [CmdletBinding()]
     param(
         [System.Collections.IDictionary] $Folders,
@@ -52,6 +82,7 @@ function Convert-FilesToMenuData {
             }
             $FullPath = Join-Path $FolderPath $File.Name
             if ($OutputRoot) {
+                # URI conversion handles relative-link escaping for local filesystem paths.
                 $Href = ([uri] $Root).MakeRelativeUri([uri] $FullPath).ToString()
             } else {
                 $Href = "$(Split-Path $FolderPath -Leaf)/$([uri]::EscapeDataString($File.Name))"

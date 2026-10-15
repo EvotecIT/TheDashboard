@@ -1,4 +1,28 @@
 ﻿function Convert-NestedElements {
+    <#
+    .SYNOPSIS
+    Executes the dashboard configuration and collects supported elements.
+
+    .DESCRIPTION
+    Adds gauges, folder settings, replacement settings, and global retention settings
+    to the supplied collections. Collector failures and unsupported element types
+    propagate to the caller. Custom collectors must respect the caller's preview preference.
+
+    .PARAMETER Elements
+    Configuration script block to execute.
+
+    .PARAMETER GageConfiguration
+    Mutable collection receiving gauge settings.
+
+    .PARAMETER FoldersConfiguration
+    Mutable collection receiving folder settings.
+
+    .PARAMETER ReplacementConfiguration
+    Mutable collection receiving replacement settings.
+
+    .PARAMETER FolderLimit
+    Mutable dictionary receiving the global retention settings.
+    #>
     [CmdletBinding()]
     param(
         [ScriptBlock] $Elements,
