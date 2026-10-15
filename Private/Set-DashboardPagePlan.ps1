@@ -1,4 +1,31 @@
 function Set-DashboardPagePlan {
+    <#
+    .SYNOPSIS
+    Assigns generated page names and decides which cached pages can be reused.
+
+    .DESCRIPTION
+    Adds stable suffixes for filename collisions and updates page names, fingerprints,
+    and skip flags on the supplied menu records. Reuse requires an unchanged generation
+    context and an existing output file. Current and snapshot pages have separate flags.
+
+    .PARAMETER MenuBuilder
+    Menu sections and report groups to update in place.
+
+    .PARAMETER Configuration
+    Folder, navigation, and presentation settings included in the fingerprint.
+
+    .PARAMETER ExportData
+    Previously saved menu fingerprints used for comparison.
+
+    .PARAMETER HTMLPath
+    Landing-page path defining the output directory and generated page extension.
+
+    .PARAMETER Force
+    Disables reuse of previously generated pages.
+
+    .OUTPUTS
+    Full paths for the landing page, current-report wrappers, and snapshot wrappers.
+    #>
     [CmdletBinding()]
     param(
         [System.Collections.IDictionary] $MenuBuilder,
@@ -18,9 +45,19 @@ function Set-DashboardPagePlan {
                 throw "Folder '$Menu' has an invalid UrlName '$Prefix'. Use a filename prefix without path separators."
             }
             $Label = $Group.Current.Name -replace '[<>:"/\\|?*\x00-\x1f ]', '_'
-            $Pages.Add([PSCustomObject] @{ Entry = $Group.Current; Kind = 'Current'; Candidate = "${Prefix}_$Label$Extension"; Key = "$Menu/$Identity/current" })
+            $Pages.Add([PSCustomObject] @{
+                    Entry     = $Group.Current
+                    Kind      = 'Current'
+                    Candidate = "${Prefix}_$Label$Extension"
+                    Key       = "$Menu/$Identity/current"
+                })
             foreach ($Entry in $Group.Full) {
-                $Pages.Add([PSCustomObject] @{ Entry = $Entry; Kind = 'Snapshot'; Candidate = $Entry.FileName; Key = "$Menu/$Identity/$($Entry.Href)" })
+                $Pages.Add([PSCustomObject] @{
+                        Entry     = $Entry
+                        Kind      = 'Snapshot'
+                        Candidate = $Entry.FileName
+                        Key       = "$Menu/$Identity/$($Entry.Href)"
+                    })
             }
         }
     }
@@ -32,19 +69,33 @@ function Set-DashboardPagePlan {
             if ($Collision.Count -gt 1 -or $Used.Contains($Name)) {
                 $Name = [IO.Path]::GetFileNameWithoutExtension($Name) + '_' + (Get-DashboardHash -Text $Page.Key).Substring(0, 12) + $Extension
             }
-            if (-not $Used.Add($Name)) { throw "Generated page collision: '$Name'." }
-            if ($Page.Kind -eq 'Current') { $Page.Entry.PageName = $Name }
-            else { $Page.Entry.FileName = $Name }
+            if (-not $Used.Add($Name)) {
+                throw "Generated page collision: '$Name'."
+            }
+            if ($Page.Kind -eq 'Current') {
+                $Page.Entry.PageName = $Name
+            } else {
+                $Page.Entry.FileName = $Name
+            }
         }
     }
     $Navigation = @(foreach ($Menu in $MenuBuilder.Keys) {
-        foreach ($Identity in $MenuBuilder[$Menu].Keys) {
-            $Entry = $MenuBuilder[$Menu][$Identity].Current
-            [ordered] @{ Menu = $Menu; Name = $Entry.Name; PageName = $Entry.PageName }
-        }
-    })
+            foreach ($Identity in $MenuBuilder[$Menu].Keys) {
+                $Entry = $MenuBuilder[$Menu][$Identity].Current
+                [ordered] @{
+                    Menu     = $Menu
+                    Name     = $Entry.Name
+                    PageName = $Entry.PageName
+                }
+            }
+        })
     $Template = (Get-Command New-HTMLReport).ScriptBlock.ToString() + (Get-Command New-HTMLReportPage).ScriptBlock.ToString()
-    $Context = Get-DashboardHash -Text (([ordered] @{ Schema = 2; Configuration = $Configuration; Navigation = $Navigation; Template = $Template } | ConvertTo-Json -Depth 30 -Compress))
+    $Context = Get-DashboardHash -Text (([ordered] @{
+                Schema        = 2
+                Configuration = $Configuration
+                Navigation    = $Navigation
+                Template      = $Template
+            } | ConvertTo-Json -Depth 30 -Compress))
     $Paths = [System.Collections.Generic.List[string]]::new()
     $Paths.Add($HTMLPath)
     foreach ($Menu in $MenuBuilder.Keys) {
@@ -56,7 +107,9 @@ function Set-DashboardPagePlan {
             }
             $Group.Fingerprint = Get-DashboardHash -Text ($Context + ($Data | ConvertTo-Json -Depth 10 -Compress))
             $OldGroup = $null
-            if ($ExportData.MenuBuilder -and $ExportData.MenuBuilder[$Menu]) { $OldGroup = $ExportData.MenuBuilder[$Menu][$Identity] }
+            if ($ExportData.MenuBuilder -and $ExportData.MenuBuilder[$Menu]) {
+                $OldGroup = $ExportData.MenuBuilder[$Menu][$Identity]
+            }
             $Unchanged = -not $Force -and $OldGroup -and $OldGroup.Fingerprint -eq $Group.Fingerprint
             $CurrentPath = Join-Path $Root $Group.Current.PageName
             $Group.Current.SkipGeneration = $Unchanged -and (Test-Path -LiteralPath $CurrentPath -PathType Leaf)

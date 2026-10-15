@@ -117,17 +117,29 @@
     $HTMLPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($HTMLPath)
     $FolderPath = [IO.Path]::GetDirectoryName($HTMLPath)
     $Extension = [IO.Path]::GetExtension($HTMLPath)
-    if (-not $Extension) { throw 'HTMLPath must include a file extension.' }
-    if ($StatisticsPath) { $StatisticsPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($StatisticsPath) }
-    if (-not $Preview -and -not $PSCmdlet.ShouldProcess($HTMLPath, 'Generate and publish dashboard')) { $Preview = $true }
+    if (-not $Extension) {
+        throw 'HTMLPath must include a file extension.'
+    }
+    if ($StatisticsPath) {
+        $StatisticsPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($StatisticsPath)
+    }
+    if (-not $Preview -and -not $PSCmdlet.ShouldProcess($HTMLPath, 'Generate and publish dashboard')) {
+        $Preview = $true
+    }
     # Keep logging defaults local, including in merged modules where a previous run may have set them.
     $LoggingDefaults = @{}
-    foreach ($Key in $PSDefaultParameterValues.Keys) { $LoggingDefaults[$Key] = $PSDefaultParameterValues[$Key] }
+    foreach ($Key in $PSDefaultParameterValues.Keys) {
+        $LoggingDefaults[$Key] = $PSDefaultParameterValues[$Key]
+    }
     $LoggingDefaults['Write-Color:LogFile'] = $null
     $PSDefaultParameterValues = $LoggingDefaults
     $Script:Reporting['Version'] = (Get-Command Start-TheDashboard).Version
-    if ($CheckForUpdates -and -not $Preview) { $Script:Reporting['Version'] = Get-GitHubVersion -Cmdlet 'Start-TheDashboard' -RepositoryOwner 'evotecit' -RepositoryName 'TheDashboard' }
-    if (-not $Preview) { Set-LoggingCapabilities -LogPath $LogPath -LogMaximum $LogMaximum -ShowTime:$LogShowTime -TimeFormat $LogTimeFormat -ScriptPath $MyInvocation.ScriptName -ParameterPSDefaultParameterValues $PSDefaultParameterValues }
+    if ($CheckForUpdates -and -not $Preview) {
+        $Script:Reporting['Version'] = Get-GitHubVersion -Cmdlet 'Start-TheDashboard' -RepositoryOwner 'evotecit' -RepositoryName 'TheDashboard'
+    }
+    if (-not $Preview) {
+        Set-LoggingCapabilities -LogPath $LogPath -LogMaximum $LogMaximum -ShowTime:$LogShowTime -TimeFormat $LogTimeFormat -ScriptPath $MyInvocation.ScriptName -ParameterPSDefaultParameterValues $PSDefaultParameterValues
+    }
 
     Write-Color '[i]', "[TheDashboard] ", 'Version', ' [Informative] ', $Script:Reporting['Version'] -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
 
@@ -173,72 +185,136 @@
         $OwnedFiles = @()
         if (Test-Path -LiteralPath $ManifestPath -PathType Leaf) {
             $Manifest = Import-Clixml -LiteralPath $ManifestPath -ErrorAction Stop
-            if ($Manifest.Schema -ne 1) { throw 'Unsupported dashboard ownership manifest.' }
+            if ($Manifest.Schema -ne 1) {
+                throw 'Unsupported dashboard ownership manifest.'
+            }
             $OwnedFiles = @($Manifest.Files)
             foreach ($Owned in $OwnedFiles) {
-                if (-not $Owned -or [IO.Path]::GetFileName($Owned) -ne $Owned -or $Owned -in @('.', '..')) { throw "Invalid owned dashboard filename '$Owned'." }
+                if (-not $Owned -or [IO.Path]::GetFileName($Owned) -ne $Owned -or $Owned -in @('.', '..')) {
+                    throw "Invalid owned dashboard filename '$Owned'."
+                }
             }
         }
-        if (-not $Preview) { Copy-HTMLFiles -Plan $CopyPlan -Confirm:$false }
+        if (-not $Preview) {
+            Copy-HTMLFiles -Plan $CopyPlan -Confirm:$false
+        }
         $Files = @(Convert-FilesToMenuData -Folders $Folders -Replacements $Replacements -Extension $Extension -OutputRoot $FolderPath -CopyPlan $CopyPlan -Pretend:$Preview)
         $SupportingFiles = @(Get-DashboardSupportingFiles -Folders $Folders -Extension $Extension -CopyPlan $CopyPlan -Pretend:$Preview)
         $MenuBuilder = Convert-FilesToMenu -Files $Files -Folders $Folders
-        $Configuration = [ordered] @{ Folders = $Folders; Logo = $Logo; LogoLink = $LogoLink; LogoLinkHome = $LogoLinkHome.IsPresent; Online = $Online.IsPresent; UrlPath = [string] $UrlPath }
+        $Configuration = [ordered] @{
+            Folders      = $Folders
+            Logo         = $Logo
+            LogoLink     = $LogoLink
+            LogoLinkHome = $LogoLinkHome.IsPresent
+            Online       = $Online.IsPresent
+            UrlPath      = [string] $UrlPath
+        }
         $FilePathsGenerated = @(Set-DashboardPagePlan -MenuBuilder $MenuBuilder -Configuration $Configuration -ExportData $ExportData -HTMLPath $HTMLPath -Force:$Force)
-        if ($StatisticsPath -and $StatisticsPath -in $FilePathsGenerated) { throw 'StatisticsPath must not overwrite a dashboard page.' }
+        if ($StatisticsPath -and $StatisticsPath -in $FilePathsGenerated) {
+            throw 'StatisticsPath must not overwrite a dashboard page.'
+        }
         $ExportData['MenuBuilder'] = $MenuBuilder
         if (-not $Preview) {
             $Stage = Join-Path $FolderPath ('.dashboard-stage-' + [guid]::NewGuid().ToString('N'))
             $null = [IO.Directory]::CreateDirectory($Stage)
             $Render = @{
-                OutputElements = $GageConfiguration; Logo = $Logo; LogoLink = $LogoLink; LogoLinkHome = $LogoLinkHome
-                MenuBuilder = $MenuBuilder; Configuration = $Configuration; ExportData = $ExportData; Files = $Files
-                HTMLPath = (Join-Path $Stage ([IO.Path]::GetFileName($HTMLPath))); Online = $Online; Extension = $Extension; UrlPath = $UrlPath
+                OutputElements = $GageConfiguration
+                Logo           = $Logo
+                LogoLink       = $LogoLink
+                LogoLinkHome   = $LogoLinkHome
+                MenuBuilder    = $MenuBuilder
+                Configuration  = $Configuration
+                ExportData     = $ExportData
+                Files          = $Files
+                HTMLPath       = (Join-Path $Stage ([IO.Path]::GetFileName($HTMLPath)))
+                Online         = $Online
+                Extension      = $Extension
+                UrlPath        = $UrlPath
             }
             $null = New-HTMLReport @Render
             $Publication = [System.Collections.Generic.List[object]]::new()
             $RequiredWrites = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
             foreach ($Menu in $MenuBuilder.Keys) {
                 foreach ($Group in $MenuBuilder[$Menu].Values) {
-                    if (-not $Group.Current.SkipGeneration) { $null = $RequiredWrites.Add($Group.Current.PageName) }
+                    if (-not $Group.Current.SkipGeneration) {
+                        $null = $RequiredWrites.Add($Group.Current.PageName)
+                    }
                     foreach ($Entry in $Group.Full) {
-                        if (-not $Entry.SkipSnapshotGeneration) { $null = $RequiredWrites.Add($Entry.FileName) }
+                        if (-not $Entry.SkipSnapshotGeneration) {
+                            $null = $RequiredWrites.Add($Entry.FileName)
+                        }
                     }
                 }
             }
             # Publish the landing page after its children. An exception rolls back pages and state.
             foreach ($Path in $FilePathsGenerated | Where-Object { $_ -ne $HTMLPath }) {
                 $StagedPath = Join-Path $Stage ([IO.Path]::GetFileName($Path))
-                if (Test-Path -LiteralPath $StagedPath -PathType Leaf) { $Publication.Add(@{ Source = $StagedPath; Destination = $Path }) }
-                elseif ($RequiredWrites.Contains([IO.Path]::GetFileName($Path)) -or -not (Test-Path -LiteralPath $Path -PathType Leaf)) { throw "The renderer did not produce '$Path'." }
+                if (Test-Path -LiteralPath $StagedPath -PathType Leaf) {
+                    $Publication.Add(@{
+                            Source      = $StagedPath
+                            Destination = $Path
+                        })
+                } elseif ($RequiredWrites.Contains([IO.Path]::GetFileName($Path)) -or -not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+                    throw "The renderer did not produce '$Path'."
+                }
             }
-            $Publication.Add(@{ Source = (Join-Path $Stage ([IO.Path]::GetFileName($HTMLPath))); Destination = $HTMLPath })
+            $Publication.Add(@{
+                    Source      = (Join-Path $Stage ([IO.Path]::GetFileName($HTMLPath)))
+                    Destination = $HTMLPath
+                })
             if ($StatisticsPath) {
                 $StatePath = Join-Path $Stage 'statistics.clixml'
                 $ExportData | Export-Clixml -Depth 12 -LiteralPath $StatePath -ErrorAction Stop
-                $Publication.Add(@{ Source = $StatePath; Destination = $StatisticsPath })
+                $Publication.Add(@{
+                        Source      = $StatePath
+                        Destination = $StatisticsPath
+                    })
             }
             $NewOwnedFiles = @($FilePathsGenerated | ForEach-Object { [IO.Path]::GetFileName($_) })
             $StagedManifest = Join-Path $Stage 'manifest.clixml'
             # Retain old ownership until cleanup succeeds, allowing an interrupted cleanup to retry.
-            @{ Schema = 1; Files = @($OwnedFiles + $NewOwnedFiles | Sort-Object -Unique) } | Export-Clixml -LiteralPath $StagedManifest -ErrorAction Stop
-            $Publication.Add(@{ Source = $StagedManifest; Destination = $ManifestPath })
+            @{
+                Schema = 1
+                Files  = @($OwnedFiles + $NewOwnedFiles | Sort-Object -Unique)
+            } | Export-Clixml -LiteralPath $StagedManifest -ErrorAction Stop
+            $Publication.Add(@{
+                    Source      = $StagedManifest
+                    Destination = $ManifestPath
+                })
             Publish-DashboardFiles -Files $Publication
             Remove-DiscardedReports -FilePathsGenerated $FilePathsGenerated -FolderPath $FolderPath -OwnedFiles $OwnedFiles -Confirm:$false
-            @{ Schema = 1; Files = $NewOwnedFiles } | Export-Clixml -LiteralPath $StagedManifest -ErrorAction Stop
-            Publish-DashboardFiles -Files @(@{ Source = $StagedManifest; Destination = $ManifestPath })
+            @{
+                Schema = 1
+                Files  = $NewOwnedFiles
+            } | Export-Clixml -LiteralPath $StagedManifest -ErrorAction Stop
+            Publish-DashboardFiles -Files @(@{
+                    Source      = $StagedManifest
+                    Destination = $ManifestPath
+                })
             foreach ($Copy in $CopyPlan | Where-Object Move) {
-                if ((Get-FileHash -LiteralPath $Copy.Source).Hash -ne (Get-FileHash -LiteralPath $Copy.Destination).Hash) { throw "Move source '$($Copy.Source)' changed during generation and was preserved. Run generation again after the report writer finishes." }
+                if ((Get-FileHash -LiteralPath $Copy.Source).Hash -ne (Get-FileHash -LiteralPath $Copy.Destination).Hash) {
+                    throw "Move source '$($Copy.Source)' changed during generation and was preserved. Run generation again after the report writer finishes."
+                }
                 Remove-Item -LiteralPath $Copy.Source -ErrorAction Stop
             }
         }
         $FilesToKeepOrRemove = Convert-FilesToKeepOrRemove -FilePathsGenerated $FilePathsGenerated -Files $Files -SupportingFiles $SupportingFiles -DeleteMethod $DeleteMethod -RemoveNotIncluded:$RemoveNotIncluded -WhatIf:$Preview
-        if ($ShowHTML -and -not $Preview) { Start-Process -FilePath $HTMLPath }
+        if ($ShowHTML -and -not $Preview) {
+            Start-Process -FilePath $HTMLPath
+        }
         if ($PassThru) {
             [ordered] @{
-                FilesToKeepOrRemove = $FilesToKeepOrRemove; Folders = $Folders; Extension = $Extension; Files = $Files
-                MenuBuilder = $MenuBuilder; Statistics = $ExportData.Statistics; StatisticsPath = $StatisticsPath
-                Replacements = $Replacements; FilePathsGenerated = $FilePathsGenerated; Preview = $Preview; ManifestPath = $ManifestPath
+                FilesToKeepOrRemove = $FilesToKeepOrRemove
+                Folders             = $Folders
+                Extension           = $Extension
+                Files               = $Files
+                MenuBuilder         = $MenuBuilder
+                Statistics          = $ExportData.Statistics
+                StatisticsPath      = $StatisticsPath
+                Replacements        = $Replacements
+                FilePathsGenerated  = $FilePathsGenerated
+                Preview             = $Preview
+                ManifestPath        = $ManifestPath
             }
         }
     } finally {
@@ -246,10 +322,16 @@
             if ($Stage -and (Test-Path -LiteralPath $Stage)) {
                 $StageInfo = Get-Item -LiteralPath $Stage -Force
                 $ExpectedRoot = $FolderPath.TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar
-                if (-not $StageInfo.FullName.StartsWith($ExpectedRoot, [StringComparison]::OrdinalIgnoreCase) -or $StageInfo.Name -notlike '.dashboard-stage-*' -or ($StageInfo.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw "Refusing to clean unexpected staging path '$Stage'." }
+                if (-not $StageInfo.FullName.StartsWith($ExpectedRoot, [StringComparison]::OrdinalIgnoreCase) -or $StageInfo.Name -notlike '.dashboard-stage-*' -or ($StageInfo.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+                    throw "Refusing to clean unexpected staging path '$Stage'."
+                }
                 Remove-Item -LiteralPath $Stage -Recurse -ErrorAction Stop
             }
-        } finally { if ($Lock) { $Lock.Dispose() } }
+        } finally {
+            if ($Lock) {
+                $Lock.Dispose()
+            }
+        }
     }
     Write-Color -Text '[i]', "[TheDashboard] ", 'Done', ' [Informative] ' -Color Yellow, DarkGray, Yellow, DarkGray, Magenta
 }

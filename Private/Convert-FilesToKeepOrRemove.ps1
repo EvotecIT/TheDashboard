@@ -41,7 +41,11 @@
                 Path    = $File.FullPath
                 Include = $Included
                 Date    = $File.Date
-                Status  = if ($Included) { 'Included' } else { 'Excluded' }
+                Status  = if ($Included) {
+                    'Included'
+                } else {
+                    'Excluded'
+                }
             }
         }
         foreach ($File in $SupportingFiles) {
@@ -50,7 +54,11 @@
                 Path    = $File.FullPath
                 Include = $true
                 Date    = $File.Date
-                Status  = if ($WhatIfPreference) { 'Included (WhatIf)' } else { 'Included' }
+                Status  = if ($WhatIfPreference) {
+                    'Included (WhatIf)'
+                } else {
+                    'Included'
+                }
             }
         }
     )
