@@ -66,9 +66,9 @@ Describe 'PingCastle repair and dashboard generation together' {
         $Engine = if ($PSVersionTable.PSEdition -eq 'Desktop') { Join-Path $PSHOME 'powershell.exe' } else { Join-Path $PSHOME 'pwsh.exe' }
         $Driver = Join-Path $PSScriptRoot 'Fixtures/Invoke-ReadOnlyRepair.ps1'
         $ModuleManifest = Join-Path (Split-Path $PSScriptRoot -Parent) 'TheDashboard.psd1'
-        $SharedGoodsManifest = (Get-Module PSSharedGoods | Select-Object -First 1).Path
-        $WriteHTMLManifest = (Get-Module PSWriteHTML | Select-Object -First 1).Path
-        $WriteColorManifest = (Get-Module PSWriteColor | Select-Object -First 1).Path
+        $SharedGoodsManifest = Join-Path (Get-Module PSSharedGoods | Select-Object -First 1).ModuleBase 'PSSharedGoods.psd1'
+        $WriteHTMLManifest = Join-Path (Get-Module PSWriteHTML | Select-Object -First 1).ModuleBase 'PSWriteHTML.psd1'
+        $WriteColorManifest = Join-Path (Get-Module PSWriteColor | Select-Object -First 1).ModuleBase 'PSWriteColor.psd1'
         $PSNativeCommandUseErrorActionPreference = $false
         $PreviousErrorActionPreference = $ErrorActionPreference
         try {
