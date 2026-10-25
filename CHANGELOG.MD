@@ -1,4 +1,13 @@
-﻿### 0.0.42 - 2025.07.31
+﻿### 0.0.43 - 2026.10.25
+- Keep independent reports separate when filename replacements produce the same menu label, and apply specific naming rules before the wildcard fallback.
+- Preserve full PingCastle domain names, with separate current reports and history for each domain.
+- Cache content repairs and unchanged generated pages, and rebuild missing pages or pages affected by navigation changes.
+- Stop failed content repairs before recording them as successfully cached.
+- Stage generated pages and saved state before publication, preserve moved inputs until publication succeeds, and restrict obsolete-page cleanup to the dashboard ownership manifest.
+- Return a deduplicated deployment list with configured supporting assets, and keep preview runs free of file writes.
+- Fix report summaries and single-sample chart data, and make the optional version check explicit.
+
+### 0.0.42 - 2025.07.31
 - Added `Repair-DashboardEncoding` function to fix UTF-8 BOM issues that cause emoji display problems
 - Function can detect and convert files from UTF-8 with BOM to UTF-8 without BOM for better web compatibility
 - Includes emoji detection and detailed reporting capabilities

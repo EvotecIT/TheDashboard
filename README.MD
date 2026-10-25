@@ -41,6 +41,46 @@ While doing so, TheDashboard provides additional insights so that the picture of
   - [ ] Active Directory - Users with password expiring in next XXX days
   - [ ] Active Directory - Computers with password last set over XXX days ago
 
+### Report names and reliable generation
+
+TheDashboard identifies a report by its original filename, before applying naming replacements. A trailing timestamp in the format `_yyyy-MM-dd_HHmmss` identifies a version of that report. For example, `PingCastle-Domain-example.test_2026-10-02_090000.html` and `PingCastle-Domain-group.example.test_2026-10-02_090000.html` create separate menu entries. Older timestamps for the same domain become versions of that entry. The timestamp determines report order; files without that suffix use their modification time.
+
+Naming rules change display labels. They do not merge independent reports. Duplicate labels include the domain or original report name, and generated filename collisions receive a stable suffix. Standard PingCastle domain labels retain the complete domain, including hyphens. In `-PassThru` results, `MenuBuilder` entries within each section are keyed by the lowercase report identity. Named retention limits also recognize the label before disambiguation.
+
+For `AfterSplitPositionName`, specific matches take precedence over the `*` fallback. Ordinary hashtables select the most specific pattern consistently. Use `[ordered]` when overlapping patterns need an explicit precedence; equally specific conflicting rules in an ordinary hashtable produce an error. Splitting on `_` preserves hyphens within domain names:
+
+```powershell
+$Root = Join-Path $PSScriptRoot 'Reports'
+Start-TheDashboard -HTMLPath (Join-Path $Root 'Index.html') -StatisticsPath (Join-Path $PSScriptRoot 'Dashboard.xml') {
+    New-DashboardFolder -Name 'PingCastle' -UrlName 'PingCastle' -Path (Join-Path $Root 'PingCastle')
+    New-DashboardReplacement -BeforeSplit @{ 'PingCastle-' = '' } -SplitOn '_' -AddSpaceToName
+    New-DashboardLimit -LimitItem 1 -IncludeHistory
+}
+```
+
+Put report folders beneath the directory containing the landing page. Use `CopyFrom` or `MoveFrom` to collect external reports into those folders. `UrlName` is a filename prefix, so it must not contain path separators. The dashboard uses relative, escaped links and supports nested report folders. `-UrlPath` sets the base URL for navigation when hosting requires an absolute address.
+
+Generated pages and statistics are staged before publishing. A publication exception rolls back files already replaced in that run. Concurrent generators targeting the same landing page are rejected. This protects against command failures; a static site host can still observe individual files changing during publication, and abrupt process termination is not a site-wide transaction.
+
+The hidden `.<landing-page>.dashboard-manifest.clixml` file records which generated pages this dashboard owns. Cleanup removes obsolete owned pages and preserves other files. Keep this manifest beside the landing page between runs. On the first run after upgrading, existing pages have no ownership record and are preserved unless they are a planned output. Review obsolete legacy pages separately. Statistics are local generator state and do not need to be served by the web host.
+
+Unchanged report pages are reused. Missing pages, changed report metadata, naming or navigation changes, logo changes, asset mode, and rendering template changes cause regeneration. `-Force` regenerates all pages. `CopyFrom` skips files with unchanged timestamps and sizes, and compares hashes when equal-size files have different timestamps. `MoveFrom` removes source files only after generation and publication succeed. `-RemoveNotIncluded` explicitly deletes raw reports excluded by retention; without `-IncludeHistory`, older excluded reports are also omitted from the upload list returned by `-PassThru`. When sections share a report directory, a raw report is retained if any section includes it.
+
+Use `-TestMode -PassThru` or `-WhatIf -PassThru` to inspect the menu and planned output without writing dashboard pages, statistics, manifests, copied reports, or logs. Configuration script blocks still execute under `WhatIfPreference`; custom collectors must respect that preference if they perform writes. Collector errors and unreadable report folders stop generation before page publication and cleanup. Email and notification configuration is unsupported by `Start-TheDashboard` and produces an explicit error.
+
+Normal generation runs without checking GitHub. Use `-CheckForUpdates` to request a version check. Omit `-Online` to embed the renderer's assets in the generated pages; use `-Online` when the host and viewers can reach its CDN resources. Upload included entries from `FilesToKeepOrRemove`, preserving the paths relative to the landing page directory. Deploy the generated pages together with their included raw reports. Add supporting file types with `New-DashboardFolder -Extension '.css', '.js', '.png'`; these files, including those in subdirectories, are included as assets in the upload list and do not create menu entries.
+
+### Validate generation
+
+The regression suite exercises naming, domain separation, retained history, preview mode, missing-page recovery, configuration changes, ownership cleanup, and publication failure. Source tests use the existing PSSharedGoods and PSWriteHTML dependencies, PSWriteColor 1.0.3 (the logging helper merged into the package), and Pester 5.7.1 or later in the 5.x series. CI installs these test dependencies explicitly.
+
+```powershell
+pwsh -NoProfile -File ./Tests/Invoke-GenerationTests.ps1
+powershell -NoProfile -File ./Tests/Invoke-GenerationTests.ps1
+```
+
+The CI workflow runs the same suite on Windows PowerShell 5.1 and PowerShell 7 with public dependency versions.
+
 ### Examples
 
 #### Example 1
