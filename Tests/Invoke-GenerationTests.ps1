@@ -28,7 +28,7 @@ if ($WriteHTMLManifest) {
 Import-Module PSWriteColor -RequiredVersion 1.0.3 -ErrorAction Stop
 Import-Module Pester -MinimumVersion 5.7.1 -MaximumVersion 5.99.0 -ErrorAction Stop
 $Configuration = New-PesterConfiguration
-$Configuration.Run.Path = Join-Path $PSScriptRoot 'Generation.Tests.ps1'
+$Configuration.Run.Path = $PSScriptRoot
 $Configuration.Run.PassThru = $true
 $Configuration.Output.Verbosity = 'Normal'
 if ($ResultPath) {

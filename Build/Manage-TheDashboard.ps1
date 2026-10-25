@@ -1,4 +1,28 @@
-﻿Clear-Host
+﻿<#
+.SYNOPSIS
+Builds or publishes TheDashboard through PSPublishModule.
+
+.PARAMETER ConfigurationGateMode
+Selects manifest validation, local build, or publication to PowerShell Gallery and GitHub.
+
+.PARAMETER SignModule
+Uses the configured Evotec signing certificate. Set false for unsigned local validation.
+
+.PARAMETER PowerShellGalleryApiKeyPath
+File containing the PowerShell Gallery publication credential.
+
+.PARAMETER GitHubApiKeyPath
+File containing the GitHub publication credential.
+#>
+param(
+    [ValidateSet('Manifest', 'Build', 'Publish')]
+    [string] $ConfigurationGateMode = 'Build',
+    [bool] $SignModule = $true,
+    [string] $PowerShellGalleryApiKeyPath = 'C:\Support\Important\PowerShellGalleryAPI.txt',
+    [string] $GitHubApiKeyPath = 'C:\Support\Important\GitHubAPI.txt'
+)
+
+Import-Module PSPublishModule -ErrorAction Stop
 
 Invoke-ModuleBuild -ModuleName 'TheDashboard' {
     # Usual defaults as per standard module
@@ -28,7 +52,7 @@ Invoke-ModuleBuild -ModuleName 'TheDashboard' {
     }
     New-ConfigurationManifest @Manifest
 
-    New-ConfigurationModule -Type RequiredModule -Name 'PSSharedGoods', 'PSWriteHTML' -Guid Auto -Version Latest
+    New-ConfigurationModule -Type RequiredModule -Name 'PSSharedGoods', 'PSWriteHTML' -Guid Auto -Version Latest -VersionSource PSGallery
     New-ConfigurationModule -Type ExternalModule -Name @(
         "Microsoft.PowerShell.Management"
         "Microsoft.PowerShell.Utility"
@@ -80,12 +104,13 @@ Invoke-ModuleBuild -ModuleName 'TheDashboard' {
     # import self to make sure that all functions are available
     New-ConfigurationImportModule -ImportSelf
     # build the module
-    New-ConfigurationBuild -Enable:$true -SignModule -MergeModuleOnBuild -MergeFunctionsFromApprovedModules -CertificateThumbprint '483292C9E317AA13B07BB7A96AE9D1A5ED9E7703'
+    New-ConfigurationBuild -Enable:$true -SignModule:$SignModule -MergeModuleOnBuild -MergeFunctionsFromApprovedModules -CertificateThumbprint '92E95FB58EFFA6A4A75E77A33CDD6BFE6DD30F1A'
     # create artefacts
     New-ConfigurationArtefact -Type Unpacked -Enable -Path "$PSScriptRoot\..\Artefacts\Unpacked" -AddRequiredModules
     New-ConfigurationArtefact -Type Packed -Enable -Path "$PSScriptRoot\..\Artefacts\Packed" -ArtefactName '<ModuleName>.v<ModuleVersion>.zip'
 
     # options for publishing to github/psgallery
-    #New-ConfigurationPublish -Type PowerShellGallery -FilePath 'C:\Support\Important\PowerShellGalleryAPI.txt' -Enabled:$true
-    #New-ConfigurationPublish -Type GitHub -FilePath 'C:\Support\Important\GitHubAPI.txt' -UserName 'EvotecIT' -Enabled:$true
+    New-ConfigurationPublish -Type PowerShellGallery -FilePath $PowerShellGalleryApiKeyPath -Enabled:$false
+    New-ConfigurationPublish -Type GitHub -FilePath $GitHubApiKeyPath -UserName 'EvotecIT' -RepositoryName 'TheDashboard' -Enabled:$false
+    New-ConfigurationGate -Mode $ConfigurationGateMode
 } -ExitCode -IncludeAll @()
