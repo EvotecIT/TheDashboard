@@ -151,7 +151,7 @@ Describe 'Filename rules and report identity' {
         $Group.History.Count | Should -Be 1
     }
 
-    It 'groups both observed timestamp formats with the dashboard naming configuration' {
+    It 'groups observed timestamp formats into one menu link per report with filename dates' {
         $Root = Join-Path $TestDrive 'observed-filenames'
         New-TestReports -Root (Join-Path $Root 'Reports') -Names @(
             'CleanupComputers_2026-07-22_06_02_12.html'
@@ -164,24 +164,68 @@ Describe 'Filename rules and report identity' {
             'ADEssentials_BrokenProtectedFromDeletion_2026-01-09_084052.html'
             'GraphEssentials_Applications_2026-05-01_132028.html'
             'GraphEssentials_Applications_2026-05-08_131952.html'
+            'WindowsUpdateReporting_2026-03-09-090007.html'
+            'WindowsUpdateReporting_2026-03-10-090007.html'
+            'ForestReplicationSummary_2026-04-01-033003.html'
+            'ForestReplicationSummary_2026-04-01-093003.html'
         )
-        $Result = Start-TheDashboard -HTMLPath (Join-Path $Root 'Index.html') -TestMode -PassThru {
+        [IO.File]::SetLastWriteTime((Join-Path $Root 'Reports/WindowsUpdateReporting_2026-03-09-090007.html'), [datetime] '2030-01-01')
+        $Result = Start-TheDashboard -HTMLPath (Join-Path $Root 'Index.html') -Online -PassThru {
             New-DashboardFolder -Name Reports -UrlName Reports -Path (Join-Path $Root 'Reports')
-            New-DashboardReplacement -SplitOn '[_-]' -BeforeSplit ([ordered] @{ 'Testimo_' = ''; 'ADEssentials_' = ''; 'GraphEssentials_' = '' }) -AddSpaceToName -AfterSplitPositionName ([ordered] @{ '*' = 0 })
+            New-DashboardReplacement -SplitOn '[_-]' -BeforeSplit ([ordered] @{ 'Testimo_' = ''; 'ADEssentials_' = ''; 'GraphEssentials_' = '' }) -AfterSplit @{ 'Windows Update Reporting' = 'Windows Updates' } -AddSpaceToName -AfterSplitPositionName ([ordered] @{ '*' = 0 })
             New-DashboardLimit -LimitItem 1 -IncludeHistory
         }
-        $Result.MenuBuilder.Reports.Count | Should -Be 5
+        $Result.MenuBuilder.Reports.Count | Should -Be 7
+        $Index = [IO.File]::ReadAllText((Join-Path $Root 'Index.html'))
         foreach ($Group in $Result.MenuBuilder.Reports.Values) {
             $Group.Full.Count | Should -Be 1
             $Group.History.Count | Should -Be 1
+            $Href = 'href="' + [uri]::EscapeDataString($Group.Current.PageName) + '"'
+            [regex]::Matches($Index, [regex]::Escape($Href)).Count | Should -Be 1
         }
         $Result.MenuBuilder.Reports['testimo_domaincomputersunsupported'].Current.Name | Should -Be 'Domain Computers Unsupported'
         $Result.MenuBuilder.Reports['adessentials_brokenprotectedfromdeletion'].Current.Name | Should -Be 'Broken Protected From Deletion'
         $Result.MenuBuilder.Reports['graphessentials_applications'].Current.Name | Should -Be 'Applications'
+        $Updates = $Result.MenuBuilder.Reports['windowsupdatereporting']
+        $Updates.Current.Name | Should -Be 'Windows Updates'
+        $Updates.Current.Date | Should -Be ([datetime] '2026-03-10T09:00:07')
+        $Updates.History[0].Date | Should -Be ([datetime] '2026-03-09T09:00:07')
+        $Replication = $Result.MenuBuilder.Reports['forestreplicationsummary']
+        $Replication.Current.Date | Should -Be ([datetime] '2026-04-01T09:30:03')
+        $Replication.History[0].Date | Should -Be ([datetime] '2026-04-01T03:30:03')
     }
 }
 
 Describe 'Retention and safe planning' {
+    It 'omits year-old versions from delivery while preserving recent history and the latest report' -TestCases @(
+        @{ SnapshotLimit = 1; FullCount = 1; HistoryCount = 1 },
+        @{ SnapshotLimit = 7; FullCount = 2; HistoryCount = 0 }
+    ) {
+        param($SnapshotLimit, $FullCount, $HistoryCount)
+        $Root = Join-Path $TestDrive "delivery-window-$SnapshotLimit"
+        $Now = Get-Date
+        $RecentName = 'WindowsUpdateReporting_' + $Now.AddDays(-2).ToString('yyyy-MM-dd-HHmmss') + '.html'
+        $HistoryName = 'WindowsUpdateReporting_' + $Now.AddDays(-8).ToString('yyyy-MM-dd-HHmmss') + '.html'
+        $OldName = 'WindowsUpdateReporting_' + $Now.AddDays(-366).ToString('yyyy-MM-dd-HHmmss') + '.html'
+        $DormantName = 'DormantReport_' + $Now.AddDays(-400).ToString('yyyy-MM-dd-HHmmss') + '.html'
+        New-TestReports -Root (Join-Path $Root 'Reports') -Names $RecentName, $HistoryName, $OldName, $DormantName
+        $Result = Start-TheDashboard -HTMLPath (Join-Path $Root 'Index.html') -Online -PassThru {
+            New-DashboardFolder -Name Reports -UrlName Reports -Path (Join-Path $Root 'Reports')
+            New-DashboardLimit -LimitItem $SnapshotLimit -LimitDays 90 -IncludeHistory -IncludeHistoryLimitDays 90
+        }
+        $Updates = $Result.MenuBuilder.Reports['windowsupdatereporting']
+        $Updates.Full.Count | Should -Be $FullCount
+        $Updates.History.Count | Should -Be $HistoryCount
+        $DeliveredReports = @($Result.FilesToKeepOrRemove | Where-Object { $_.Type -eq 'Report' -and $_.Include } | ForEach-Object { [IO.Path]::GetFileName($_.Path) })
+        $DeliveredReports | Should -HaveCount 3
+        $DeliveredReports | Should -Contain $RecentName
+        $DeliveredReports | Should -Contain $HistoryName
+        $DeliveredReports | Should -Contain $DormantName
+        $DeliveredReports | Should -Not -Contain $OldName
+        @($Result.FilePathsGenerated | Where-Object { [IO.Path]::GetFileName($_) -eq ('Reports_' + $OldName) }).Count | Should -Be 0
+        Test-Path -LiteralPath (Join-Path $Root "Reports/$OldName") | Should -BeTrue
+    }
+
     It 'applies named retention limits even when duplicate labels are disambiguated' {
         $Root = Join-Path $TestDrive 'named-retention'
         New-TestReports -Root (Join-Path $Root 'Reports') -Names 'One_2026-10-02_090000.html', 'One_2026-10-01_090000.html', 'Two_2026-10-02_090000.html', 'Two_2026-10-01_090000.html'
