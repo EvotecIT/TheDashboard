@@ -139,6 +139,46 @@ Describe 'Filename rules and report identity' {
         $Result = Invoke-TestDashboard -Root $Root -TestMode
         $Result.MenuBuilder.Reports['report'].Current.Date | Should -Be ([datetime] '2026-10-02T09:00:00')
     }
+
+    It 'groups CleanupMonster reports with separated time components into history' {
+        $Root = Join-Path $TestDrive 'cleanup-timestamps'
+        New-TestReports -Root (Join-Path $Root 'Reports') -Names 'CleanupCloudDevices_2026-09-23_17_51_30.html', 'CleanupCloudDevices_2026-09-22_18_13_14.html', 'OtherReport_2026-09-23_175130.html'
+        $Result = Invoke-TestDashboard -Root $Root -TestMode
+        $Result.MenuBuilder.Reports.Count | Should -Be 2
+        $Group = $Result.MenuBuilder.Reports['cleanupclouddevices']
+        $Group.Current.Date | Should -Be ([datetime] '2026-09-23T17:51:30')
+        $Group.Full.Count | Should -Be 1
+        $Group.History.Count | Should -Be 1
+    }
+
+    It 'groups both observed timestamp formats with the dashboard naming configuration' {
+        $Root = Join-Path $TestDrive 'observed-filenames'
+        New-TestReports -Root (Join-Path $Root 'Reports') -Names @(
+            'CleanupComputers_2026-07-22_06_02_12.html'
+            'CleanupComputers_2026-07-23_06_02_11.html'
+            'CriticalGroups_2026-10-19_04_24_02.html'
+            'CriticalGroups_2026-10-26_04_22_07.html'
+            'Testimo_DomainComputersUnsupported_2026-10-01_010353.html'
+            'Testimo_DomainComputersUnsupported_2026-10-08_010428.html'
+            'ADEssentials_BrokenProtectedFromDeletion_2026-01-02_081603.html'
+            'ADEssentials_BrokenProtectedFromDeletion_2026-01-09_084052.html'
+            'GraphEssentials_Applications_2026-05-01_132028.html'
+            'GraphEssentials_Applications_2026-05-08_131952.html'
+        )
+        $Result = Start-TheDashboard -HTMLPath (Join-Path $Root 'Index.html') -TestMode -PassThru {
+            New-DashboardFolder -Name Reports -UrlName Reports -Path (Join-Path $Root 'Reports')
+            New-DashboardReplacement -SplitOn '[_-]' -BeforeSplit ([ordered] @{ 'Testimo_' = ''; 'ADEssentials_' = ''; 'GraphEssentials_' = '' }) -AddSpaceToName -AfterSplitPositionName ([ordered] @{ '*' = 0 })
+            New-DashboardLimit -LimitItem 1 -IncludeHistory
+        }
+        $Result.MenuBuilder.Reports.Count | Should -Be 5
+        foreach ($Group in $Result.MenuBuilder.Reports.Values) {
+            $Group.Full.Count | Should -Be 1
+            $Group.History.Count | Should -Be 1
+        }
+        $Result.MenuBuilder.Reports['testimo_domaincomputersunsupported'].Current.Name | Should -Be 'Domain Computers Unsupported'
+        $Result.MenuBuilder.Reports['adessentials_brokenprotectedfromdeletion'].Current.Name | Should -Be 'Broken Protected From Deletion'
+        $Result.MenuBuilder.Reports['graphessentials_applications'].Current.Name | Should -Be 'Applications'
+    }
 }
 
 Describe 'Retention and safe planning' {
