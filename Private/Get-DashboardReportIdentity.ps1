@@ -4,7 +4,8 @@ function Get-DashboardReportIdentity {
     Derives a stable report identity and date from the original filename.
 
     .DESCRIPTION
-    Removes a valid trailing yyyy-MM-dd_HHmmss or yyyy-MM-dd_HH_mm_ss timestamp before forming the identity.
+    Removes a valid trailing yyyy-MM-dd_HHmmss, yyyy-MM-dd_HH_mm_ss, or
+    yyyy-MM-dd-HHmmss timestamp before forming the identity.
     Other names use their complete stem and last-write time. PingCastle domain names
     retain the full domain, including hyphens.
 
@@ -20,9 +21,9 @@ function Get-DashboardReportIdentity {
     )
     $BaseName = $File.BaseName
     $Date = $File.LastWriteTime
-    if ($BaseName -match '^(?<report>.+)_(?<stamp>\d{4}-\d{2}-\d{2}_(?:\d{6}|\d{2}_\d{2}_\d{2}))$') {
+    if ($BaseName -match '^(?<report>.+)_(?<stamp>\d{4}-\d{2}-\d{2}(?:_\d{6}|_\d{2}_\d{2}_\d{2}|-\d{6}))$') {
         $ParsedDate = [datetime]::MinValue
-        $Formats = [string[]] @('yyyy-MM-dd_HHmmss', 'yyyy-MM-dd_HH_mm_ss')
+        $Formats = [string[]] @('yyyy-MM-dd_HHmmss', 'yyyy-MM-dd_HH_mm_ss', 'yyyy-MM-dd-HHmmss')
         if ([datetime]::TryParseExact($Matches.stamp, $Formats, [cultureinfo]::InvariantCulture, [Globalization.DateTimeStyles]::None, [ref] $ParsedDate)) {
             $BaseName = $Matches.report
             $Date = $ParsedDate

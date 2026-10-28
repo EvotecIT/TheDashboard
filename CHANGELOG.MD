@@ -1,4 +1,10 @@
-﻿### 0.0.43 - 2026.10.25
+﻿### 0.0.45 - 2026.10.28
+- Group Windows Update and Forest Replication Summary reports with `_yyyy-MM-dd-HHmmss` timestamps into one menu entry and use the filename date for ordering and calendar history.
+
+### 0.0.44 - 2026.10.28
+- Group reports with `_yyyy-MM-dd_HH_mm_ss` timestamps into one menu entry, alongside the existing compact time format.
+
+### 0.0.43 - 2026.10.25
 - Keep independent reports separate when filename replacements produce the same menu label, and apply specific naming rules before the wildcard fallback.
 - Preserve full PingCastle domain names, with separate current reports and history for each domain.
 - Cache content repairs and unchanged generated pages, and rebuild missing pages or pages affected by navigation changes.
