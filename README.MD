@@ -87,6 +87,26 @@ The CI workflow runs the same suite on Windows PowerShell 5.1 and PowerShell 7 w
 
 ### Examples
 
+#### Gauges by city
+
+Pass `-City` to `New-DashboardGage` to add a City selector to the dashboard.
+**All** is selected by default and displays the overall gauges defined without
+`-City`. If you supply only city gauges, **All** shows them grouped by city.
+Selecting a city shows its gauges. The Domain Summary chart uses overall gauge
+history.
+
+```powershell
+Start-TheDashboard -HTMLPath './Dashboard/Index.html' {
+    $Today = Get-Date
+    New-DashboardFolder -Name 'Reports' -UrlName 'Reports' -Path './Dashboard/Reports'
+    New-DashboardGage -Label 'Users' -MaxValue 100 -Value 60 -Date $Today
+    New-DashboardGage -Label 'Users' -MaxValue 50 -Value 35 -Date $Today -City 'Warsaw'
+    New-DashboardGage -Label 'Users' -MaxValue 50 -Value 25 -Date $Today -City 'Krakow'
+}
+```
+
+#### Active Directory gauges
+
 See the [Active Directory gauge example](Examples/TheDashboardActiveDirectoryGauges.ps1)
 for enabled and disabled account counts, security and distribution group counts,
 and the total number of Group Policy Objects across a forest. Run it on a host

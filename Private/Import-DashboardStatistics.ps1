@@ -6,7 +6,7 @@
     .DESCRIPTION
     Accepts current state dictionaries and the legacy statistics-only layout.
     Missing state starts empty; unreadable or invalid state is an error. Adds current
-    gauge values in memory without writing the statistics file.
+    overall gauge values in memory without writing the statistics file.
 
     .PARAMETER StatisticsPath
     Optional CLIXML state file to read.
@@ -39,6 +39,9 @@
         }
     }
     foreach ($E in $GageConfiguration) {
+        if ($E.City) {
+            continue
+        }
         if (-not $ExportData['Statistics'].Contains($E.Date)) {
             $ExportData['Statistics'][$E.Date] = [ordered] @{}
         }

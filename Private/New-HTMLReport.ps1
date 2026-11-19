@@ -112,6 +112,8 @@
         }
     } else {
         # Build report
+        $OverallGages = @($OutputElements | Where-Object { -not $_.City })
+        $CityGages = @($OutputElements | Where-Object City)
         New-HTML {
             $newHTMLNavTopSplat = @{
                 Logo            = $Logo
@@ -155,32 +157,26 @@
             New-HTMLSectionStyle -BorderRadius 0px -HeaderBackGroundColor Grey -RemoveShadow
             New-HTMLPanelStyle -BorderRadius 0px
 
+            New-DashboardGageOverview -OverallGages $OverallGages -CityGages $CityGages
             New-HTMLSection -Invisible {
-                foreach ($E in $OutputElements) {
+                if ($OverallGages.Count -or -not $CityGages.Count) {
                     New-HTMLPanel {
-                        New-HTMLGage -Label $E.Label -MinValue $E.MinValue -MaxValue $E.MaxValue -Value $E.Value -Counter
-                        $ExportData['Statistics'][$E.Date][$($E.Label)] = $E.Value
-                        # New-HTMLText -Text 'Change since last + ', $DifferenceUsers -Color Red -Alignment right -FontSize 20px -SkipParagraph
-                    }
-                }
-            }
-            New-HTMLSection -Invisible {
-                New-HTMLPanel {
-                    $StatisticsKeys = $ExportData['Statistics'].Keys | Sort-Object | Select-Object -Last 50
-                    # The chart needs arrays even when statistics contain only one sample.
-                    [Array] $Dates = foreach ($Day in $StatisticsKeys) {
-                        $ExportData['Statistics'][$Day].Date
-                    }
+                        $StatisticsKeys = $ExportData['Statistics'].Keys | Sort-Object | Select-Object -Last 50
+                        # The chart needs arrays even when statistics contain only one sample.
+                        [Array] $Dates = foreach ($Day in $StatisticsKeys) {
+                            $ExportData['Statistics'][$Day].Date
+                        }
 
-                    New-HTMLChart -Title 'Domain Summary' -TitleAlignment center {
-                        New-ChartAxisX -Type datetime -Names $Dates
-                        New-ChartAxisY -TitleText 'Numbers' -Show
+                        New-HTMLChart -Title 'Domain Summary' -TitleAlignment center {
+                            New-ChartAxisX -Type datetime -Names $Dates
+                            New-ChartAxisY -TitleText 'Numbers' -Show
 
-                        foreach ($UserInput in $OutputElements) {
-                            [Array] $Values = foreach ($Day in $StatisticsKeys) {
-                                $ExportData['Statistics'][$Day].$($UserInput.Label)
+                            foreach ($UserInput in $OverallGages) {
+                                [Array] $Values = foreach ($Day in $StatisticsKeys) {
+                                    $ExportData['Statistics'][$Day].$($UserInput.Label)
+                                }
+                                New-ChartLine -Name $UserInput.Label -Value $Values
                             }
-                            New-ChartLine -Name $UserInput.Label -Value $Values
                         }
                     }
                 }

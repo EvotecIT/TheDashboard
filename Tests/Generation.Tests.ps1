@@ -196,6 +196,34 @@ Describe 'Filename rules and report identity' {
     }
 }
 
+Describe 'Gauge statistics' {
+    It 'preserves saved overall values when city gauges use the same label' {
+        $Root = Join-Path $TestDrive 'city-gauge-history'
+        $ReportRoot = Join-Path $Root 'Reports'
+        New-TestReports -Root $ReportRoot -Names 'Report.html'
+        $PreviousDate = [datetime]'2025-04-10'
+        $Date = $PreviousDate.AddDays(1)
+        $CityOnlyDate = $Date.AddDays(1)
+        $StatisticsPath = Join-Path $Root 'Stats.xml'
+        $LegacyStatistics = [ordered]@{}
+        $LegacyStatistics[$PreviousDate] = [ordered]@{ Date = $PreviousDate; Users = 18 }
+        $LegacyStatistics | Export-Clixml -LiteralPath $StatisticsPath
+
+        $null = Start-TheDashboard -HTMLPath (Join-Path $Root 'Index.html') -StatisticsPath $StatisticsPath -Online {
+            New-DashboardFolder -Name Reports -UrlName Reports -Path $ReportRoot
+            New-DashboardGage -Label Users -Date $Date -MaxValue 50 -Value 25
+            New-DashboardGage -Label Users -Date $Date -MaxValue 50 -Value 12 -City Warsaw
+            New-DashboardGage -Label Users -Date $Date -MaxValue 50 -Value 13 -City Krakow
+            New-DashboardGage -Label Users -Date $CityOnlyDate -MaxValue 50 -Value 5 -City Warsaw
+        }
+
+        $Statistics = (Import-Clixml -LiteralPath $StatisticsPath).Statistics
+        $Statistics[$PreviousDate].Users | Should -Be 18
+        $Statistics[$Date].Users | Should -Be 25
+        $Statistics.Contains($CityOnlyDate) | Should -BeFalse
+    }
+}
+
 Describe 'Retention and safe planning' {
     It 'labels outdated current reports and clears the label when a newer report arrives' {
         $Root = Join-Path $TestDrive 'outdated-reports'
