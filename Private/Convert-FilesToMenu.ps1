@@ -5,7 +5,8 @@ function Convert-FilesToMenu {
 
     .DESCRIPTION
     Groups files by their original report identity within each configured folder.
-    The newest version becomes the current report. Retention settings determine
+    The newest version becomes the current report. Its age is recorded when
+    it exceeds the configured outdated threshold. Retention settings determine
     which additional versions appear as pages or retained history. Each input
     record's Include property is updated to reflect that decision.
 
@@ -59,10 +60,18 @@ function Convert-FilesToMenu {
         }
         $Group = $MenuBuilder[$Entry.Menu][$Entry.Identity]
         if (-not $Group) {
+            $OutdatedAgeDays = $null
+            if ($Limits.OutdatedDays) {
+                $AgeDays = ($CurrentDate - $Entry.Date).TotalDays
+                if ($AgeDays -gt $Limits.OutdatedDays) {
+                    $OutdatedAgeDays = [Math]::Floor($AgeDays)
+                }
+            }
             $Group = @{
-                Current = $Entry
-                Full    = [System.Collections.Generic.List[object]]::new()
-                History = [System.Collections.Generic.List[object]]::new()
+                Current         = $Entry
+                Full            = [System.Collections.Generic.List[object]]::new()
+                History         = [System.Collections.Generic.List[object]]::new()
+                OutdatedAgeDays = $OutdatedAgeDays
             }
             $MenuBuilder[$Entry.Menu][$Entry.Identity] = $Group
         } else {

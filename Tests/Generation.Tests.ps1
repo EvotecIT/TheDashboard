@@ -197,6 +197,34 @@ Describe 'Filename rules and report identity' {
 }
 
 Describe 'Retention and safe planning' {
+    It 'labels outdated current reports and clears the label when a newer report arrives' {
+        $Root = Join-Path $TestDrive 'outdated-reports'
+        $ReportRoot = Join-Path $Root 'Reports'
+        $IndexPath = Join-Path $Root 'Index.html'
+        $StatisticsPath = Join-Path $Root 'Stats.xml'
+        $Now = Get-Date
+        $OldBackup = 'Backup_' + $Now.AddDays(-45).ToString('yyyy-MM-dd_HHmmss') + '.html'
+        New-TestReports -Root $ReportRoot -Names $OldBackup, 'Inventory.html'
+        [IO.File]::SetLastWriteTime((Join-Path $ReportRoot 'Inventory.html'), $Now.AddDays(-60))
+
+        $Settings = {
+            New-DashboardFolder -Name Reports -UrlName Reports -Path $ReportRoot
+            New-DashboardLimit -OutdatedDays 30 -LimitItem 1 -IncludeHistory
+        }
+        $null = Start-TheDashboard -HTMLPath $IndexPath -StatisticsPath $StatisticsPath -Online $Settings
+        $Index = [IO.File]::ReadAllText($IndexPath)
+        $Index | Should -Match 'href="Reports_Backup\.html"[^>]*>(?:(?!</a>).)*Backup \(Outdated, 45 days old\)</a>'
+        $Index | Should -Match 'Inventory \(Outdated, 60 days old\)</a>'
+
+        $NewBackup = 'Backup_' + $Now.AddDays(-2).ToString('yyyy-MM-dd_HHmmss') + '.html'
+        New-TestReports -Root $ReportRoot -Names $NewBackup
+        $Result = Start-TheDashboard -HTMLPath $IndexPath -StatisticsPath $StatisticsPath -Online -PassThru $Settings
+        $Index = [IO.File]::ReadAllText($IndexPath)
+        $Index | Should -Match 'href="Reports_Backup\.html"[^>]*>(?:(?!</a>).)*Backup</a>'
+        $Index | Should -Not -Match 'Backup \(Outdated'
+        $Result.MenuBuilder.Reports.backup.History | Should -HaveCount 1
+    }
+
     It 'omits year-old versions from delivery while preserving recent history and the latest report' -TestCases @(
         @{ SnapshotLimit = 1; FullCount = 1; HistoryCount = 1 },
         @{ SnapshotLimit = 7; FullCount = 2; HistoryCount = 0 }
