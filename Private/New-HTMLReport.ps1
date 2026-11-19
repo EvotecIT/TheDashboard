@@ -128,13 +128,16 @@
                         }
                         New-NavTopMenu @TopMenuSplat {
                             foreach ($MenuReport in $MenuBuilder[$Menu].Keys | Sort-Object) {
-                                $MenuLink = $MenuBuilder[$Menu][$MenuReport]['Current'].MenuLink
-                                $PageName = [uri]::EscapeDataString($MenuBuilder[$Menu][$MenuReport]['Current'].PageName)
-                                if ($UrlPath) {
-                                    New-NavLink -IconRegular calendar-check -Name $MenuBuilder[$Menu][$MenuReport]['Current'].Name -Href "$($UrlPath.ToString().TrimEnd('/'))/$PageName"
-                                } else {
-                                    New-NavLink -IconRegular calendar-check -Name $MenuBuilder[$Menu][$MenuReport]['Current'].Name -Href $PageName
+                                $ReportGroup = $MenuBuilder[$Menu][$MenuReport]
+                                $Label = $ReportGroup.Current.Name
+                                if ($null -ne $ReportGroup.OutdatedAgeDays) {
+                                    $Label = "$Label (Outdated, $($ReportGroup.OutdatedAgeDays) days old)"
                                 }
+                                $Href = [uri]::EscapeDataString($ReportGroup.Current.PageName)
+                                if ($UrlPath) {
+                                    $Href = "$($UrlPath.ToString().TrimEnd('/'))/$Href"
+                                }
+                                New-NavLink -IconRegular calendar-check -Name $Label -Href $Href
                             }
                         }
                     }

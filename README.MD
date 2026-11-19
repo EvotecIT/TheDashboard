@@ -68,6 +68,8 @@ Unchanged report pages are reused. Missing pages, changed report metadata, namin
 
 To limit delivery to recent reports, use `New-DashboardLimit -LimitItem 7 -LimitDays 90 -IncludeHistory -IncludeHistoryLimitDays 90`. This generates up to seven dated wrappers per report within the last 90 days and links to additional history within the same window. The latest version of each report is always retained, including report types that have not run recently. Older excluded versions are omitted from the upload list; their local files remain unless `-RemoveNotIncluded` is requested. Configure remote cleanup separately in your synchronization command.
 
+Add `-OutdatedDays 30` to a limit to mark current reports older than 30 days in the menu. The label includes the report's age and clears on the next dashboard generation after a newer report arrives within the configured limit.
+
 Use `-TestMode -PassThru` or `-WhatIf -PassThru` to inspect the menu and planned output without writing dashboard pages, statistics, manifests, copied reports, or logs. Configuration script blocks still execute under `WhatIfPreference`; custom collectors must respect that preference if they perform writes. Collector errors and unreadable report folders stop generation before page publication and cleanup. Email and notification configuration is unsupported by `Start-TheDashboard` and produces an explicit error.
 
 Normal generation runs without checking GitHub. Use `-CheckForUpdates` to request a version check. Omit `-Online` to embed the renderer's assets in the generated pages; use `-Online` when the host and viewers can reach its CDN resources. Upload included entries from `FilesToKeepOrRemove`, preserving the paths relative to the landing page directory. Deploy the generated pages together with their included raw reports. Add supporting file types with `New-DashboardFolder -Extension '.css', '.js', '.png'`; these files, including those in subdirectories, are included as assets in the upload list and do not create menu entries.
@@ -84,6 +86,11 @@ powershell -NoProfile -File ./Tests/Invoke-GenerationTests.ps1
 The CI workflow runs the same suite on Windows PowerShell 5.1 and PowerShell 7 with public dependency versions.
 
 ### Examples
+
+See the [Active Directory gauge example](Examples/TheDashboardActiveDirectoryGauges.ps1)
+for enabled and disabled account counts, security and distribution group counts,
+and the total number of Group Policy Objects across a forest. Run it on a host
+with the ActiveDirectory and GroupPolicy modules.
 
 #### Example 1
 

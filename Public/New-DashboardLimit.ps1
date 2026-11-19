@@ -19,6 +19,10 @@
     .PARAMETER LimitDays
     Specifies how many days back reports are displayed.
 
+    .PARAMETER OutdatedDays
+    Marks the latest report in the menu when its report date is older than this number of days.
+    The report remains available and its retention settings still apply.
+
     .PARAMETER IncludeHistory
     Indicates whether older files are added to a history list instead of excluded.
 
@@ -34,6 +38,10 @@
     .EXAMPLE
     New-DashboardLimit -LimitItem 3 -LimitDays 10
 
+    .EXAMPLE
+    New-DashboardLimit -OutdatedDays 30
+    Shows the age of current reports older than 30 days in the menu.
+
     .NOTES
     Part of TheDashboard module, used to configure file retention rules.
     #>
@@ -46,7 +54,8 @@
         [switch] $IncludeHistory,
         [nullable[DateTime]] $IncludeHistoryLimitDate,
         [nullable[int]] $IncludeHistoryLimitDays,
-        [nullable[int]] $IncludeHistoryLimit
+        [nullable[int]] $IncludeHistoryLimit,
+        [ValidateRange(1, [int]::MaxValue)][nullable[int]] $OutdatedDays
     )
 
     if (-not $Name) {
@@ -64,6 +73,7 @@
             LimitItem               = $LimitItem
             LimitDate               = $LimitDate
             LimitDays               = $LimitDays
+            OutdatedDays            = $OutdatedDays
             IncludeHistory          = $IncludeHistory
             IncludeHistoryLimit     = $IncludeHistoryLimit
             IncludeHistoryLimitDate = $IncludeHistoryLimitDate
